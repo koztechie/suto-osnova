@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "duration": 47,
+  "results": [
+    {
+      "name": "Lucali",
+      "entity_id": "895FA243-5144-4E7C-9B2D-6F8A0C3E5B17",
+      "types": [
+        "urn:entity:place"
+      ],
+      "properties": {
+        "address": "575 Henry St, Brooklyn, NY 11231"
+      },
+      "popularity": 0.94,
+      "disambiguation": "Carroll Gardens pizzeria",
+      "tags": [
+        {
+          "name": "Pizza restaurant",
+          "tag_id": "urn:tag:category:place:pizza_restaurant",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "name": "Restaurant",
+          "tag_id": "urn:tag:genre:place:restaurant",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "name": "Pizza",
+          "tag_id": "urn:tag:genre:place:restaurant:pizza",
+          "type": "urn:tag:genre:place"
+        }
+      ]
+    }
+  ]
+}

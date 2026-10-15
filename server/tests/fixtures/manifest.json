@@ -1,0 +1,154 @@
+{
+  "description": "Reference mock data for 10 canonical test scenarios. Raw responses recorded live from hackathon.api.qloo.com (2026-10-14); expected envelopes generated through the real clients — pinned by server/test/referenceFixtures.test.js. Regenerate: node server/tests/fixtures/generate.mjs",
+  "generatedBy": "server/tests/fixtures/generate.mjs",
+  "scenarios": [
+    {
+      "id": "01-film-search",
+      "title": "Film domain: search a TV show by name",
+      "client": "searchEntities",
+      "args": [
+        "Severance",
+        "tv_show"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "01-film-search.response.json",
+      "expected": "01-film-search.expected.json",
+      "notes": "search /search; raw tags use the tag_id shape of the live host"
+    },
+    {
+      "id": "02-music-search",
+      "title": "Music domain: search an artist",
+      "client": "searchEntities",
+      "args": [
+        "Kendrick Lamar",
+        "music"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "02-music-search.response.json",
+      "expected": "02-music-search.expected.json",
+      "notes": "music resolves to urn:entity:artist; live tag families for artists"
+    },
+    {
+      "id": "03-books-search",
+      "title": "Books domain: search a book",
+      "client": "searchEntities",
+      "args": [
+        "Dune",
+        "books"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "03-books-search.response.json",
+      "expected": "03-books-search.expected.json",
+      "notes": "books resolves to urn:entity:book"
+    },
+    {
+      "id": "04-dining-search",
+      "title": "Dining domain: search a restaurant (place + restaurant tags)",
+      "client": "searchEntities",
+      "args": [
+        "Lucali",
+        "dining"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "04-dining-search.response.json",
+      "expected": "04-dining-search.expected.json",
+      "notes": "dining resolves to urn:entity:place; restaurant tag families qualify it"
+    },
+    {
+      "id": "05-fashion-search",
+      "title": "Fashion domain: search a brand (brand + fashion tags)",
+      "client": "searchEntities",
+      "args": [
+        "Nike",
+        "fashion"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "05-fashion-search.response.json",
+      "expected": "05-fashion-search.expected.json",
+      "notes": "fashion resolves to urn:entity:brand; genre:brand:fashion family qualifies it"
+    },
+    {
+      "id": "06-taste-tags",
+      "title": "Taste vector tags for an entity, scoped by tag type",
+      "client": "findTags",
+      "args": [
+        "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+        "genre:media"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "06-taste-tags.response.json",
+      "expected": "06-taste-tags.expected.json",
+      "notes": "/v2/tags live shape: results.tags with parents, popularity, nested tags"
+    },
+    {
+      "id": "07-cross-domain-movies",
+      "title": "Cross-domain affinity: artist signal -> movies, with attribution",
+      "client": "getCrossDomainAffinities",
+      "args": [
+        "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+        "movie",
+        {
+          "take": 3
+        }
+      ],
+      "status": 200,
+      "error": false,
+      "response": "07-cross-domain-movies.response.json",
+      "expected": "07-cross-domain-movies.expected.json",
+      "notes": "/v2/insights live shape: query.affinity per entity, explainability under signal.interests.entities, root-level warning"
+    },
+    {
+      "id": "08-audience-insights",
+      "title": "Audience insights: demographic signal -> places",
+      "client": "getAudienceInsights",
+      "args": [
+        {
+          "targetDomain": "place",
+          "audiences": "urn:audience:hobbies_and_interests:outdoors",
+          "take": 2
+        }
+      ],
+      "status": 200,
+      "error": false,
+      "response": "08-audience-insights.response.json",
+      "expected": "08-audience-insights.expected.json",
+      "notes": "demographic-only signal: live host computes no attribution, so explain/aggregate are null"
+    },
+    {
+      "id": "09-audience-discovery",
+      "title": "Audience discovery by keyword (URN lookup)",
+      "client": "searchAudiences",
+      "args": [
+        "outdoors"
+      ],
+      "status": 200,
+      "error": false,
+      "response": "09-audience-discovery.response.json",
+      "expected": "09-audience-discovery.expected.json",
+      "notes": "/v2/audiences live shape: results.audiences with parents and disambiguation"
+    },
+    {
+      "id": "10-error-rate-limit",
+      "title": "Upstream 429 quota error surfaces as QlooApiError",
+      "client": "qlooClient.get",
+      "args": [
+        "/v2/insights",
+        {
+          "filter.type": "urn:entity:movie",
+          "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836"
+        }
+      ],
+      "status": 429,
+      "error": true,
+      "response": "10-error-rate-limit.response.json",
+      "expected": "10-error-rate-limit.expected.json",
+      "notes": "live 429 body shape {\"error_msg\": ...}; QLOO_MAX_RETRIES=0 -> single attempt"
+    }
+  ]
+}

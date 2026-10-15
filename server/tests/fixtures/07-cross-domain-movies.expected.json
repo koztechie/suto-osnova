@@ -1,0 +1,93 @@
+{
+  "sourceEntityIds": [
+    "AFBC71A7-9439-4AB0-AB68-D14B11AAF836"
+  ],
+  "targetType": "urn:entity:movie",
+  "take": 3,
+  "page": null,
+  "offset": null,
+  "count": 2,
+  "explainability": {
+    "signal.interests.entities": {
+      "top3": [
+        {
+          "entityId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+          "avgScore": 1
+        }
+      ],
+      "top5": [
+        {
+          "entityId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+          "avgScore": 1
+        }
+      ],
+      "top10": [
+        {
+          "entityId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+          "avgScore": 1
+        }
+      ],
+      "all": [
+        {
+          "entityId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+          "avgScore": 1
+        }
+      ]
+    },
+    "warning": "partial attribution coverage"
+  },
+  "results": [
+    {
+      "id": "E39A5CE6-5991-46B9-897D-4B23A494804A",
+      "name": "Promising Young Woman",
+      "type": "urn:entity",
+      "subtype": "urn:entity:movie",
+      "popularity": 0.9933691872394652,
+      "affinity": 0.9445416539735196,
+      "affinityRank": null,
+      "explain": {
+        "AFBC71A7-9439-4AB0-AB68-D14B11AAF836": 1
+      },
+      "measurements": {
+        "audience_growth": 0
+      },
+      "description": "A woman goes on a vigilante mission.",
+      "imageUrl": null,
+      "releaseYear": 2020,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": null,
+      "tags": [
+        {
+          "id": "urn:tag:genre:media:drama",
+          "name": "Drama",
+          "type": "urn:tag:genre:media"
+        }
+      ]
+    },
+    {
+      "id": "C17E1B67-0D79-404B-B0BC-BBBD37F7107D",
+      "name": "The Menu",
+      "type": "urn:entity",
+      "subtype": "urn:entity:movie",
+      "popularity": 0.9984448908183762,
+      "affinity": 0.9234310157956184,
+      "affinityRank": null,
+      "explain": null,
+      "measurements": {},
+      "description": null,
+      "imageUrl": null,
+      "releaseYear": null,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": null,
+      "tags": []
+    }
+  ]
+}

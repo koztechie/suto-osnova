@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "duration": 38,
+  "results": [
+    {
+      "name": "Kendrick Lamar",
+      "entity_id": "C915A918-39C4-4F2B-8D6E-2A7B5C9E1F30",
+      "types": [
+        "urn:entity:artist"
+      ],
+      "properties": {},
+      "popularity": 0.98,
+      "tags": [
+        {
+          "name": "Socially Conscious",
+          "tag_id": "urn:tag:music:qloo:socially_conscious",
+          "type": "urn:tag:music:qloo"
+        },
+        {
+          "name": "Lyrical",
+          "tag_id": "urn:tag:music:qloo:lyrical",
+          "type": "urn:tag:music:qloo"
+        }
+      ]
+    }
+  ]
+}

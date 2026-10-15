@@ -1,0 +1,33 @@
+{
+  "name": "suto-osnova",
+  "version": "1.0.0",
+  "description": "Autonomous cultural intelligence and mise-en-scène worldbuilding agent powered by Qloo Taste AI",
+  "type": "module",
+  "main": "server/src/index.js",
+  "scripts": {
+    "start": "node --env-file=.env server/src/index.js",
+    "dev": "node --watch --env-file=.env server/src/index.js",
+    "mcp": "node --env-file=.env server/src/mcp/server.js",
+    "mcp:verify": "node scripts/verify-harness-compat.mjs",
+    "verify:env": "node scripts/verify_backend_env.js",
+    "verify:memory": "node scripts/verify_memory.js",
+    "test": "NODE_ENV=test node --test",
+    "lint": "node --check server/src/**/*.js"
+  },
+  "keywords": [
+    "qloo",
+    "agentic",
+    "taste-ai",
+    "mcp",
+    "cultural-intelligence"
+  ],
+  "author": "Eugene Kozlovsky (koztechie)",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@qloo/qloo-harness": "^0.1.26"
+  }
+}

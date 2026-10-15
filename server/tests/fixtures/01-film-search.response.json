@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "duration": 41,
+  "results": [
+    {
+      "name": "Severance",
+      "entity_id": "569F8294-72D1-4C6E-8A2F-1B3D5E7F9A01",
+      "types": [
+        "urn:entity:tv_show"
+      ],
+      "properties": {
+        "release_year": 2022,
+        "release_date": "2022-02-18",
+        "description": "Employees at Lumon Industries agree to a procedure that separates their work memories from their personal lives.",
+        "image": {
+          "url": "https://images.qloo.com/i/569F8294-420x-auto.jpg"
+        },
+        "duration": 50,
+        "content_rating": "TV-MA"
+      },
+      "popularity": 0.997,
+      "tags": [
+        {
+          "name": "Work Life Balance",
+          "tag_id": "urn:tag:keyword:media:work_life_balance",
+          "type": "urn:tag:keyword:media"
+        },
+        {
+          "name": "Office",
+          "tag_id": "urn:tag:keyword:media:office",
+          "type": "urn:tag:keyword:media"
+        }
+      ]
+    }
+  ]
+}

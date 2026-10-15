@@ -1,0 +1,21 @@
+{
+  "query": "outdoors",
+  "take": 20,
+  "count": 1,
+  "results": [
+    {
+      "id": "urn:audience:hobbies_and_interests:outdoors",
+      "name": "Outdoors",
+      "type": "urn:audience:hobbies_and_interests",
+      "entityId": "AAAE9FAA-FE3D-4732-9E82-BD4CED485D60",
+      "disambiguation": "Outdoors enthusiasts",
+      "parents": [
+        {
+          "id": "urn:audience:hobbies_and_interests",
+          "name": "Hobbies And Interests",
+          "type": "urn:audience"
+        }
+      ]
+    }
+  ]
+}

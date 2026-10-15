@@ -1,0 +1,29 @@
+{
+  "query": "Dune",
+  "types": [
+    "urn:entity:book"
+  ],
+  "take": 10,
+  "offset": 0,
+  "count": 1,
+  "results": [
+    {
+      "id": "7C4E9B2A-5D31-4F87-A6C9-0E2B8D4F1A73",
+      "name": "Frank Herbert's Dune Saga Collection (Dune #1-6)",
+      "type": "urn:entity",
+      "subtype": "urn:entity:book",
+      "popularity": 0.96,
+      "affinity": null,
+      "description": null,
+      "imageUrl": null,
+      "releaseYear": 1965,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": null,
+      "tags": []
+    }
+  ]
+}

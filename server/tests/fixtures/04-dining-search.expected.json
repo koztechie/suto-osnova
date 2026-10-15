@@ -1,0 +1,45 @@
+{
+  "query": "Lucali",
+  "types": [
+    "urn:entity:place"
+  ],
+  "take": 10,
+  "offset": 0,
+  "count": 1,
+  "results": [
+    {
+      "id": "895FA243-5144-4E7C-9B2D-6F8A0C3E5B17",
+      "name": "Lucali",
+      "type": "urn:entity",
+      "subtype": "urn:entity:place",
+      "popularity": 0.94,
+      "affinity": null,
+      "description": null,
+      "imageUrl": null,
+      "releaseYear": null,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": "575 Henry St, Brooklyn, NY 11231",
+      "tags": [
+        {
+          "id": "urn:tag:category:place:pizza_restaurant",
+          "name": "Pizza restaurant",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:genre:place:restaurant",
+          "name": "Restaurant",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:restaurant:pizza",
+          "name": "Pizza",
+          "type": "urn:tag:genre:place"
+        }
+      ]
+    }
+  ]
+}

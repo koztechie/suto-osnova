@@ -1,0 +1,45 @@
+{
+  "entityId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+  "types": [
+    "urn:tag:genre:media"
+  ],
+  "take": 20,
+  "page": null,
+  "offset": null,
+  "count": 2,
+  "results": [
+    {
+      "id": "urn:tag:genre:media:indie",
+      "name": "Indie",
+      "type": "urn:tag:genre:media",
+      "popularity": 0.96761465,
+      "affinity": null,
+      "description": "Independent production style.",
+      "history": null,
+      "parents": [
+        "urn:entity:tv_show",
+        "urn:entity:movie"
+      ],
+      "tags": [
+        {
+          "id": "urn:tag:collection:canonical",
+          "name": "Canonical",
+          "type": "urn:tag:collection"
+        }
+      ]
+    },
+    {
+      "id": "urn:tag:genre:media:drama",
+      "name": "Drama",
+      "type": "urn:tag:genre:media",
+      "popularity": 0.99998873,
+      "affinity": null,
+      "description": null,
+      "history": null,
+      "parents": [
+        "urn:entity:movie"
+      ],
+      "tags": []
+    }
+  ]
+}

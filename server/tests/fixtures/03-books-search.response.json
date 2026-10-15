@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "duration": 33,
+  "results": [
+    {
+      "name": "Frank Herbert's Dune Saga Collection (Dune #1-6)",
+      "entity_id": "7C4E9B2A-5D31-4F87-A6C9-0E2B8D4F1A73",
+      "types": [
+        "urn:entity:book"
+      ],
+      "properties": {
+        "release_year": 1965
+      },
+      "popularity": 0.96,
+      "tags": []
+    }
+  ]
+}

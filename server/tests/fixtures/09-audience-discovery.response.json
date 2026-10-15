@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "duration": 28,
+  "results": {
+    "audiences": [
+      {
+        "entity_id": "AAAE9FAA-FE3D-4732-9E82-BD4CED485D60",
+        "name": "Outdoors",
+        "parents": [
+          {
+            "id": "urn:audience:hobbies_and_interests",
+            "name": "Hobbies And Interests",
+            "type": "urn:audience"
+          }
+        ],
+        "type": "urn:audience:hobbies_and_interests",
+        "id": "urn:audience:hobbies_and_interests:outdoors",
+        "disambiguation": "Outdoors enthusiasts"
+      }
+    ]
+  }
+}

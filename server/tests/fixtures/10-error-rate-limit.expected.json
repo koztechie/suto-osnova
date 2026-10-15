@@ -1,0 +1,9 @@
+{
+  "errorName": "QlooApiError",
+  "code": null,
+  "status": 429,
+  "attempts": 1,
+  "data": {
+    "error_msg": "Rate limit exceeded for this API key"
+  }
+}

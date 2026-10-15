@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "duration": 36,
+  "results": [
+    {
+      "name": "Nike",
+      "entity_id": "C70CE2B8-0AD3-4E5F-8C7B-1D9A2F4E6B80",
+      "types": [
+        "urn:entity:brand"
+      ],
+      "properties": {},
+      "popularity": 0.99,
+      "tags": [
+        {
+          "name": "Fashion",
+          "tag_id": "urn:tag:genre:brand:fashion",
+          "type": "urn:tag:genre:brand"
+        },
+        {
+          "name": "Sportswear Brands",
+          "tag_id": "urn:tag:wikipedia_category:sportswear_brands",
+          "type": "urn:tag:wikipedia_category"
+        }
+      ]
+    }
+  ]
+}

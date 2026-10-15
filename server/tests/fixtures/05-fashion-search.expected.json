@@ -1,0 +1,40 @@
+{
+  "query": "Nike",
+  "types": [
+    "urn:entity:brand"
+  ],
+  "take": 10,
+  "offset": 0,
+  "count": 1,
+  "results": [
+    {
+      "id": "C70CE2B8-0AD3-4E5F-8C7B-1D9A2F4E6B80",
+      "name": "Nike",
+      "type": "urn:entity",
+      "subtype": "urn:entity:brand",
+      "popularity": 0.99,
+      "affinity": null,
+      "description": null,
+      "imageUrl": null,
+      "releaseYear": null,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": null,
+      "tags": [
+        {
+          "id": "urn:tag:genre:brand:fashion",
+          "name": "Fashion",
+          "type": "urn:tag:genre:brand"
+        },
+        {
+          "id": "urn:tag:wikipedia_category:sportswear_brands",
+          "name": "Sportswear Brands",
+          "type": "urn:tag:wikipedia_category"
+        }
+      ]
+    }
+  ]
+}

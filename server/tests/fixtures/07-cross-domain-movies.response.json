@@ -1,0 +1,83 @@
+{
+  "success": true,
+  "duration": 52,
+  "results": {
+    "entities": [
+      {
+        "name": "Promising Young Woman",
+        "entity_id": "E39A5CE6-5991-46B9-897D-4B23A494804A",
+        "type": "urn:entity",
+        "subtype": "urn:entity:movie",
+        "properties": {
+          "release_year": 2020,
+          "description": "A woman goes on a vigilante mission."
+        },
+        "popularity": 0.9933691872394652,
+        "query": {
+          "affinity": 0.9445416539735196,
+          "measurements": {
+            "audience_growth": 0
+          },
+          "explainability": {
+            "signal.interests.entities": [
+              {
+                "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+                "score": 1
+              }
+            ]
+          }
+        },
+        "tags": [
+          {
+            "id": "urn:tag:genre:media:drama",
+            "name": "Drama",
+            "type": "urn:tag:genre:media"
+          }
+        ]
+      },
+      {
+        "name": "The Menu",
+        "entity_id": "C17E1B67-0D79-404B-B0BC-BBBD37F7107D",
+        "type": "urn:entity",
+        "subtype": "urn:entity:movie",
+        "properties": {},
+        "popularity": 0.9984448908183762,
+        "query": {
+          "affinity": 0.9234310157956184
+        },
+        "tags": []
+      }
+    ]
+  },
+  "query": {
+    "explainability": {
+      "signal.interests.entities": {
+        "effect_on_top3_recs": [
+          {
+            "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+            "avg_score": 1
+          }
+        ],
+        "effect_on_top5_recs": [
+          {
+            "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+            "avg_score": 1
+          }
+        ],
+        "effect_on_top10_recs": [
+          {
+            "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+            "avg_score": 1
+          }
+        ],
+        "effect_on_all_recs": [
+          {
+            "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+            "avg_score": 1
+          }
+        ]
+      },
+      "warning": "partial attribution coverage"
+    }
+  }
+}

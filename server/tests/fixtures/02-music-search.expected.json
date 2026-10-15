@@ -1,0 +1,40 @@
+{
+  "query": "Kendrick Lamar",
+  "types": [
+    "urn:entity:artist"
+  ],
+  "take": 10,
+  "offset": 0,
+  "count": 1,
+  "results": [
+    {
+      "id": "C915A918-39C4-4F2B-8D6E-2A7B5C9E1F30",
+      "name": "Kendrick Lamar",
+      "type": "urn:entity",
+      "subtype": "urn:entity:artist",
+      "popularity": 0.98,
+      "affinity": null,
+      "description": null,
+      "imageUrl": null,
+      "releaseYear": null,
+      "releaseDate": null,
+      "duration": null,
+      "contentRating": null,
+      "city": null,
+      "countryCode": null,
+      "address": null,
+      "tags": [
+        {
+          "id": "urn:tag:music:qloo:socially_conscious",
+          "name": "Socially Conscious",
+          "type": "urn:tag:music:qloo"
+        },
+        {
+          "id": "urn:tag:music:qloo:lyrical",
+          "name": "Lyrical",
+          "type": "urn:tag:music:qloo"
+        }
+      ]
+    }
+  ]
+}

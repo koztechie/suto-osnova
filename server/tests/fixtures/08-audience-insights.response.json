@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "duration": 61,
+  "results": {
+    "entities": [
+      {
+        "name": "Vanier Park",
+        "entity_id": "F8351CC6-ADDD-4CD7-8A33-B6CA1F86D3CF",
+        "type": "urn:entity",
+        "subtype": "urn:entity:place",
+        "properties": {
+          "geocode": {
+            "name": "Vancouver",
+            "country_code": "CA"
+          }
+        },
+        "popularity": 0.87,
+        "query": {
+          "affinity": 0.9370823954423944,
+          "measurements": {
+            "audience_growth": 0
+          }
+        },
+        "tags": [
+          {
+            "id": "urn:tag:genre:place:park",
+            "name": "Park",
+            "type": "urn:tag:genre:place"
+          }
+        ]
+      }
+    ]
+  }
+}
