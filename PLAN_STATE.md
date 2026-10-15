@@ -189,3 +189,23 @@ Date: 2026-10-15
 Commit: 664af12 (amended to include this status) on branch main — "feat: scaffold backend gateway and qloo mcp server". 87 files, 18379 insertions: server/ (config, middleware, services, mcp, mocks), scripts/ (verify_backend_env, verify_memory, verify-harness-compat), server/tests/fixtures/ (10 reference scenarios + generator), docs/, AGENTS.md, LICENSE, PLAN_STATE.md, package.json/-lock, .env.example, .gitignore, opencode.jsonc. Secrets/caches excluded by .gitignore (.env, node_modules, build/, .cache/); staged-tree leak scan against the live QLOO_API_KEY value: clean (only synthetic sk-live strings inside redaction TEST fixtures).
 
 Verification of the committed tree: npm test 284/284, npm run lint clean, node --env-file=.env scripts/verify_backend_env.js -> CONFIGURATION: PASS (the bare run without --env-file correctly FAILS on the missing key — expected gate behavior).
+
+## EPIC 1 — Backend gateway scaffold + Qloo MCP server
+
+Status: COMPLETE
+Closed: 2026-10-15
+Anchor commit: c102439 "feat: scaffold backend gateway and qloo mcp server"
+
+Scope delivered (tasks 15-39):
+
+1. Transport foundation (15-19, baseline before this journal): qlooClient with X-Api-Key attachment, token-bucket rate limiting + concurrency semaphore + bounded queue, exponential backoff with Retry-After (3 attempts, network/429/503 only), two-tier response cache (memory LRU + disk JSON, SHA-256 keys, stale-if-error) with per-endpoint TTL tiers (24h entities/tags/audiences, general 5min).
+2. Qloo capability clients (20-24): searchEntities (entity search), findTags (taste vector tags), getCrossDomainAffinities (cross-domain affinity + attribution), getAudienceInsights + searchAudiences (demographics), domainMapper (5 mandatory agent domains film/music/books/dining/fashion, two-way mapping, live-verified tag-family classification). All contracts verified live against hackathon.api.qloo.com.
+3. Privacy and offline operation (25-27): privacyGuard with unconditional transport-boundary redaction (zero personal data in outbound requests; typed domain errors; masked findings), MOCK_MODE with recorded fixtures (autonomous offline operation), 10 reference mock-data scenarios pinned by golden regression tests.
+4. MCP server (28-33): stdio server on @modelcontextprotocol/sdk; 18 tools under the canonical qloo_* namespace (search, tags, cross-domain, audiences, resolve_entity, cross_correlate, taste_antithesis, capabilities, local domain/privacy utilities); entity-graph resources (qloo://domains, entity/{id}, tags/{tag}, audiences/{urn}); offline contract tool + qloo://contracts/suto-osnova with SHA-256 checksum; official qloo-harness compatibility verified 15/15 via `qloo mcp` (canonical namespace, contract resources, NDJSON purity, offline capabilities on both servers).
+5. HTTP layer (34-37): GET /api/health with live Qloo connectivity probe (GET /, 5s bound, 503 on degradation); global error handler mapping Qloo transport failures to structured envelopes with informative codes (QLOO_TIMEOUT/NETWORK/AUTH/RATE_LIMITED/UPSTREAM/REJECTED, MOCK_FIXTURE_NOT_FOUND, PII_DETECTED, typed validator codes, INTERNAL) + X-Request-Id correlation; laconic stderr logging with secret redaction (zero console.* drift, zero emojis); scripts/verify_backend_env.js (schema + semantic checks + optional live probe).
+6. Quality gate (38): base-server memory optimized and recorded — heapUsed max 7.5MB under load (gate <60MB; RSS platform floor documented), build/memory-baseline.json.
+7. Repository (39): initial commit c102439 on main; secrets/caches excluded; staged-tree leak scan clean.
+
+Epic-level verification: npm test 284/284 (two consecutive stable runs), npm run lint clean, harness compatibility 15/15, env verifier 11/11 PASS with live probe (HTTP 200), memory MEMORY: PASS, live API contract probes across all five endpoint families, no secret material in git history.
+
+Definition of Done: all epic tasks implemented, tested and verified; state journal complete; working tree clean on main. Epic 2 (agent behavior / mise-en-scène domain logic on top of this gateway) not started — no tasks executed beyond the scaffold.
