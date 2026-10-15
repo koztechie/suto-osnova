@@ -209,3 +209,14 @@ Scope delivered (tasks 15-39):
 Epic-level verification: npm test 284/284 (two consecutive stable runs), npm run lint clean, harness compatibility 15/15, env verifier 11/11 PASS with live probe (HTTP 200), memory MEMORY: PASS, live API contract probes across all five endpoint families, no secret material in git history.
 
 Definition of Done: all epic tasks implemented, tested and verified; state journal complete; working tree clean on main. Epic 2 (agent behavior / mise-en-scène domain logic on top of this gateway) not started — no tasks executed beyond the scaffold.
+
+## Task 41 — deterministic agent finite state machine (engine core)
+
+Status: DONE
+Date: 2026-10-15
+
+Deliverable: server/src/engine/AgentStateMachine.js — pure, dependency-free FSM core layered above the gateway/MCP toolbox (start of Epic 2). 10 states (idle, intake, intent, domain, disambiguation, execute, synthesize + terminal delivered/failed/cancelled), 13 events, 6 declarative effect types, frozen transition table with ordered guard branches (first-match, default branch required). Intent->canonical qloo_* tool map (10 intents, live-verified names from task 33); 7 domain-bearing intents route through DOMAIN (domainMapper) before EXECUTE, direct intents (capabilities/group_by_domain/privacy_scan) skip it; disambiguation loop (domain.unresolved -> clarification.provided -> domain); bounded retries (MAX_ATTEMPTS=3, attempts carried in context, ATTEMPTS_EXHAUSTED on ceiling); failure taxonomy (PII_DETECTED/MALFORMED_INPUT/UNKNOWN_INTENT/TOOL_REJECTED/UPSTREAM_ERROR/ATTEMPTS_EXHAUSTED); bounded trace (last 100 {from,event,to} records, no clocks in core -> trace is deterministic).
+
+Determinism invariants D1-D5 pinned by tests: pure reducer (no I/O, clocks, RNG), total function over known events (undefined pair OR guard-rejected payload -> typed InvalidTransitionError with state/event/reason), pure guards, effects are declarations executed elsewhere (executor feeds results back as events), immutability (every transition returns a new frozen machine; context patches never mutate).
+
+Verification: server/test/agentStateMachine.test.js 16/16 — golden paths (domain + direct intents with full effect-sequence assertions), determinism (identical scripts -> deep-equal machines), exhaustive 130-pair state x event matrix (20 defined targets asserted, 110 undefined pairs assert typed rejection), retry loop 1->2->3->EXHAUSTED, cancel/reset coverage per state class, trace FIFO cap, argument taxonomy (TypeError vs InvalidTransitionError), intent->tool regex completeness. npm test 300/300 (two consecutive stable runs; baseline 284), npm run lint clean. Engine imports nothing -> zero effect on the base-server memory gate (task 38).
