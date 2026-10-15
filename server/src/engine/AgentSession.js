@@ -25,6 +25,15 @@
  *     cores never hold references to caller-owned objects).
  * H5. THE FACADE STAYS DETERMINISTIC: no clocks, no RNG — two sessions
  *     fed the same event scripts produce identical snapshots.
+ *
+ * EXECUTION SNAPSHOTS (task 44): `getExecutionSnapshot()` records the
+ * CURRENT step of analysis — a point-in-time, deeply Object.freeze'd
+ * record of (step counter, both cores' positions and contexts, the
+ * bounded traces, the last event and its effects). Snapshots are built
+ * from COPIES, so a snapshot taken at step N can never diverge from
+ * what the session looked like then; taking one is a pure read (it
+ * never advances the step counter). Same scripts -> identical
+ * snapshots (H5 carries through).
  */
 
 import { transition, createMachine } from './AgentStateMachine.js';
@@ -34,6 +43,9 @@ import { deepFreeze } from './deepFreeze.js';
 export class AgentSession {
   #machine;
   #pipeline;
+  #step = 0;
+  #lastEvent = null;
+  #lastEffects = [];
 
   constructor() {
     this.#machine = createMachine();
@@ -82,19 +94,53 @@ export class AgentSession {
 
   /**
    * Advance the REQUEST machine (task 41). Returns the frozen effects
-   * the executor must perform ([] when the step emits none).
+   * the executor must perform ([] when the step emits none). A failed
+   * transition throws BEFORE any step bookkeeping changes.
    */
   dispatch(event) {
-    this.#machine = transition(this.#machine, this.#isolatedEvent(event));
-    return this.#machine.effects ?? [];
+    const isolated = this.#isolatedEvent(event);
+    const next = transition(this.#machine, isolated);
+    this.#machine = next;
+    this.#step += 1;
+    this.#lastEvent = Object.freeze({ core: 'machine', type: isolated.type });
+    this.#lastEffects = next.effects ?? [];
+    return this.#lastEffects;
   }
 
   /**
    * Advance the DOSSIER pipeline (task 42). Returns the new phase.
    */
   advancePhase(event) {
-    this.#pipeline = advance(this.#pipeline, this.#isolatedEvent(event));
+    const isolated = this.#isolatedEvent(event);
+    this.#pipeline = advance(this.#pipeline, isolated);
+    this.#step += 1;
+    this.#lastEvent = Object.freeze({ core: 'phase', type: isolated.type });
+    this.#lastEffects = [];
     return this.#pipeline.phase;
+  }
+
+  // --- execution snapshots (task 44) --------------------------------------
+
+  /**
+   * Immutable point-in-time record of the CURRENT analysis step:
+   * `{ step, lastEvent, lastEffects, state, context, trace, phase,
+   *   phaseContext, phaseTrace }` — every level Object.freeze'd via
+   * deepFreeze, built from copies so later mutations can never reach
+   * into an earlier snapshot. Pure read: taking one does not advance
+   * the step.
+   */
+  getExecutionSnapshot() {
+    return deepFreeze({
+      step: this.#step,
+      lastEvent: this.#lastEvent ? { ...this.#lastEvent } : null,
+      lastEffects: [...this.#lastEffects],
+      state: this.#machine.state,
+      context: { ...this.#machine.context },
+      trace: [...this.#machine.trace],
+      phase: this.#pipeline.phase,
+      phaseContext: { ...this.#pipeline.context },
+      phaseTrace: [...this.#pipeline.trace],
+    });
   }
 
   // --- internals ----------------------------------------------------------

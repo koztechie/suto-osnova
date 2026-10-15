@@ -232,3 +232,130 @@ test('deepFreeze utility: recursive, cycle-safe, idempotent, primitive-safe', ()
   assert.equal(deepFreeze(null), null);
   assert.equal(deepFreeze('x'), 'x');
 });
+
+// ---------------------------------------------------------------------------
+// Task 44 — getExecutionSnapshot(): immutable current-step records.
+// ---------------------------------------------------------------------------
+
+test('getExecutionSnapshot: initial shape, fully deep-frozen', () => {
+  const session = new AgentSession();
+  const snap = session.getExecutionSnapshot();
+
+  assert.equal(snap.step, 0);
+  assert.equal(snap.lastEvent, null);
+  assert.deepEqual(snap.lastEffects, []);
+  assert.equal(snap.state, AgentState.IDLE);
+  assert.equal(snap.phase, AgentPhase.IDLE);
+  assert.deepEqual(snap.context.requestId, null);
+  assert.deepEqual(snap.trace, []);
+  assert.deepEqual(snap.phaseTrace, []);
+
+  assert.ok(Object.isFrozen(snap));
+  assert.ok(Object.isFrozen(snap.lastEffects));
+  assert.ok(Object.isFrozen(snap.context));
+  assert.ok(Object.isFrozen(snap.trace));
+  assert.ok(Object.isFrozen(snap.phaseContext));
+  assert.throws(() => {
+    snap.context.attempts = 99;
+  }, TypeError);
+  assert.throws(() => {
+    snap.trace.push('x');
+  }, TypeError);
+});
+
+test('getExecutionSnapshot: step accounting and pure-read semantics', () => {
+  const session = new AgentSession();
+
+  // Taking a snapshot never advances the step.
+  const before = session.getExecutionSnapshot();
+  const again = session.getExecutionSnapshot();
+  assert.deepEqual(before, again, 'pure read, identical records');
+  assert.equal(again.step, 0);
+
+  session.dispatch({ type: AgentEvent.REQUEST_RECEIVED, payload: { requestId: 'r-1' } });
+  assert.equal(session.getExecutionSnapshot().step, 1);
+
+  session.dispatch({ type: AgentEvent.INPUT_VALID });
+  session.dispatch({ type: AgentEvent.INTENT_CLASSIFIED, payload: { intent: 'capabilities' } });
+  assert.equal(session.getExecutionSnapshot().step, 3);
+
+  session.advancePhase({ type: PhaseEvent.START });
+  assert.equal(session.getExecutionSnapshot().step, 4);
+
+  // A FAILED transition throws before bookkeeping: step unchanged.
+  const stepBefore = session.getExecutionSnapshot().step;
+  assert.throws(() => session.dispatch({ type: AgentEvent.REQUEST_RECEIVED }), InvalidTransitionError);
+  assert.equal(session.getExecutionSnapshot().step, stepBefore, 'failed dispatch does not count');
+});
+
+test('getExecutionSnapshot: lastEvent/lastEffects reflect the last successful mutation', () => {
+  const session = new AgentSession();
+
+  const effects = session.dispatch({
+    type: AgentEvent.REQUEST_RECEIVED,
+    payload: { requestId: 'r-snap' },
+  });
+  let snap = session.getExecutionSnapshot();
+  assert.deepEqual(snap.lastEvent, { core: 'machine', type: AgentEvent.REQUEST_RECEIVED });
+  assert.deepEqual(snap.lastEffects, effects, 'records a frozen copy of the returned effects');
+
+  session.advancePhase({ type: PhaseEvent.START });
+  snap = session.getExecutionSnapshot();
+  assert.deepEqual(snap.lastEvent, { core: 'phase', type: PhaseEvent.START });
+  assert.deepEqual(snap.lastEffects, [], 'phase steps emit no machine effects');
+  assert.equal(snap.phase, AgentPhase.SEED_RESOLUTION);
+  assert.equal(snap.state, AgentState.INTAKE, 'cores tracked independently in one record');
+});
+
+test('getExecutionSnapshot: point-in-time isolation from later mutations', () => {
+  const session = new AgentSession();
+  driveToDelivered(session);
+  driveToCompleted(session);
+
+  const frozenSnapshot = session.getExecutionSnapshot();
+  const serialized = JSON.stringify(frozenSnapshot);
+
+  // Further mutations of the machine core (the pipeline is COMPLETED —
+  // terminal by design, no further phase steps exist).
+  session.dispatch({ type: AgentEvent.RESET });
+  session.dispatch({ type: AgentEvent.REQUEST_RECEIVED, payload: { requestId: 'r-after' } });
+
+  // ...must not reach into the earlier snapshot.
+  assert.equal(JSON.stringify(frozenSnapshot), serialized, 'old snapshot immutable in content');
+  assert.equal(frozenSnapshot.state, AgentState.DELIVERED, 'keeps the state it was taken at');
+  assert.equal(frozenSnapshot.phase, AgentPhase.COMPLETED);
+  assert.equal(frozenSnapshot.step, 10);
+
+  const now = session.getExecutionSnapshot();
+  assert.equal(now.state, AgentState.INTAKE);
+  assert.equal(now.phase, AgentPhase.COMPLETED, 'pipeline phase unchanged by machine steps');
+  assert.equal(now.step, 12, 'current snapshot reflects the new steps');
+  assert.notEqual(now.step, frozenSnapshot.step);
+});
+
+test('getExecutionSnapshot: deterministic across sessions (H5)', () => {
+  const run = () => {
+    const session = new AgentSession();
+    driveToDelivered(session);
+    driveToCompleted(session);
+    return session.getExecutionSnapshot();
+  };
+  assert.deepEqual(run(), run(), 'identical scripts -> identical step records');
+});
+
+test('getExecutionSnapshot: nested payload objects are frozen in the record', () => {
+  const session = new AgentSession();
+  driveToDelivered(session);
+  const snap = session.getExecutionSnapshot();
+
+  assert.ok(Object.isFrozen(snap.context.response), 'nested response frozen');
+  assert.ok(Object.isFrozen(snap.lastEffects), 'effects collection frozen');
+  assert.ok(Object.isFrozen(snap.lastEvent));
+  assert.throws(() => {
+    snap.lastEvent.core = 'hijacked';
+  }, TypeError);
+  assert.throws(() => {
+    snap.phaseContext.affinities.push('x');
+  }, TypeError);
+  assert.equal(JSON.parse(JSON.stringify(snap)).context.response.text, 'dossier text', 'serializable');
+});
