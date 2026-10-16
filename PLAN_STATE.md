@@ -587,3 +587,24 @@ Evidence (Node v22.22.2, linux):
 - `npm run mcp:verify`: HARNESS COMPATIBILITY PASS (qloo:// resources, strict NDJSON purity on both stdios).
 
 Scope of the green suite: engine (20 modules), services (23 modules), MCP surface (18 tools + resources + harness compat), HTTP layer, 3 golden agent-run scenarios (A24 / Post-Punk / Brutalism), perf gate (cycle median ~15-25ms vs 900ms local / 4.5s A4 budget), memory isolation (both GC modes), no-trackers compliance. Baseline for all future regressions: 673 tests / 0 failures / three-run stability.
+
+## EPIC: AUTONOMOUS CROSS-DOMAIN TASTE EXPANSION ENGINE — COMPLETE
+
+Status: COMPLETE
+Date: 2026-10-16
+Scope: tasks 41-80 (agent engine through the fixing snapshot).
+
+DELIVERED SUBSYSTEMS:
+- Deterministic agent core: FSM (10 states / 13 events), six-phase dossier ladder, AgentSession facade with #private-field protection and getExecutionSnapshot (tasks 41-44).
+- Ingest & recognition: SeedResolver (NFC, code-point bounds), SeedClassifier (title/person/description with documented ambiguity honesty) (tasks 45-46).
+- Qloo bridge: seedEntityResolver with probe ladders and UUID gate; candidateRanker (task-48 weighted signals) feeding selection (tasks 47-48).
+- Expansion & layers: CrossDomainExpander + affinityVectorService (bounded parallel, per-domain isolation); five extraction layers (sound/literary/material/gastronomy/visual) with exported marker tables and the literary >0.65 correlation gate (tasks 49-55).
+- Math chain: LongTailFilter (Via Negativa), UniquenessCoefficient (surprisal model), PopClicheFilter (top-15% banality quantile), ScoreNormalizer (0-100% scales), NonObviousSorter (confirmed surprise), AdaptiveThreshold (rarity relief) (tasks 56-61).
+- Synthesis: llmSynthesizer (OpenAI-compatible), hardened anti-hallucination system prompt with a load-time invariant gate, OutputValidator backstop (tasks 62-64).
+- Explanation & coherence: ConnectionNotes (evidence-backed notes with honesty clause), TonalityEngine (five poles, outlier vs contradiction) (tasks 65-66).
+- Edge cases & viz: AdaptiveThreshold edge relief; ContextGraph + GraphWeights (numeric client-ready weights, node strength) (tasks 67-69).
+- Persistence & hygiene: sessionCache (UUID, TTL, atomic writes), memoryHygiene (isolateCycle, honest GC) (tasks 70, 76).
+- Verification assets: three golden scenarios (A24 / Post-Punk / Brutalism), the AMD-A4 cycle budget gate (<=4.5s; measured ~2%), Promise.allSettled orchestration (parallelTasks + dossierLayers), no-trackers compliance audit (verify:trackers), internal API reference (docs/architecture/AGENT_PIPELINE.md) (tasks 71-78).
+- Recorded baseline (task 79): npm test 673/673 across three consecutive runs; lint, test:gc, verify:memory, verify:trackers, verify:env, mcp:verify all PASS.
+
+This commit marks the engine complete: from raw cultural anchor text to a verified, filtered, explained, coherence-checked, graph-visualizable, LLM-narrated, hallucination-audited dossier persisted under a UUID — every layer deterministic, injectable, typed and test-pinned.
