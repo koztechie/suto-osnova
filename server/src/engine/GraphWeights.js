@@ -8,10 +8,14 @@
  * module post-processes a context graph and guarantees that.
  *
  * THE WEIGHT MODEL (deterministic, documented):
- *   base      = the measured weight when present, else the exported
+ *   base      = the measured weight when POSITIVE, else the exported
  *               TYPE PRIOR (resolves 1.0 — the anchor's own edge;
  *               connection 0.6; cross_domain/affinity 0.5; tagged 0.3
- *               — carrier-share edges are abundant and thin);
+ *               — carrier-share edges are abundant and thin). A
+ *               measured ZERO (a catalog-only tag with no carriers)
+ *               falls back to the prior: for layout purposes zero
+ *               carriers is indistinguishable from "unmeasured", and
+ *               the (0, 1] guarantee must hold for renderers;
  *   boosted   = min(1, base * (1 + rarityBoost * U(target))) — the
  *               TASK-57 uniqueness of the TARGET node buys visual
  *               prominence (default rarityBoost 0.25: a microtail
@@ -98,10 +102,10 @@ export function generateEdgeWeights(graph = {}, options = {}) {
       (finiteNumber(target?.popularity) !== null
         ? uniquenessCoefficient(target.popularity).coefficient
         : 0);
-    const base =
-      finiteNumber(edge?.weight) ?? resolved.typePriors[edge?.type] ?? 0.5;
-    const boosted = clamp01(base * (1 + resolved.rarityBoost * (rarity ?? 0)));
-    return { edge, base: round6(base), boosted: round6(boosted) };
+    const base = finiteNumber(edge?.weight);
+    const effective = base !== null && base > 0 ? base : (resolved.typePriors[edge?.type] ?? 0.5);
+    const boosted = clamp01(effective * (1 + resolved.rarityBoost * (rarity ?? 0)));
+    return { edge, base: round6(effective), boosted: round6(boosted) };
   });
 
   let min = weighted.length > 0 ? Math.min(...weighted.map((w) => w.boosted)) : null;

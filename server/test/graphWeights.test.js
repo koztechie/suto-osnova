@@ -155,12 +155,17 @@ test('non-mutation, freezing, determinism, validation, empty graph', () => {
   assert.equal(empty.stats.meanWeight, null);
 });
 
-test('tolerance: corrupt edges fall back to defaults', () => {
+test('tolerance: corrupt edges fall back to defaults; measured zero falls back to the prior', () => {
   const weighted = generateEdgeWeights(
-    graph([node('a'), node('b')], [{}, { source: 'a', target: 'b', type: 'unknown_kind' }])
+    graph(
+      [node('a'), node('b'), node('t', { kind: 'tag' })],
+      [{}, { source: 'a', target: 'b', type: 'unknown_kind' }, edge('a', 't', 'tagged', 0)]
+    )
   );
   assert.equal(weighted.edges[0].weight, 0.5, 'no type -> default prior');
   assert.equal(weighted.edges[1].weight, 0.5, 'unknown type -> default prior');
+  assert.equal(weighted.edges[2].weight, 0.3, 'zero carrier share -> the tagged prior');
+  assert.ok(weighted.edges.every((e) => e.weight > 0), 'the (0, 1] guarantee holds');
 });
 
 test('composition: task-68 graph becomes client-ready', () => {
