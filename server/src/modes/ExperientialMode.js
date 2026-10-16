@@ -73,6 +73,7 @@ import { saveSession } from '../services/sessionCache.js';
 import {
   parseSceneContext, applyContextBoost, CONTEXT_DEFAULTS,
 } from './SceneContext.js';
+import { buildAfterpartyEcosystem } from './AfterpartyEcosystem.js';
 
 /** Documented defaults (exported tuning contract). */
 export const ACTIVATION_DEFAULTS = Object.freeze({
@@ -123,6 +124,11 @@ const validateOptions = (options) => {
     && (typeof options.cutRate !== 'number' || !Number.isFinite(options.cutRate)
       || options.cutRate < 0 || options.cutRate > 1)) {
     throw new TypeError('runExperiential: cutRate must be a finite number in 0..1');
+  }
+  if (options.afterpartyLimit !== undefined
+    && (!Number.isInteger(options.afterpartyLimit)
+      || options.afterpartyLimit < 1 || options.afterpartyLimit > 50)) {
+    throw new TypeError('runExperiential: afterpartyLimit must be an integer in 1..50');
   }
   parseSceneContext(options.scene ?? null);
   if (options.contextBoost !== undefined
@@ -365,7 +371,17 @@ export async function runExperiential(input, options = {}) {
     vendors.push(curationItem({ ...entry, domain: entry.domain ?? 'dining' }, evidenceFor(entry)));
   }
 
-  // 7. Narrative synthesis (optional, honest skip / isolated failure).
+  // 7. THE AFTERPARTY ECOSYSTEM (task 89): authentic bars and
+  //    nightlife venues from the dossier's own evidence (honest null
+  //    when disabled).
+  const afterparty = options.afterparty === false
+    ? null
+    : buildAfterpartyEcosystem(
+      { entity, ranked, layers, scene },
+      options.afterpartyLimit !== undefined ? { limit: options.afterpartyLimit } : {}
+    );
+
+  // 8. Narrative synthesis (optional, honest skip / isolated failure).
   let synthesis = null;
   let validation = null;
   let synthesisFailure = null;
@@ -399,7 +415,7 @@ export async function runExperiential(input, options = {}) {
   }
   if (synthesisFailure !== null) failures.push({ ...synthesisFailure, stage: 'synthesis' });
 
-  // 8. Terminal lifecycle + optional persistence.
+  // 9. Terminal lifecycle + optional persistence.
   const curationCounts = Object.freeze({
     openingActs: openingActs.length,
     sponsors: sponsors.length,
@@ -481,6 +497,7 @@ export async function runExperiential(input, options = {}) {
     layers: deepFreeze(layers),
     coverage: deepFreeze(coverage),
     curation: Object.freeze({ openingActs, sponsors, vendors }),
+    afterparty,
     synthesis: deepFreeze({
       attempted: synthesis !== null,
       text: synthesis?.text ?? null,
