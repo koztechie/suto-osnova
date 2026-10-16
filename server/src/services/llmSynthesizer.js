@@ -41,6 +41,12 @@
  */
 
 import { env } from '../config/env.js';
+import { SYSTEM_PROMPT } from './dossierSystemPrompt.js';
+
+// The hardened anti-hallucination prompt (task 63) is the single
+// source of truth in dossierSystemPrompt — re-exported here so the
+// synthesizer surface stays one import.
+export { SYSTEM_PROMPT };
 
 /** Typed error for synthesis failures. */
 export class LlmSynthesisError extends Error {
@@ -69,21 +75,6 @@ export const LLM_DEFAULTS = Object.freeze({
   maxEntriesPerLayer: 25,
   maxPromptChars: 24_000,
 });
-
-/** The synthesizer persona and hard rules (exported, tested). */
-export const SYSTEM_PROMPT = [
-  'You are the synthesis engine of SUTO OSNOVA, a cultural intelligence',
-  'dossier builder. You receive VERIFIED cultural data as JSON.',
-  'Rules: (1) use the provided percentages and coefficients VERBATIM —',
-  'never recompute or invent numbers; (2) lead with the NON-OBVIOUS,',
-  'mathematically confirmed correlations before the famous ones;',
-  '(3) never invent entities, tags or scores not present in the data;',
-  '(4) NO personal data of any kind — the payload is cultural by',
-  'construction and must stay so; (5) write tight structured prose:',
-  'a one-paragraph verdict, then one short section per supplied layer;',
-  '(6) answer in the language of the anchor request when identifiable,',
-  'otherwise in English.',
-].join(' ');
 
 const boundedArray = (value, maxEntries) =>
   Array.isArray(value) ? value.slice(0, maxEntries) : value;
