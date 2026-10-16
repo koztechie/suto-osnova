@@ -33,8 +33,14 @@
  * SURFACES: buildSceneDossier(bundle, options) -> frozen structured
  * template; renderSceneDossier(template) -> the print-ready plain-text
  * document; SCENE_SECTIONS / SCENE_TEMPLATE_VERSION as the exported
- * template contracts.
+ * template contracts. Task 85: the template additionally carries the
+ * MATERIALS SPEC (fabrics/metals/lighting for the production
+ * designer, task 85) — rendered as the trailing block before the
+ * provenance footer, present only when the dossier markers map into
+ * at least one family.
  */
+
+import { buildMaterialsSpec, renderMaterialsSpec } from './MaterialsSpec.js';
 
 /** The section registry (reading order) — the template contract. */
 export const SCENE_SECTIONS = Object.freeze([
@@ -205,6 +211,16 @@ export function buildSceneDossier(bundle, options = {}) {
     ], layers.gastronomy, rawLimit),
   ]);
 
+  // Task 85: the production-designer materials sheet — derived from
+  // the same bundle markers; null when nothing maps (honest absence).
+  let materials = null;
+  if (options.materials !== false) {
+    const spec = buildMaterialsSpec(bundle, {
+      ...(options.materialsLimit !== undefined ? { familyLimit: options.materialsLimit } : {}),
+    });
+    materials = spec.stats.total > 0 ? spec : null;
+  }
+
   return Object.freeze({
     version: SCENE_TEMPLATE_VERSION,
     title: 'SUTO OSNOVA — MISE-EN-SCENE DOSSIER',
@@ -217,6 +233,8 @@ export function buildSceneDossier(bundle, options = {}) {
     // Task 84: the era/geography of the scene (normalized, echoed
     // from the bundle; null for a context-less run).
     scene: bundle.scene ? Object.freeze({ ...bundle.scene }) : null,
+    // Task 85: fabrics/metals/lighting for the production designer.
+    materials,
     tonality: character.tone,
     sections,
     provenance: Object.freeze({
@@ -272,6 +290,15 @@ export function renderSceneDossier(template) {
     }
     lines.push('');
   });
+
+  // Task 85: the materials sheet for the production designer.
+  if (template.materials) {
+    const block = renderMaterialsSpec(template.materials);
+    if (block.length > 0) {
+      lines.push(block);
+      lines.push('');
+    }
+  }
 
   const p = template.provenance;
   lines.push(
