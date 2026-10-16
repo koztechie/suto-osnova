@@ -48,11 +48,7 @@ import { validateSynthesis } from '../src/engine/OutputValidator.js';
 
 // Env-dependent services — loaded after the env setup (named exports).
 const { resolveTextQuery } = await import('../src/services/seedEntityResolver.js');
-const { extractSoundProfile } = await import('../src/services/soundExtractor.js');
-const { extractLiteraryProfile } = await import('../src/services/literaryExtractor.js');
-const { extractMaterialProfile } = await import('../src/services/materialCultureExtractor.js');
-const { extractGastronomyContext } = await import('../src/services/gastronomyExtractor.js');
-const { extractVisualContext } = await import('../src/services/visualContextExtractor.js');
+const { extractAllLayers } = await import('../src/services/dossierLayers.js');
 const { synthesizeDossier } = await import('../src/services/llmSynthesizer.js');
 const { saveSession, loadSession } = await import('../src/services/sessionCache.js');
 
@@ -148,11 +144,14 @@ async function runFullCycle(baseDir) {
   const expansion = expandTastes(plan, {});
 
   const anchorFor = { id: resolved.entity.id, name: 'Hereditary', category: 'film' };
-  const sound = await extractSoundProfile(anchorFor, { affinityFn: affinityStub, searchFn: async () => ({ results: [] }), tagsFn: tagsStub });
-  const literary = await extractLiteraryProfile(anchorFor, { affinityFn: affinityStub });
-  const material = await extractMaterialProfile(anchorFor, { affinityFn: affinityStub, tagsFn: tagsStub });
-  const gastro = await extractGastronomyContext(anchorFor, { affinityFn: affinityStub, tagsFn: tagsStub });
-  const visual = await extractVisualContext(anchorFor, { affinityFn: affinityStub, tagsFn: tagsStub });
+  // Task 75: the five layers run as ONE concurrent wave.
+  const layerClients = { affinityFn: affinityStub, searchFn: async () => ({ results: [] }), tagsFn: tagsStub };
+  const batch = await extractAllLayers(anchorFor, layerClients);
+  const sound = batch.layers.sound;
+  const literary = batch.layers.literary;
+  const material = batch.layers.material;
+  const gastro = batch.layers.gastronomy;
+  const visual = batch.layers.visual;
 
   // Notes + tonality.
   const connections = annotateConnections(
@@ -192,7 +191,7 @@ async function runFullCycle(baseDir) {
   );
   const loaded = await loadSession(saved.id, { baseDir });
 
-  return { format, resolved, session, ranked, expansion, connections, tonality, client, verdict, loaded };
+  return { format, resolved, session, ranked, expansion, connections, tonality, client, verdict, loaded, coverage: batch.coverage };
 }
 
 test('full agent generation cycle stays inside the AMD A4 budget', async (t) => {
@@ -205,6 +204,11 @@ test('full agent generation cycle stays inside the AMD A4 budget', async (t) => 
     assert.equal(warm.session.state, AgentState.DELIVERED);
     assert.equal(warm.session.phase, AgentPhase.COMPLETED);
     assert.equal(warm.loaded.data.anchor, ANCHOR, 'the cycle really completed end to end');
+    assert.deepEqual(
+      Object.values(warm.coverage).every((v) => v === true),
+      true,
+      'every layer of the concurrent wave succeeded'
+    );
 
     for (let i = 0; i < CYCLES; i += 1) {
       const started = performance.now();
