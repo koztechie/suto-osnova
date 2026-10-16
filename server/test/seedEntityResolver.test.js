@@ -326,6 +326,64 @@ test('ingest validation: typed seed errors before any network call', async () =>
   assert.equal(search.calls.length, 0, 'zero quota on invalid input');
 });
 
+// ---------------------------------------------------------------------------
+// Task 48 — statistical candidate ranking inside ambiguous resolution.
+// ---------------------------------------------------------------------------
+
+test('ambiguous search: graph affinity outranks raw popularity, relevance explained', async () => {
+  const popular = {
+    ...movie('Blade Runner', UUID('AAAAAAAA'), 0.95),
+    affinity: 0.4,
+  };
+  const graphFavorite = {
+    ...movie('Blade Runner', UUID('BBBBBBBB'), 0.5),
+    affinity: 0.99,
+  };
+  const search = stubSearch([[popular, graphFavorite]]);
+
+  const result = await resolveTextQuery('Blade Runner', { search });
+
+  assert.equal(result.entity.id, graphFavorite.id, 'the graph opinion wins');
+  assert.equal(result.match, 'exact', 'both are exact-name candidates');
+  assert.equal(result.ambiguous, true);
+  assert.equal(result.relevance.signals.graphAffinity, 0.99);
+  assert.ok('nameSimilarity' in result.relevance.signals);
+  assert.equal(result.alternatives[0].id, popular.id);
+  assert.ok(typeof result.alternatives[0].score === 'number', 'runner-up scored');
+  assert.ok(result.relevance.score > result.alternatives[0].score);
+  assert.ok(Object.isFrozen(result.relevance));
+});
+
+test('ambiguous search: taste words from the query drive tag overlap', async () => {
+  const moody = {
+    ...movie('Blade Runner', UUID('AAAAAAAA'), 0.6),
+    tags: [{ id: 'urn:tag:keyword:media:moody', name: 'Moody', type: 'urn:tag:keyword:media' }],
+  };
+  const feelGood = {
+    ...movie('Blade Runner', UUID('BBBBBBBB'), 0.6),
+    tags: [{ id: 'urn:tag:keyword:media:feel_good', name: 'Feel Good', type: 'urn:tag:keyword:media' }],
+  };
+  const search = stubSearch([[feelGood, moody]]);
+
+  const result = await resolveTextQuery('moody films like "Blade Runner"', { search });
+
+  assert.equal(result.entity.id, moody.id, 'the mood-matching entity wins');
+  assert.equal(result.relevance.signals.tagOverlap, 1);
+  assert.equal(result.alternatives[0].id, feelGood.id);
+});
+
+test('ambiguous search: domainFit breaks a tie under a domain hint', async () => {
+  const band = artist('Kraftwerk', UUID('AAAAAAAA'), 0.5);
+  const venue = restaurant('Kraftwerk', UUID('BBBBBBBB'), 0.5);
+  const search = stubSearch([[band, venue]]);
+
+  const result = await resolveTextQuery('Kraftwerk', { domain: 'music', search });
+
+  assert.equal(result.entity.id, band.id, 'the hinted-domain entity wins');
+  assert.equal(result.relevance.signals.domainFit, 1);
+  assert.equal(result.entity.category, 'music');
+});
+
 test('probe extraction unit: dedup, ladder order, description rules', () => {
   const probeOf = (text, domain) => {
     const seed = resolveSeed(text, domain ? { domain } : undefined);

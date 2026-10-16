@@ -14,6 +14,7 @@ import {
   SEED_CONFIDENCE,
   FORMAT_PRECEDENCE,
   SIGNAL_WEIGHTS,
+  extractTasteWords,
 } from '../src/engine/SeedClassifier.js';
 import { resolveSeed, InvalidSeedError } from '../src/engine/SeedResolver.js';
 
@@ -195,4 +196,13 @@ test('scoring model is inspectable and self-consistent', () => {
   assert.ok(entries.every(([, s]) => s >= 0));
   const max = Math.max(...entries.map(([, s]) => s));
   assert.equal(result.scores[result.format], max, 'format is a top scorer');
+});
+
+test('extractTasteWords: distinct adjectives for the ranker tag-overlap signal', () => {
+  assert.deepEqual([...extractTasteWords('moody cozy Blade Runner')], ['moody', 'cozy']);
+  assert.deepEqual([...extractTasteWords('MOODY, moody and moody')], ['moody'], 'dedup + case');
+  assert.deepEqual([...extractTasteWords('The Godfather')], [], 'titles carry no taste words');
+  assert.deepEqual([...extractTasteWords('')], []);
+  assert.deepEqual([...extractTasteWords(null)], [], 'non-string input -> empty');
+  assert.ok(Object.isFrozen(extractTasteWords('moody')));
 });

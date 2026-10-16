@@ -24,10 +24,12 @@
  *   4. SELECTION: deterministic and verified — candidates must carry a
  *      VALID entity id (Qloo issues UUIDs; validated by
  *      ENTITY_ID_PATTERN), pass the optional popularity gate, and
- *      satisfy the exact/fuzzy name policy; the winner is preferred
- *      among entities CLASSIFIABLE into one of the five agent domains
- *      (category), ordered by popularity desc, then name, then id —
- *      repeated resolutions never flip;
+ *      satisfy the exact/fuzzy name policy; the surviving pool is then
+ *      RANKED by the statistical candidate ranker (task 48 — name
+ *      similarity, Qloo graph affinity, popularity, tag overlap,
+ *      domain fit; absent signals renormalized) so an ambiguous search
+ *      picks the most statistically relevant entity with a full
+ *      per-signal explanation (`relevance`), ordered deterministically;
  *   5. OUTPUT: a frozen record with entity {id, name, category,
  *      subtype, popularity}, match/ambiguity, alternatives, the probe
  *      trail (attempts) and the live|mock provenance stamp.
@@ -65,7 +67,12 @@ import {
   MANDATORY_DOMAINS,
 } from './domainMapper.js';
 import { resolveSeed } from '../engine/SeedResolver.js';
-import { classifySeedFormat, SEED_FORMATS } from '../engine/SeedClassifier.js';
+import {
+  classifySeedFormat,
+  extractTasteWords,
+  SEED_FORMATS,
+} from '../engine/SeedClassifier.js';
+import { rankCandidates } from './candidateRanker.js';
 
 /** Typed error for resolution failures. */
 export class SeedResolutionError extends Error {
@@ -141,11 +148,17 @@ export function extractProbes(classification, seed) {
  * Deterministic candidate selection over ONE search page.
  *
  * Filter order: valid id -> popularity gate -> exact/fuzzy name policy
- * -> domain-mapped preference; final order: popularity desc, name, id.
+ * -> domain-mapped preference; the surviving pool is then RANKED by
+ * the statistical candidate ranker (task 48) — name similarity, Qloo
+ * graph affinity, popularity, tag overlap, domain fit — instead of
+ * bare popularity, so an ambiguous search picks the most statistically
+ * relevant entity, explainably and reproducibly.
  *
- * @returns {{best: object|null, alternatives: object[], match: string,
- *            ambiguous: boolean, diagnostics: {total: number,
- *            sawValidId: boolean, sawMapped: boolean}}}
+ * @returns {{best: object|null, relevance: {score: number,
+ *            signals: object}|null, alternatives: object[],
+ *            match: string, ambiguous: boolean, diagnostics: {total:
+ *            number, sawValidId: boolean, sawPopularity: boolean,
+ *            sawName: boolean, sawMapped: boolean}}}
  */
 export function selectBestCandidate(results, options = {}) {
   const {
@@ -154,6 +167,9 @@ export function selectBestCandidate(results, options = {}) {
     minPopularity,
     requireMapped = true,
     requireValidId = true,
+    queryWords = [],
+    targetDomain = null,
+    weights = undefined,
   } = options;
 
   const list = Array.isArray(results) ? results : [];
@@ -182,14 +198,13 @@ export function selectBestCandidate(results, options = {}) {
     sawMapped: !requireMapped || namePool.some((e) => classifyEntity(e) !== null),
   };
 
-  const byPrecedence = (a, b) =>
-    (b.popularity ?? 0) - (a.popularity ?? 0) ||
-    a.name.localeCompare(b.name) ||
-    a.id.localeCompare(b.id);
+  const context = { queryKey, queryWords, targetDomain };
+  const byScoreThenDeterminism = rankCandidates(mappedPool, context, { weights });
 
-  if (mappedPool.length === 0) {
+  if (byScoreThenDeterminism.length === 0) {
     return {
       best: null,
+      relevance: null,
       alternatives: [],
       match: 'none',
       ambiguous: false,
@@ -197,23 +212,25 @@ export function selectBestCandidate(results, options = {}) {
     };
   }
 
-  const ordered = [...mappedPool].sort(byPrecedence);
-  const best = ordered[0];
-  const alternatives = popPool
-    .filter((e) => e !== best)
-    .sort(byPrecedence)
+  const top = byScoreThenDeterminism[0];
+  const best = top.candidate;
+  const rankedPool = rankCandidates(popPool, context, { weights });
+  const alternatives = rankedPool
+    .filter((entry) => entry.candidate !== best)
     .slice(0, 6)
-    .map((e) => ({
-      id: e.id,
-      name: e.name,
-      category: classifyEntity(e),
+    .map((entry) => ({
+      id: entry.candidate.id,
+      name: entry.candidate.name,
+      category: classifyEntity(entry.candidate),
+      score: entry.score,
     }));
 
   return {
     best,
+    relevance: Object.freeze({ score: top.score, signals: top.signals }),
     alternatives,
     match: exactPool.length > 0 ? 'exact' : 'fuzzy',
-    ambiguous: ordered.length > 1,
+    ambiguous: rankedPool.length > 1,
     diagnostics,
   };
 }
@@ -297,6 +314,7 @@ export async function resolveTextQuery(rawText, options = {}) {
     requireValidId = true,
     take = 10,
     extraTypes = undefined,
+    weights = undefined,
     search = searchEntities,
   } = options;
 
@@ -304,6 +322,8 @@ export async function resolveTextQuery(rawText, options = {}) {
   const seed = resolveSeed(rawText, domain !== undefined ? { domain } : undefined);
   const classification = classifySeedFormat(seed);
   const probes = extractProbes(classification, seed);
+  // Query side of the ranker's tag-overlap signal (task 48).
+  const tasteWords = extractTasteWords(seed.normalized);
 
   const types = [
     ...new Set([
@@ -346,6 +366,9 @@ export async function resolveTextQuery(rawText, options = {}) {
       minPopularity,
       requireMapped,
       requireValidId,
+      queryWords: tasteWords,
+      targetDomain: seed.domain,
+      weights,
     });
     attempts.push({ probe: probe.text, source: probe.source, count: results.length });
     diagnostics = mergeDiagnostics(diagnostics, selection.diagnostics);
@@ -370,6 +393,8 @@ export async function resolveTextQuery(rawText, options = {}) {
           subtype: best.subtype ?? null,
           popularity: best.popularity ?? null,
         }),
+        // Task 48: the statistical explanation of WHY this candidate won.
+        relevance: selection.relevance,
         idValid: ENTITY_ID_PATTERN.test(best.id),
         match: selection.match,
         ambiguous: selection.ambiguous,

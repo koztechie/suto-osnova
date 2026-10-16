@@ -193,6 +193,23 @@ function splitFragments(normalized) {
     .filter((f) => countCodePoints(f) >= 2);
 }
 
+/**
+ * Extracts the DISTINCT taste words of an anchor (task 48): the
+ * descriptive adjectives that carry its mood ("moody", "cozy" …). Used
+ * by the candidate ranker as the query side of the tag-overlap signal —
+ * the words a user paints with, matched against an entity's Qloo tag
+ * names. Pure, deterministic, case/punctuation-insensitive.
+ */
+export function extractTasteWords(text) {
+  const normalized = typeof text === 'string' ? normalizeSeedText(text) : '';
+  const words = normalized
+    .toLowerCase()
+    .split(/[\s,.;:!?/\\|]+/)
+    .filter(Boolean);
+  const stripped = words.map((w) => w.replace(/[^\p{L}\p{N}-]/gu, ''));
+  return Object.freeze([...new Set(stripped.filter((w) => ADJECTIVES.has(w)))]);
+}
+
 // --- scoring -----------------------------------------------------------------
 
 function scoreDirectTitle(normalized, tokens, stripped) {
