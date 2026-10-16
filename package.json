@@ -12,6 +12,7 @@
     "verify:env": "node scripts/verify_backend_env.js",
     "verify:memory": "node scripts/verify_memory.js",
     "test": "NODE_ENV=test node --test",
+    "test:gc": "NODE_ENV=test node --expose-gc --test server/test/memoryIsolation.test.js",
     "lint": "node --check server/src/**/*.js"
   },
   "keywords": [
