@@ -94,6 +94,21 @@ test('expansionPlan: maxPerDomain is clamped to 1..50', () => {
   assert.equal(expansionPlan(SEED, { maxPerDomain: 3.9 }).maxPerDomain, 3);
 });
 
+test('expansionPlan: includeSeedDomain keeps the source domain in the vector (task 50)', () => {
+  const plan = expansionPlan(SEED, { includeSeedDomain: true });
+  assert.deepEqual([...plan.domains], [...MANDATORY_DOMAINS], 'all five, canonical order');
+
+  // The flag also governs explicit subsets.
+  const subset = expansionPlan(SEED, {
+    domains: ['film', 'music'],
+    includeSeedDomain: true,
+  });
+  assert.deepEqual([...subset.domains], ['film', 'music']);
+
+  // Default remains cross-only (task 49 contract untouched).
+  assert.ok(!expansionPlan(SEED).domains.includes('film'));
+});
+
 test('expandTastes: happy path — ordering, weight shares, self and invalid drops', () => {
   const plan = expansionPlan(SEED, { domains: ['music', 'books'] });
 

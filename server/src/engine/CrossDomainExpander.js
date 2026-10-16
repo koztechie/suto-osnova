@@ -88,7 +88,10 @@ const clampMax = (value) => {
  * @param {object} [options]
  * @param {string[]} [options.domains] explicit target domains (agent
  *        vocabulary or aliases, caller order preserved); the seed's
- *        own domain is always removed.
+ *        own domain is removed UNLESS `includeSeedDomain` is true.
+ * @param {boolean} [options.includeSeedDomain=false] keep the source
+ *        domain in the ladder (task 50: the full 5-domain affinity
+ *        vector includes same-domain neighbors of the seed).
  * @param {number} [options.maxPerDomain] cap per domain (1..50).
  * @returns {Readonly<{seed: {id: string, domain: string},
  *          domains: string[], maxPerDomain: number}>}
@@ -114,9 +117,11 @@ export function expansionPlan(seed, options = {}) {
     );
   }
 
+  const includeSeedDomain = options.includeSeedDomain === true;
+
   let domains;
   if (options.domains === undefined) {
-    domains = MANDATORY_DOMAINS.filter((d) => d !== domain);
+    domains = MANDATORY_DOMAINS.filter((d) => includeSeedDomain || d !== domain);
   } else {
     if (!Array.isArray(options.domains) || options.domains.length === 0) {
       throw new ExpansionInputError(
@@ -128,7 +133,9 @@ export function expansionPlan(seed, options = {}) {
     for (const entry of options.domains) {
       try {
         const id = resolveDomain(entry);
-        if (id !== domain && !resolved.includes(id)) resolved.push(id);
+        if ((includeSeedDomain || id !== domain) && !resolved.includes(id)) {
+          resolved.push(id);
+        }
       } catch (cause) {
         if (!(cause instanceof DomainMappingError)) throw cause;
         throw new ExpansionInputError(
@@ -143,7 +150,8 @@ export function expansionPlan(seed, options = {}) {
   if (domains.length === 0) {
     throw new ExpansionInputError(
       `expansionPlan: no target domains remain after removing the seed's ` +
-        `own domain "${domain}" — cross-domain expansion needs at least one`,
+        `own domain "${domain}" — cross-domain expansion needs at least one ` +
+        `(or pass includeSeedDomain: true to expand within it)`,
       { code: EXPANSION_CODES.NO_TARGET_DOMAINS, details: { seedDomain: domain } }
     );
   }
