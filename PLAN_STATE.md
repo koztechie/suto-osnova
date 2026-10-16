@@ -571,3 +571,19 @@ Date: 2026-10-16
 Deliverable: docs/architecture/AGENT_PIPELINE.md — the internal API reference for the agent module stack (tasks 41-77), in the repo's English PRD doc style. Contents: (0) layer map with the ONLY permitted upward imports (engine -> domainMapper/candidateRanker); (1) the 14-stage pipeline diagram (raw text -> seed -> resolution -> FSM/phases -> math chain -> expansion -> five layers -> notes -> tonality -> graph -> weights -> synthesis -> validator -> session cache -> GC isolation); (2) ENGINE reference table — 19 pure modules with key exports and contract highlights (FSM states/events, honesty rules, threshold formulas, weight models, validator semantics incl. documented limitations); (3) SERVICES reference table — 17 I/O modules (transport stack, privacy, domain mapper, resolvers, ranker, vector service, five extractors, concurrent layer wave, LLM bridge with the prompt integrity gate, session cache, memory hygiene); (4) seven cross-cutting contracts (honesty null!=0, determinism, typed-error taxonomy, injection, the anti-hallucination chain, privacy, no-trackers); (5) environment table; (6) verification map (673 tests, three golden scenarios with their distinct branch coverage, four gates + verify CLIs); (7) an extension checklist for future modules.
 
 Verification: consistency audit — all 36 referenced module paths exist on disk; 8 spot-checked exports resolve as functions at runtime (resolveSeed, extractTasteWords, cutMassCliches, filterByAdaptiveThreshold, coherenceIndex, extractAllLayers, chunkedProcess, isolateCycle); documented test count matches the live suite (673); full npm test re-run green after the documentation commit preparation. npm test 673/673, npm run lint clean.
+
+## Task 79 — recorded stable full-suite pass (`npm test`)
+
+Status: DONE
+Date: 2026-10-16
+
+Evidence (Node v22.22.2, linux):
+- `npm test` THREE consecutive runs: 673/673 tests, 0 failures every run; wall time 90.28s / 94.40s / 102.68s (stability of RESULTS confirmed; wall variance is the shared CI box, not the suite — assertions are deterministic, timing gates use medians by design).
+- `npm run lint`: PASS (node --check over server/src).
+- `npm run test:gc`: 6/6 (memory isolation with --expose-gc).
+- `npm run verify:memory`: PASS (baseline re-recorded to build/memory-baseline.json).
+- `npm run verify:trackers`: PASS (runtime deps = sanctioned set; 94 production packages zero tracker SDKs; dev tooling clean; 59 source files, zero tracker patterns, all hosts allowlisted, fetch() only in the 2 sanctioned transports).
+- `node --env-file=.env scripts/verify_backend_env.js`: CONFIGURATION PASS — 0 failures, 0 warnings.
+- `npm run mcp:verify`: HARNESS COMPATIBILITY PASS (qloo:// resources, strict NDJSON purity on both stdios).
+
+Scope of the green suite: engine (20 modules), services (23 modules), MCP surface (18 tools + resources + harness compat), HTTP layer, 3 golden agent-run scenarios (A24 / Post-Punk / Brutalism), perf gate (cycle median ~15-25ms vs 900ms local / 4.5s A4 budget), memory isolation (both GC modes), no-trackers compliance. Baseline for all future regressions: 673 tests / 0 failures / three-run stability.
