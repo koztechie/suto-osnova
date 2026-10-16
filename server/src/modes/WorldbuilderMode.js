@@ -79,6 +79,9 @@ import {
 import { synthesizeDossier } from '../services/llmSynthesizer.js';
 import { saveSession } from '../services/sessionCache.js';
 import { dispatchMode, MODE_WORLDBUILDER } from '../engine/ModeDispatcher.js';
+import {
+  parseSceneContext, applyContextBoost, CONTEXT_DEFAULTS,
+} from './SceneContext.js';
 
 /** Documented defaults (exported tuning contract). */
 export const WORLDBUILDER_DEFAULTS = Object.freeze({
@@ -115,6 +118,15 @@ const validateOptions = (options) => {
     && (typeof options.thresholds !== 'object' || options.thresholds === null
       || Array.isArray(options.thresholds))) {
     throw new TypeError('runWorldbuilder: options.thresholds must be an object of schedule overrides');
+  }
+  // Task 84: scene context (era + geography) is validated SYNCHRONOUSLY
+  // BEFORE any client work — typed SceneContextError for bad values,
+  // TypeError for bad types (parseSceneContext contract).
+  parseSceneContext(options.scene ?? null);
+  if (options.contextBoost !== undefined
+    && (typeof options.contextBoost !== 'number' || !Number.isFinite(options.contextBoost)
+      || options.contextBoost < 0 || options.contextBoost > 0.5)) {
+    throw new TypeError('runWorldbuilder: contextBoost must be a finite number in 0..0.5');
   }
 };
 
@@ -206,8 +218,17 @@ export async function runWorldbuilder(input, options = {}) {
     });
   }
 
-  // 4. The math chain (tasks 56-61 + 67 gate first).
-  const candidates = flattenExpansion(vector.expansion);
+  // 4. The math chain (tasks 56-61 + 67 gate first). With a scene
+  //    context (task 84), candidates get the deterministic era/geo
+  //    bias BEFORE the gate — period- and place-fitting picks gain a
+  //    small documented affinity boost; rows are never dropped.
+  const scene = parseSceneContext(options.scene ?? null);
+  const rawCandidates = flattenExpansion(vector.expansion);
+  const candidates = scene === null
+    ? rawCandidates
+    : applyContextBoost(rawCandidates, scene, {
+      boost: options.contextBoost ?? CONTEXT_DEFAULTS.boost,
+    });
   const thresholdOptions = { ...(plan.thresholds ?? {}), ...(options.thresholds ?? {}) };
   const gated = filterByAdaptiveThreshold(candidates, thresholdOptions);
   const longTail = filterLongTail(gated.kept);
@@ -338,6 +359,7 @@ export async function runWorldbuilder(input, options = {}) {
         requestId,
         anchor: seed.normalized,
         mode: plan.mode,
+        scene,
         entity: { id: entity.id, name: entity.name, category: entity.category },
         top: ranked.map((entry) => ({ id: entry.id, name: entry.name })),
         coverage: batch.coverage,
@@ -352,6 +374,7 @@ export async function runWorldbuilder(input, options = {}) {
     mode: plan.mode,
     output: plan.output,
     requestId,
+    scene,
     seed: {
       normalized: seed.normalized,
       format: classification.format,

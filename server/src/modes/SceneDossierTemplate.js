@@ -214,6 +214,9 @@ export function buildSceneDossier(bundle, options = {}) {
       format: bundle.seed?.format ?? null,
       confidence: bundle.seed?.confidence ?? null,
     }),
+    // Task 84: the era/geography of the scene (normalized, echoed
+    // from the bundle; null for a context-less run).
+    scene: bundle.scene ? Object.freeze({ ...bundle.scene }) : null,
     tonality: character.tone,
     sections,
     provenance: Object.freeze({
@@ -242,6 +245,14 @@ export function renderSceneDossier(template) {
     `Anchor: ${a.name}${a.domain ? ` (${a.domain})` : ''}` +
       `${a.format ? ` — ${a.format}${a.confidence ? `, ${a.confidence} confidence` : ''}` : ''}`
   );
+  if (template.scene) {
+    const parts = [template.scene.era, template.scene.location].filter(Boolean);
+    const years = template.scene.startYear !== null || template.scene.endYear !== null
+      ? ` [${template.scene.startYear ?? '…'}–${template.scene.endYear ?? '…'}]`
+      : '';
+    const geohash = template.scene.geohash ? ` @${template.scene.geohash}` : '';
+    lines.push(`Scene: ${parts.join(' — ')}${years}${geohash}`);
+  }
   const t = template.tonality;
   if (t && t.coherent !== null) {
     const axis = t.axis ? `${t.axis.axis}/${t.axis.direction}` : 'unclassified';
