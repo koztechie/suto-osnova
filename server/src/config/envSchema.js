@@ -34,6 +34,8 @@ const DEFAULTS = {
   PORT: 3000,
   NODE_ENV: 'development',
   LOG_LEVEL: 'info',
+  LLM_BASE_URL: 'https://api.openai.com/v1',
+  LLM_MODEL: 'gpt-4o-mini',
 };
 
 function parseNumber(raw, { min, int, field, issues }) {
@@ -123,6 +125,24 @@ export const envSchema = {
     data.QLOO_CACHE_DIR = source.QLOO_CACHE_DIR ?? DEFAULTS.QLOO_CACHE_DIR;
     if (typeof data.QLOO_CACHE_DIR !== 'string' || data.QLOO_CACHE_DIR.length < 1) {
       issues.push({ path: ['QLOO_CACHE_DIR'], message: 'Must be a non-empty string' });
+    }
+
+    // LLM synthesis (task 62): an OPTIONAL integration — the server
+    // boots and serves without it; synthesis fails typed (llm_not_configured)
+    // at call time instead. The key is a credential: accepted verbatim,
+    // never echoed by any reporter.
+    data.LLM_API_KEY =
+      typeof source.LLM_API_KEY === 'string' ? source.LLM_API_KEY : '';
+    const llmBaseUrl = source.LLM_BASE_URL ?? DEFAULTS.LLM_BASE_URL;
+    try {
+      new URL(llmBaseUrl);
+      data.LLM_BASE_URL = llmBaseUrl;
+    } catch {
+      issues.push({ path: ['LLM_BASE_URL'], message: 'Invalid URL' });
+    }
+    data.LLM_MODEL = source.LLM_MODEL ?? DEFAULTS.LLM_MODEL;
+    if (typeof data.LLM_MODEL !== 'string' || data.LLM_MODEL.length < 1) {
+      issues.push({ path: ['LLM_MODEL'], message: 'Must be a non-empty string' });
     }
 
     // Cross-field TTL validation: entity/tag reference data is relatively
