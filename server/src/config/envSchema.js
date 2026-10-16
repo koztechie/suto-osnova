@@ -36,6 +36,9 @@ const DEFAULTS = {
   LOG_LEVEL: 'info',
   LLM_BASE_URL: 'https://api.openai.com/v1',
   LLM_MODEL: 'gpt-4o-mini',
+  SESSION_CACHE_DIR: '.cache/sessions',
+  SESSION_CACHE_TTL_MS: 3_600_000,
+  SESSION_CACHE_MAX_ENTRIES: 50,
 };
 
 function parseNumber(raw, { min, int, field, issues }) {
@@ -143,6 +146,23 @@ export const envSchema = {
     data.LLM_MODEL = source.LLM_MODEL ?? DEFAULTS.LLM_MODEL;
     if (typeof data.LLM_MODEL !== 'string' || data.LLM_MODEL.length < 1) {
       issues.push({ path: ['LLM_MODEL'], message: 'Must be a non-empty string' });
+    }
+
+    // Analysis session cache (task 70): local, temporary, optional.
+    data.SESSION_CACHE_DIR = source.SESSION_CACHE_DIR ?? DEFAULTS.SESSION_CACHE_DIR;
+    if (
+      typeof data.SESSION_CACHE_DIR !== 'string' ||
+      data.SESSION_CACHE_DIR.length < 1
+    ) {
+      issues.push({ path: ['SESSION_CACHE_DIR'], message: 'Must be a non-empty string' });
+    }
+    for (const [field, opts] of [
+      ['SESSION_CACHE_TTL_MS', { min: 1, int: true }],
+      ['SESSION_CACHE_MAX_ENTRIES', { min: 1, int: true }],
+    ]) {
+      const raw = source[field] ?? String(DEFAULTS[field]);
+      const value = parseNumber(raw, { ...opts, field, issues });
+      if (value !== undefined) data[field] = value;
     }
 
     // Cross-field TTL validation: entity/tag reference data is relatively
