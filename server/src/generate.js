@@ -4,6 +4,7 @@
  *
  * POST /api/generate/worldbuilder   -> MODE 1 (Character & Scene Dossier)
  * POST /api/generate/experiential   -> MODE 2 (Live Event Activation)
+ * POST /api/generate/antithesis     -> MODE 3 (Taste Antithesis Report)
  *
  * Each takes { seed, options?, format? } and returns the dossier
  * generated through the REAL Qloo clients (lazy-imported, so the
@@ -123,6 +124,14 @@ export async function handleGenerateWorldbuilder(req, res, body, requestId, clie
 export async function handleGenerateExperiential(req, res, body, requestId, clients) {
   return runGenerate(
     async () => (await import('./modes/ExperientialMode.js')).runExperiential,
+    req, res, body, requestId, clients,
+  );
+}
+
+/** HTTP handler for POST /api/generate/antithesis (Mode 3). */
+export async function handleGenerateAntithesis(req, res, body, requestId, clients) {
+  return runGenerate(
+    async () => (await import('./modes/AntithesisMode.js')).runAntithesis,
     req, res, body, requestId, clients,
   );
 }

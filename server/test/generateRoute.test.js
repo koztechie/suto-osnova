@@ -25,7 +25,7 @@ process.env.QLOO_MAX_RETRIES = '0';
 
 const { createHttpHandler } = await import('../src/app.js');
 const {
-  handleGenerateWorldbuilder, handleGenerateExperiential,
+  handleGenerateWorldbuilder, handleGenerateExperiential, handleGenerateAntithesis,
 } = await import('../src/generate.js');
 const { env } = await import('../src/config/env.js');
 const { classifyError, RequestValidationError } = await import('../src/httpErrors.js');
@@ -291,4 +291,60 @@ test('experiential options pass-through: topN bounds reach the mode', async () =
   );
   const payload = JSON.parse(res.body);
   assert.ok(payload.dossier.data.curation.openingActs.length <= 2, 'topN honored');
+});
+
+// --- POST /api/generate/antithesis (Mode 3, task 113) -------------------------
+
+test('antithesis routing: the POST reaches the Mode 3 handler', async () => {
+  const res = await request('/api/generate/antithesis', { method: 'POST', body: {} });
+  assert.equal(res.status, 400, 'the echo would be 200; a 400 proves the route ran');
+  assert.equal(res.json().error.code, 'INVALID_SEED');
+
+  const badFormat = await request('/api/generate/antithesis', {
+    method: 'POST', body: { seed: 'x', format: 'pdf' },
+  });
+  assert.equal(badFormat.status, 400);
+  assert.equal(badFormat.json().error.code, 'INVALID_FORMAT');
+});
+
+test('antithesis happy path: the blindspot envelope', async () => {
+  const res = mockRes();
+  await handleGenerateAntithesis({}, res, { seed: 'Dark Thread' }, 'req-a1', clients);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.headers['Content-Type'], 'application/json');
+  assert.equal(res.headers['X-Request-Id'], 'req-a1');
+
+  const payload = JSON.parse(res.body);
+  assert.equal(payload.status, 'ok');
+  assert.equal(payload.dossier.schema, 'suto-osnova.dossier/v1');
+  assert.equal(payload.dossier.mode, 'antithesis');
+  assert.equal(payload.dossier.output, 'cultural_blindspot_report');
+  assert.equal(payload.dossier.entity.name, 'Dark Thread');
+  // The antithesis payload: the blindspot block with the honest null thresholds.
+  assert.ok(payload.dossier.data.antithesis, 'the antithesis block rides `data`');
+  assert.ok(Array.isArray(payload.dossier.data.antithesis.matrix));
+  assert.equal(payload.dossier.data.selection.strategy, 'lowest_correlation');
+  assert.equal(payload.dossier.data.selection.thresholds, null);
+  assert.ok(payload.dossier.meta.stats, 'the ledger rides `meta`');
+});
+
+test('antithesis format dispatch: markdown + html carry the blindspot report', async () => {
+  const md = mockRes();
+  await handleGenerateAntithesis(
+    {}, md, { seed: 'Dark Thread', format: 'markdown' }, 'req-a2', clients,
+  );
+  assert.equal(md.statusCode, 200);
+  assert.equal(md.headers['Content-Type'], 'text/markdown; charset=utf-8');
+  assert.match(md.body, /^# DOSSIER — Taste Antithesis/m);
+  assert.match(md.body, /^## CULTURAL BLINDSPOT$/m);
+
+  const html = mockRes();
+  await handleGenerateAntithesis(
+    {}, html, { seed: 'Dark Thread', format: 'html' }, 'req-a3', clients,
+  );
+  assert.equal(html.statusCode, 200);
+  assert.equal(html.headers['Content-Type'], 'text/html; charset=utf-8');
+  assert.ok(html.body.startsWith('<!DOCTYPE html>'));
+  assert.match(html.body, /<h2>CULTURAL BLINDSPOT<\/h2>/);
+  assert.match(html.body, /<h2>PRIVACY NOTICE<\/h2>/);
 });

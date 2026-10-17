@@ -7,13 +7,16 @@
  *   GET  /api/health                     -> system health incl. Qloo connectivity (health.js)
  *   POST /api/generate/worldbuilder      -> Mode 1 Character & Scene Dossier (generate.js)
  *   POST /api/generate/experiential      -> Mode 2 Live Event Activation (generate.js)
+ *   POST /api/generate/antithesis        -> Mode 3 Taste Antithesis Report (generate.js)
  *   anything else                        -> legacy echo behavior (pre-existing contract).
  */
 
 import { corsMiddleware } from './middleware/cors.js';
 import { parseJsonBody } from './middleware/bodyParser.js';
 import { handleHealth } from './health.js';
-import { handleGenerateWorldbuilder, handleGenerateExperiential } from './generate.js';
+import {
+  handleGenerateWorldbuilder, handleGenerateExperiential, handleGenerateAntithesis,
+} from './generate.js';
 import { sendError, classifyError } from './httpErrors.js';
 import { createLogger } from './logger.js';
 import { newRequestId } from './ids.js';
@@ -51,6 +54,10 @@ export function createHttpHandler() {
       }
       if (req.method === 'POST' && url.pathname === '/api/generate/experiential') {
         await handleGenerateExperiential(req, res, req.body, requestId);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/api/generate/antithesis') {
+        await handleGenerateAntithesis(req, res, req.body, requestId);
         return;
       }
 
