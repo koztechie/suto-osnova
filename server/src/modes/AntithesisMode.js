@@ -254,6 +254,38 @@ export function buildAntithesisBlock(pieces) {
       .filter((record) => record.sponsorshipRisk)
   );
 
+  // 5. THE PROTAGONIST FINGERPRINT (task 97): the hero's OWN
+  //    strongest taste per domain — the highest measured affinity
+  //    in that domain (lowest divergence). Computed over the SAME
+  //    measurable pool in one pass, so the antagonist profile can
+  //    contrast the hero's world against the blindspot without a
+  //    second run.
+  const fingerprint = Object.freeze(domains.map((domain) => {
+    let hero = null;
+    for (const record of inverted.records) {
+      if (record.domain !== domain) continue;
+      // records are divergence-DESC, so a later (lower-divergence,
+      // higher-affinity) row wins; tiebreak on name for stability.
+      if (hero === null
+        || record.divergence < hero.divergence
+        || (record.divergence === hero.divergence
+          && record.name.localeCompare(hero.name) < 0)) {
+        hero = record;
+      }
+    }
+    return Object.freeze({
+      domain,
+      present: hero !== null,
+      name: hero?.name ?? null,
+      id: hero?.id ?? null,
+      affinity: hero?.coefficientKind === COEFFICIENT_KINDS.UNSIGNED
+        ? hero.coefficient : null,
+      affinityPercent: hero?.coefficientKind === COEFFICIENT_KINDS.UNSIGNED
+        ? Math.round(hero.coefficient * 100) : null,
+      divergencePercent: hero?.divergencePercent ?? null,
+    });
+  }));
+
   return Object.freeze({
     anchor: Object.freeze({
       name: pieces.anchor.name,
@@ -262,6 +294,11 @@ export function buildAntithesisBlock(pieces) {
     strategy: SELECTION_STRATEGIES.LOWEST_CORRELATION,
     thresholds: null, // the plan's honest null: nothing accepted on affinity
     coefficientDomain: inverted.coefficientDomain,
+    protagonist: Object.freeze({
+      name: pieces.anchor.name,
+      domain: pieces.anchor.domain ?? null,
+      fingerprint,
+    }),
     dissonance: Object.freeze({
       minEncounterTier: filtered.minEncounterTier,
       keepMinimal: filtered.keepMinimal,
