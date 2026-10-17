@@ -105,7 +105,7 @@ test('layer discipline: L1 references L0, L2 derives only from L1', () => {
     assert.match(value, /^var\(--palette-\w+\)$/,
       `${name} references exactly one Layer 0 token`);
   }
-  const derived = ['--line', '--surface-hi', '--focus-ring'];
+  const derived = ['--line', '--surface-hi', '--focus-ring', '--bg-page'];
   for (const name of derived) {
     const value = tokens.get(name);
     assert.ok(value, `${name} is declared`);

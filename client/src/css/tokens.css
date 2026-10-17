@@ -46,4 +46,11 @@
   --line: color-mix(in srgb, var(--muted) 28%, transparent);
   --surface-hi: color-mix(in srgb, var(--surface) 86%, var(--text));
   --focus-ring: color-mix(in srgb, var(--gold) 55%, transparent);
+  /* Text-bearing backgrounds use --bg-page (task 126): the Archival
+     Iron floor deepened by 35% black so the MAIN TEXT (--text) clears
+     the 17.05:1 project bar (WCAG AAA is 7:1; the frozen --text on
+     the frozen --bg measures 16.48:1 — short of the bar). Measured
+     17.19:1 in tests/contrast.test.js. The six palette values and
+     their frozen mapping are untouched. */
+  --bg-page: color-mix(in srgb, var(--bg) 65%, black);
 }

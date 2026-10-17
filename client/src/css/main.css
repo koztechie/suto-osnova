@@ -25,7 +25,7 @@ body {
 }
 
 body {
-  background: var(--bg);
+  background: var(--bg-page);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 15px;
@@ -113,7 +113,7 @@ select,
 button {
   font: inherit;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-page);
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.55rem 0.7rem;
@@ -181,7 +181,7 @@ button:disabled {
 .output-text {
   margin: 0;
   padding: 1rem;
-  background: var(--bg);
+  background: var(--bg-page);
   border: 1px solid var(--line);
   border-radius: 4px;
   overflow: auto;
@@ -196,5 +196,5 @@ button:disabled {
   min-height: 70vh;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--text);
+  background: var(--bg);
 }
