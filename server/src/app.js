@@ -6,13 +6,14 @@
  * Routes:
  *   GET  /api/health                     -> system health incl. Qloo connectivity (health.js)
  *   POST /api/generate/worldbuilder      -> Mode 1 Character & Scene Dossier (generate.js)
+ *   POST /api/generate/experiential      -> Mode 2 Live Event Activation (generate.js)
  *   anything else                        -> legacy echo behavior (pre-existing contract).
  */
 
 import { corsMiddleware } from './middleware/cors.js';
 import { parseJsonBody } from './middleware/bodyParser.js';
 import { handleHealth } from './health.js';
-import { handleGenerateWorldbuilder } from './generate.js';
+import { handleGenerateWorldbuilder, handleGenerateExperiential } from './generate.js';
 import { sendError, classifyError } from './httpErrors.js';
 import { createLogger } from './logger.js';
 import { newRequestId } from './ids.js';
@@ -42,10 +43,14 @@ export function createHttpHandler() {
       // boundary below: PAYLOAD_TOO_LARGE / INVALID_JSON envelopes.
       await parseJsonBody(req);
 
-      // Generate routes (task 111): the mode pipeline over the real
-      // Qloo clients. Errors here propagate to the global boundary.
+      // Generate routes (tasks 111-112): the mode pipeline over the
+      // real Qloo clients. Errors here propagate to the global boundary.
       if (req.method === 'POST' && url.pathname === '/api/generate/worldbuilder') {
         await handleGenerateWorldbuilder(req, res, req.body, requestId);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/api/generate/experiential') {
+        await handleGenerateExperiential(req, res, req.body, requestId);
         return;
       }
 

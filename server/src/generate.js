@@ -1,24 +1,30 @@
 /**
- * Generate routes (task 111) — the HTTP surface for MODE 1.
+ * Generate routes (tasks 111-112) — the HTTP surface for the agent
+ * modes.
  *
- * POST /api/generate/worldbuilder — takes { seed, options?, format? }
- * and returns the Character & Scene Dossier generated through the
- * REAL Qloo clients (lazy-imported, so the transport chain stays off
- * the server boot path and only loads when a request actually runs).
+ * POST /api/generate/worldbuilder   -> MODE 1 (Character & Scene Dossier)
+ * POST /api/generate/experiential   -> MODE 2 (Live Event Activation)
  *
- * CLIENT WIRING: the mode's injectable contract is satisfied by the
+ * Each takes { seed, options?, format? } and returns the dossier
+ * generated through the REAL Qloo clients (lazy-imported, so the
+ * transport chain stays off the server boot path and only loads when a
+ * request actually runs). The two modes share the SAME client wiring,
+ * validation and format dispatch — only the runner differs.
+ *
+ * CLIENT WIRING: the modes' injectable contract is satisfied by the
  * production service functions — affinityFn -> getCrossDomainAffinities,
  * search/searchFn -> searchEntities (both the seed probe
  * `search(text, types, {take})` and the layer probe
  * `searchFn(query, [urn], {take})` share this signature), tagsFn ->
- * findTags, insightsFn -> getAudienceInsights. The transport stack
- * (auth, rate limiting, retries, cache, privacy guard) is inherited
- * from qlooClient; the API key NEVER reaches the response.
+ * findTags, insightsFn -> getAudienceInsights (REQUIRED by Mode 2's
+ * audience leg). The transport stack (auth, rate limiting, retries,
+ * cache, privacy guard) is inherited from qlooClient; the API key
+ * NEVER reaches the response.
  *
  * RESPONSE FORMATS: `json` (default) returns the STANDARDIZED envelope
- * (task 103 exportJson); `markdown` returns the semantic document
- * (task 102); `html` returns the print-ready page (task 104). All
- * carry an X-Request-Id correlation header.
+ * (task 103 exportJson); `markdown` the semantic document (task 102);
+ * `html` the print-ready page (task 104). All carry an X-Request-Id
+ * correlation header.
  *
  * ERRORS: caller-input problems (missing seed, bad format, an
  * unusable or unresolvable seed) surface as a 400 typed envelope via
@@ -62,38 +68,9 @@ async function realClients() {
   return { searchEntities, getCrossDomainAffinities, findTags, getAudienceInsights };
 }
 
-/** HTTP handler for POST /api/generate/worldbuilder.
- *
- * @param {object} req the node request.
- * @param {object} res the node response.
- * @param {object} body the parsed JSON body.
- * @param {string} requestId the correlation id.
- * @param {object} [clients] TEST-ONLY dependency injection — the
- *        real Qloo clients are used when it is absent. Never taken
- *        from the request body (a caller cannot inject clients).
- */
-export async function handleGenerateWorldbuilder(req, res, body, requestId, clients) {
-  const { seed, format, options } = validateBody(body);
-
-  // Lazy imports: the mode + the whole Qloo transport chain load only
-  // when a request runs, keeping the boot path light (task 38).
-  const { runWorldbuilder } = await import('./modes/WorldbuilderMode.js');
-  const wired = clients ?? await realClients();
-
-  const bundle = await runWorldbuilder(seed, {
-    affinityFn: wired.getCrossDomainAffinities,
-    search: wired.searchEntities,
-    searchFn: wired.searchEntities,
-    tagsFn: wired.findTags,
-    insightsFn: wired.getAudienceInsights,
-    ...options,
-  });
-
-  const headers = {
-    'X-Request-Id': requestId,
-    'Cache-Control': 'no-store',
-  };
-
+/** Write the bundle in the requested format. */
+async function dispatchFormat(res, bundle, format, requestId) {
+  const headers = { 'X-Request-Id': requestId, 'Cache-Control': 'no-store' };
   if (format === 'markdown') {
     const { markdownFromBundle } = await import('./formatters/MarkdownExporter.js');
     res.writeHead(200, { ...headers, 'Content-Type': 'text/markdown; charset=utf-8' });
@@ -106,13 +83,46 @@ export async function handleGenerateWorldbuilder(req, res, body, requestId, clie
     res.end(exportHtml(bundle));
     return;
   }
-
   // json (default): the standardized envelope (task 103).
   const { exportJson } = await import('./formatters/JsonExporter.js');
   res.writeHead(200, { ...headers, 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({
-    status: 'ok',
-    service: 'suto-osnova',
-    dossier: exportJson(bundle),
-  }));
+  res.end(JSON.stringify({ status: 'ok', service: 'suto-osnova', dossier: exportJson(bundle) }));
+}
+
+/**
+ * The shared generate pipeline: validate, run the mode over the real
+ * (or injected) clients, dispatch the format.
+ *
+ * @param {Function} loadRunner a lazy loader for the mode runner.
+ * @param {object} [clients] TEST-ONLY DI (never from the request).
+ */
+async function runGenerate(loadRunner, req, res, body, requestId, clients) {
+  const { seed, format, options } = validateBody(body);
+  const runner = await loadRunner(); // lazy: the transport chain loads here
+  const wired = clients ?? await realClients();
+  const bundle = await runner(seed, {
+    affinityFn: wired.getCrossDomainAffinities,
+    search: wired.searchEntities,
+    searchFn: wired.searchEntities,
+    tagsFn: wired.findTags,
+    insightsFn: wired.getAudienceInsights,
+    ...options,
+  });
+  await dispatchFormat(res, bundle, format, requestId);
+}
+
+/** HTTP handler for POST /api/generate/worldbuilder (Mode 1). */
+export async function handleGenerateWorldbuilder(req, res, body, requestId, clients) {
+  return runGenerate(
+    async () => (await import('./modes/WorldbuilderMode.js')).runWorldbuilder,
+    req, res, body, requestId, clients,
+  );
+}
+
+/** HTTP handler for POST /api/generate/experiential (Mode 2). */
+export async function handleGenerateExperiential(req, res, body, requestId, clients) {
+  return runGenerate(
+    async () => (await import('./modes/ExperientialMode.js')).runExperiential,
+    req, res, body, requestId, clients,
+  );
 }

@@ -24,7 +24,9 @@ process.env.QLOO_MAX_CONCURRENCY = '10';
 process.env.QLOO_MAX_RETRIES = '0';
 
 const { createHttpHandler } = await import('../src/app.js');
-const { handleGenerateWorldbuilder } = await import('../src/generate.js');
+const {
+  handleGenerateWorldbuilder, handleGenerateExperiential,
+} = await import('../src/generate.js');
 const { env } = await import('../src/config/env.js');
 const { classifyError, RequestValidationError } = await import('../src/httpErrors.js');
 
@@ -144,7 +146,8 @@ const TAGS = {
 };
 const NAMES = {
   music: ['Null Drone', 'Grey Static'], books: ['Samizdat Nights'],
-  fashion: ['Monochrome Atelier'], dining: ['The Crypt Bar'], film: ['Silent Reel'],
+  fashion: ['Monochrome Atelier', 'Obsidian Wear'],
+  dining: ['The Crypt Bar', 'Nocturne Cafe'], film: ['Silent Reel'],
 };
 const clients = {
   searchEntities: async () => ({ results: [ANCHOR] }),
@@ -165,7 +168,10 @@ const clients = {
     };
   },
   findTags: async () => ({ results: TAGS.music }),
-  getAudienceInsights: async () => ({ count: 0, results: [] }),
+  getAudienceInsights: async () => ({
+    count: 1,
+    results: [{ name: 'Monochrome Atelier', affinity: 0.8 }],
+  }),
 };
 
 function mockRes() {
@@ -217,4 +223,72 @@ test('validation edge: the typed 400 classifier', () => {
   const { httpStatus, code } = classifyError(new RequestValidationError('bad', 'INVALID_SEED'));
   assert.equal(httpStatus, 400);
   assert.equal(code, 'INVALID_SEED');
+});
+
+// --- POST /api/generate/experiential (Mode 2, task 112) -----------------------
+
+test('experiential routing: the POST reaches the Mode 2 handler', async () => {
+  const res = await request('/api/generate/experiential', { method: 'POST', body: {} });
+  assert.equal(res.status, 400, 'the echo would be 200; a 400 proves the route ran');
+  assert.equal(res.json().error.code, 'INVALID_SEED');
+
+  const badFormat = await request('/api/generate/experiential', {
+    method: 'POST', body: { seed: 'x', format: 'pdf' },
+  });
+  assert.equal(badFormat.status, 400);
+  assert.equal(badFormat.json().error.code, 'INVALID_FORMAT');
+});
+
+test('experiential happy path: the activation envelope with the audience leg', async () => {
+  const res = mockRes();
+  await handleGenerateExperiential(
+    {}, res, { seed: 'Dark Thread', options: { cutRate: 0 } }, 'req-x1', clients,
+  );
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.headers['Content-Type'], 'application/json');
+  assert.equal(res.headers['X-Request-Id'], 'req-x1');
+
+  const payload = JSON.parse(res.body);
+  assert.equal(payload.status, 'ok');
+  assert.equal(payload.dossier.schema, 'suto-osnova.dossier/v1');
+  assert.equal(payload.dossier.mode, 'activation', 'the mode id, not the route name');
+  assert.equal(payload.dossier.output, 'activation_curation');
+  assert.equal(payload.dossier.entity.name, 'Dark Thread');
+  // The activation payload: the audience leg + the curation lists.
+  assert.ok(payload.dossier.data.audience, 'the audience leg rides `data`');
+  assert.equal(payload.dossier.data.audience.available, true);
+  assert.ok(payload.dossier.data.curation.openingActs.length > 0, 'opening acts present');
+  assert.ok(payload.dossier.data.curation.sponsors.length > 0, 'sponsors present');
+  assert.ok(payload.dossier.meta.stats, 'the ledger rides `meta`');
+});
+
+test('experiential format dispatch: markdown + html carry the activation blocks', async () => {
+  const md = mockRes();
+  await handleGenerateExperiential(
+    {}, md, { seed: 'Dark Thread', format: 'markdown', options: { cutRate: 0 } }, 'req-x2', clients,
+  );
+  assert.equal(md.statusCode, 200);
+  assert.equal(md.headers['Content-Type'], 'text/markdown; charset=utf-8');
+  assert.match(md.body, /^# DOSSIER — Experiential Activation/m);
+  assert.match(md.body, /^## AUDIENCE INSIGHTS$/m);
+  assert.match(md.body, /^## OPENING ACTS$/m);
+
+  const html = mockRes();
+  await handleGenerateExperiential(
+    {}, html, { seed: 'Dark Thread', format: 'html', options: { cutRate: 0 } }, 'req-x3', clients,
+  );
+  assert.equal(html.statusCode, 200);
+  assert.equal(html.headers['Content-Type'], 'text/html; charset=utf-8');
+  assert.ok(html.body.startsWith('<!DOCTYPE html>'));
+  assert.match(html.body, /<h2>SPONSORS<\/h2>/);
+  assert.match(html.body, /<h2>PRIVACY NOTICE<\/h2>/);
+});
+
+test('experiential options pass-through: topN bounds reach the mode', async () => {
+  const res = mockRes();
+  await handleGenerateExperiential(
+    {}, res, { seed: 'Dark Thread', options: { topN: 2, cutRate: 0 } }, 'req-x4', clients,
+  );
+  const payload = JSON.parse(res.body);
+  assert.ok(payload.dossier.data.curation.openingActs.length <= 2, 'topN honored');
 });
