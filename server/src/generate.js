@@ -34,30 +34,47 @@
  */
 
 import { RequestValidationError } from './httpErrors.js';
+import { validateSchema } from './schemaValidator.js';
 
 /** The supported response formats. */
 export const GENERATE_FORMATS = Object.freeze(['json', 'markdown', 'html']);
 
+/**
+ * The generate request schema (task 115): a lightweight JSON Schema.
+ * The envelope is validated here; the free-form `options` object is
+ * validated by each MODE's own validateOptions (topN, cutRate, ...)
+ * — this layer only proves it is an object.
+ */
+export const GENERATE_REQUEST_SCHEMA = Object.freeze({
+  type: 'object',
+  errorCode: 'INVALID_BODY',
+  required: ['seed'],
+  properties: Object.freeze({
+    seed: Object.freeze({ type: 'string', errorCode: 'INVALID_SEED' }),
+    format: Object.freeze({
+      type: 'string', enum: GENERATE_FORMATS, errorCode: 'INVALID_FORMAT',
+    }),
+    options: Object.freeze({ type: 'object', errorCode: 'INVALID_OPTIONS' }),
+  }),
+});
+
 const validateBody = (body) => {
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    throw new RequestValidationError('a JSON body object is required', 'INVALID_BODY');
+  const { valid, errors } = validateSchema(body, GENERATE_REQUEST_SCHEMA);
+  if (!valid) {
+    // Declaration order (required first, then properties) makes the
+    // FIRST error deterministic and stable.
+    const first = errors[0];
+    throw new RequestValidationError(first.message, first.code);
   }
-  const { seed, format, options } = body;
-  if (typeof seed !== 'string' || seed.trim().length === 0) {
+  // Structural checks pass; the seed's semantic rule (non-empty after
+  // trim) is a value check the schema cannot express portably.
+  const seed = body.seed.trim();
+  if (seed.length === 0) {
     throw new RequestValidationError(
       'a non-empty string `seed` is required', 'INVALID_SEED'
     );
   }
-  if (format !== undefined && !GENERATE_FORMATS.includes(format)) {
-    throw new RequestValidationError(
-      `format must be one of ${GENERATE_FORMATS.join(' | ')}`, 'INVALID_FORMAT'
-    );
-  }
-  if (options !== undefined && (typeof options !== 'object' || options === null
-    || Array.isArray(options))) {
-    throw new RequestValidationError('options must be a JSON object', 'INVALID_OPTIONS');
-  }
-  return { seed: seed.trim(), format: format ?? 'json', options: options ?? {} };
+  return { seed, format: body.format ?? 'json', options: body.options ?? {} };
 };
 
 /** The production Qloo clients (lazy, loaded only when a request runs). */
