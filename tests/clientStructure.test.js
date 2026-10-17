@@ -1,11 +1,18 @@
 /**
- * Client structure gate (task 121) — pins the vanilla client scaffold:
+ * Client structure + tokens gate (tasks 121-122) — pins the vanilla
+ * client scaffold and its design-token configuration:
  *   - the required tree exists (index.html, src/css/, src/js/, public/);
  *   - index.html is HTML5, loads the stylesheet + favicon + the ES-module
  *     entry, and every referenced local asset actually exists;
  *   - the STRICT Archival Iron palette holds across EVERY client file:
  *     no hex literal outside the six permitted values (CSS custom
  *     properties or SVG);
+ *   - tokens.css is the SINGLE SOURCE OF TRUTH: the six hex literals
+ *     appear EXACTLY ONCE in the whole tree (in tokens.css), every other
+ *     colour is derived via color-mix()/transparent, and no stylesheet
+ *     redefines a token;
+ *   - every var(--token) reference resolves to a token defined in
+ *     tokens.css (no dangling custom properties);
  *   - the JS is framework-free ES6+ (import/export, native fetch, no
  *     CommonJS require/module.exports, no React/Vue/Tailwind/jQuery/axios,
  *     no absolute upstream URL, no API key);
@@ -81,6 +88,74 @@ test('every client file honours the strict six-color palette', async () => {
     for (const match of text.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []) {
       assert.ok(PALETTE.has(match.toLowerCase()),
         `${path.relative(CLIENT, file)}: ${match} is outside the Archival Iron palette`);
+    }
+  }
+});
+
+test('tokens.css is the single source of truth for the palette', async () => {
+  const tokensPath = path.join(CSS_DIR, 'tokens.css');
+  assert.ok((await stat(tokensPath)).isFile(), 'client/src/css/tokens.css exists');
+  const tokens = await readText(tokensPath);
+
+  // The canonical palette is declared as the six --palette-* tokens.
+  const paletteValues = new Set(
+    [...tokens.matchAll(/--palette-(\w+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => m[2].toLowerCase()),
+  );
+  assert.deepEqual([...paletteValues].sort(), [...PALETTE].sort(),
+    'tokens.css declares exactly the six canonical palette values');
+
+  // SINGLE SOURCE for every file that CAN consume custom properties:
+  // no other .css/.js file in the tree may hold a hex literal.
+  for (const file of await walk(CLIENT)) {
+    if (!/\.(css|js)$/.test(file) || file === tokensPath) continue;
+    const text = await readText(file);
+    assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(text),
+      `${path.relative(CLIENT, file)}: css/js files consume tokens, never literals`);
+  }
+
+  // Standalone-rendered assets CANNOT inherit :root custom properties
+  // (a favicon is parsed without the document; a meta tag is not CSS).
+  // They may hold literals, but each one must be byte-identical to a
+  // token value — so editing tokens.css without them FAILS here (drift).
+  const html = await readText(INDEX);
+  const theme = html.match(/<meta name="theme-color" content="(#[0-9a-fA-F]{6})">/);
+  assert.ok(theme, 'index.html pins the browser chrome colour');
+  assert.ok(paletteValues.has(theme[1].toLowerCase()),
+    `theme-color ${theme[1]} must equal a tokens.css palette value`);
+
+  const favicon = await readText(path.join(PUBLIC_DIR, 'favicon.svg'));
+  const faviconColors = favicon.match(/#[0-9a-fA-F]{6}\b/g) ?? [];
+  assert.ok(faviconColors.length > 0, 'the favicon carries its palette colours');
+  for (const colour of faviconColors) {
+    assert.ok(paletteValues.has(colour.toLowerCase()),
+      `favicon ${colour} must equal a tokens.css palette value`);
+  }
+
+  // Every semantic alias references a palette token (no stray literals).
+  for (const [, name, ref] of tokens.matchAll(/--(bg|surface|muted|gold|rust|text):\s*var\((--palette-\w+)\)/g)) {
+    assert.ok(ref.startsWith('--palette-'), `--${name} references a palette token`);
+  }
+});
+
+test('main.css imports tokens.css and defines no colour of its own', async () => {
+  const main = await readText(path.join(CSS_DIR, 'main.css'));
+  assert.match(main, /@import\s+"\.\/tokens\.css";/, 'main.css imports the token sheet');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(main), 'main.css holds no hex literal of its own');
+});
+
+test('every var() reference resolves to a declared token', async () => {
+  const tokens = await readText(path.join(CSS_DIR, 'tokens.css'));
+  const declared = new Set([...tokens.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));
+
+  const referencing = [
+    path.join(CSS_DIR, 'main.css'),
+    ...(await walk(PUBLIC_DIR)).filter((f) => /\.(svg|css)$/.test(f)),
+  ];
+  for (const file of referencing) {
+    const text = await readText(file);
+    for (const [, name] of text.matchAll(/var\((--[\w-]+)/g)) {
+      assert.ok(declared.has(name),
+        `${path.relative(CLIENT, file)}: ${name} is not declared in tokens.css`);
     }
   }
 });

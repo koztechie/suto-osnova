@@ -1,22 +1,10 @@
 /*
- * SUTO OSNOVA — client tokens.
- * STRICT PALETTE (Archival Iron). These are the ONLY six hex values
- * permitted anywhere in the client's UI. Every other shade is derived
- * from them via color-mix()/opacity — never a new hex literal.
+ * SUTO OSNOVA — main stylesheet.
+ * Colour comes exclusively from tokens.css (the canonical Archival Iron
+ * palette); this file styles structure and behaviour only and must
+ * never introduce a hex literal of its own.
  */
-:root {
-  --bg: #101114;
-  --surface: #1F2326;
-  --muted: #96A2A8;
-  --gold: #D4A853;
-  --rust: #E06338;
-  --text: #F4EFE6;
-
-  /* Derived (no new hex literals). */
-  --line: color-mix(in srgb, var(--muted) 28%, transparent);
-  --surface-hi: color-mix(in srgb, var(--surface) 86%, var(--text));
-  --focus-ring: color-mix(in srgb, var(--gold) 55%, transparent);
-}
+@import "./tokens.css";
 
 /*
  * Base reset. Deliberately small: the client is a single-workspace tool,

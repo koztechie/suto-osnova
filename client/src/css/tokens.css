@@ -1,0 +1,40 @@
+/*
+ * SUTO OSNOVA — design tokens.
+ * CANONICAL ARCHIVAL IRON PALETTE (AGENTS.md, section 4).
+ *
+ * Layer 0 — the palette itself: the ONLY six hex values permitted
+ *   anywhere in the client's UI. DO NOT EDIT — any new hex literal
+ *   outside this block is a contract violation (tests/clientStructure
+ *   .test.js fails the build).
+ * Layer 1 — semantic aliases: the names every stylesheet rule and
+ *   component styles against. They never hold a literal, only a
+ *   reference to a Layer 0 value, so re-theming means editing ONE block.
+ * Layer 2 — derived shades: computed from the semantic tokens via
+ *   color-mix()/transparent. NEVER a new hex literal.
+ *
+ * Server parity: the same six values are pinned in
+ * server/src/formatters/HtmlPrintFormatter.js (PALETTE) for the
+ * print-ready HTML export — the two must stay identical.
+ */
+:root {
+  /* Layer 0 — canonical palette. */
+  --palette-bg: #101114;
+  --palette-surface: #1F2326;
+  --palette-muted: #96A2A8;
+  --palette-gold: #D4A853;
+  --palette-rust: #E06338;
+  --palette-text: #F4EFE6;
+
+  /* Layer 1 — semantic aliases. */
+  --bg: var(--palette-bg);
+  --surface: var(--palette-surface);
+  --muted: var(--palette-muted);
+  --gold: var(--palette-gold);
+  --rust: var(--palette-rust);
+  --text: var(--palette-text);
+
+  /* Layer 2 — derived (no new hex literals). */
+  --line: color-mix(in srgb, var(--muted) 28%, transparent);
+  --surface-hi: color-mix(in srgb, var(--surface) 86%, var(--text));
+  --focus-ring: color-mix(in srgb, var(--gold) 55%, transparent);
+}
