@@ -2,6 +2,15 @@
  * SUTO OSNOVA — design tokens.
  * CANONICAL ARCHIVAL IRON PALETTE (AGENTS.md, section 4).
  *
+ * PINNED SYSTEM MAPPING (task 123) — these six resolutions are FROZEN:
+ *   --bg      -> #101114     --gold  -> #D4A853
+ *   --surface -> #1F2326     --rust  -> #E06338
+ *   --muted   -> #96A2A8     --text  -> #F4EFE6
+ * Repointing any of them fails tests/systemTokens.test.js (exact-value
+ * gate + server-parity gate). Changing the PALETTE is a deliberate,
+ * multi-file act: tokens.css + server HtmlPrintFormatter PALETTE +
+ * the AGENTS.md contract, all at once.
+ *
  * Layer 0 — the palette itself: the ONLY six hex values permitted
  *   anywhere in the client's UI. DO NOT EDIT — any new hex literal
  *   outside this block is a contract violation (tests/clientStructure
