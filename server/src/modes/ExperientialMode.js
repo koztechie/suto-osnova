@@ -75,6 +75,7 @@ import {
 } from './SceneContext.js';
 import { buildAfterpartyEcosystem } from './AfterpartyEcosystem.js';
 import { buildFoodCuration } from './FoodCuration.js';
+import { computeResonance } from './ResonanceIndex.js';
 
 /** Documented defaults (exported tuning contract). */
 export const ACTIVATION_DEFAULTS = Object.freeze({
@@ -397,6 +398,20 @@ export async function runExperiential(input, options = {}) {
       options.foodZoneLimit !== undefined ? { limit: options.foodZoneLimit } : {}
     );
 
+  // 7c. THE EVENT RESONANCE INDEX (task 93): the bundle's own
+  //     coherence measurement over the seven evidence signals
+  //     (honest null when disabled).
+  const resonance = options.resonance === false
+    ? null
+    : computeResonance({
+      audience,
+      curation: { openingActs, sponsors, vendors },
+      chain: { candidates: candidates.length, ranked: ranked.length },
+      expansion: { ok: vector.ok, failed: vector.failed },
+      coverage,
+      ranked,
+    });
+
   // 8. Narrative synthesis (optional, honest skip / isolated failure).
   let synthesis = null;
   let validation = null;
@@ -515,6 +530,7 @@ export async function runExperiential(input, options = {}) {
     curation: Object.freeze({ openingActs, sponsors, vendors }),
     afterparty,
     foodZones,
+    resonance,
     synthesis: deepFreeze({
       attempted: synthesis !== null,
       text: synthesis?.text ?? null,
