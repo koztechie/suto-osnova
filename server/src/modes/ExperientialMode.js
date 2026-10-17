@@ -74,6 +74,7 @@ import {
   parseSceneContext, applyContextBoost, CONTEXT_DEFAULTS,
 } from './SceneContext.js';
 import { buildAfterpartyEcosystem } from './AfterpartyEcosystem.js';
+import { buildFoodCuration } from './FoodCuration.js';
 
 /** Documented defaults (exported tuning contract). */
 export const ACTIVATION_DEFAULTS = Object.freeze({
@@ -129,6 +130,11 @@ const validateOptions = (options) => {
     && (!Number.isInteger(options.afterpartyLimit)
       || options.afterpartyLimit < 1 || options.afterpartyLimit > 50)) {
     throw new TypeError('runExperiential: afterpartyLimit must be an integer in 1..50');
+  }
+  if (options.foodZoneLimit !== undefined
+    && (!Number.isInteger(options.foodZoneLimit)
+      || options.foodZoneLimit < 1 || options.foodZoneLimit > 50)) {
+    throw new TypeError('runExperiential: foodZoneLimit must be an integer in 1..50');
   }
   parseSceneContext(options.scene ?? null);
   if (options.contextBoost !== undefined
@@ -381,6 +387,16 @@ export async function runExperiential(input, options = {}) {
       options.afterpartyLimit !== undefined ? { limit: options.afterpartyLimit } : {}
     );
 
+  // 7b. THE F&B ZONE MAP (task 92): the festival ground's
+  //     gastronomic zones from the same evidence (honest null when
+  //     disabled).
+  const foodZones = options.foodZones === false
+    ? null
+    : buildFoodCuration(
+      { entity, ranked, layers, audience, scene },
+      options.foodZoneLimit !== undefined ? { limit: options.foodZoneLimit } : {}
+    );
+
   // 8. Narrative synthesis (optional, honest skip / isolated failure).
   let synthesis = null;
   let validation = null;
@@ -498,6 +514,7 @@ export async function runExperiential(input, options = {}) {
     coverage: deepFreeze(coverage),
     curation: Object.freeze({ openingActs, sponsors, vendors }),
     afterparty,
+    foodZones,
     synthesis: deepFreeze({
       attempted: synthesis !== null,
       text: synthesis?.text ?? null,
