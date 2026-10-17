@@ -8,9 +8,16 @@
  *     system serif with near-universal coverage; the generic `serif`
  *     guarantees a serif face even where both are missing — the stack
  *     degrades gracefully and NEVER depends on a network fetch.
- *   --font-mono   the instrument stack (controls, labels, data) —
- *     kept from the original scaffold; serif must not leak into
- *     interactive chrome.
+ *   --font-mono  'IBM Plex Mono', 'Courier New', monospace — the
+ *     TECHNICAL DATA AND SCORING stack (task 125): the JSON envelope
+ *     view (scores, ids, numeric fields) and the instrument chrome.
+ *     Provenance: IBM Plex — IBM (USA, designed by Bold Monday);
+ *     Courier — Monotype (USA, originally drawn for IBM); the generic
+ *     `monospace` guarantees a fixed-width face everywhere. A certain
+ *     Saint-Petersburg-founded IDE vendor's mono face is BANNED BY
+ *     PROJECT DIRECTIVE (Russian-origin company) — it must never appear
+ *     in this tree; tests/typography.test.js fails the build on its
+ *     name anywhere under client/ (even in a comment).
  *
  * NO EXTERNAL FONT TRANSPORT: no @import over the network, no CDN
  * @font-face, no https url() — the page renders fully offline and the
@@ -22,7 +29,7 @@
  */
 :root {
   --font-serif: 'Lora', 'Georgia', serif;
-  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
 }
 
 /* Headings — the serif carries the archival voice. */
@@ -41,4 +48,11 @@ h6 {
 .output-text {
   font-family: var(--font-serif);
   line-height: 1.6;
+}
+
+/* Technical data + scoring — the JSON envelope view (scores, ids,
+   numeric fields) stays instrument-set even on the reading surface.
+   ui.js tags the <pre> with data-format="json" for this rule. */
+.output-text[data-format='json'] {
+  font-family: var(--font-mono);
 }

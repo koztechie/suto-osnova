@@ -1,16 +1,22 @@
 /**
- * Typography gate (task 124) — pins the client font stacks:
+ * Typography gate (tasks 124-125) — pins the client font stacks:
  *
- *   --font-serif: 'Lora', 'Georgia', serif   (headings + analytical text)
- *   --font-mono:  ui-monospace, ...          (controls, labels, data)
+ *   --font-serif: 'Lora', 'Georgia', serif            (headings + analytical)
+ *   --font-mono:  'IBM Plex Mono', 'Courier New', monospace
+ *                                              (technical data + scoring)
  *
- * The gates hold the contract around the stack:
- *   - STACK VERBATIM: --font-serif is declared exactly as the ordered
- *     triple 'Lora', 'Georgia', serif — order matters (Lora preferred,
- *     Georgia the system fallback, the generic serif the last resort);
- *   - CONSUMPTION SCOPE: the serif is applied ONLY to headings (h1-h6)
- *     and the analytical reading surface (.output-text) — it must never
- *     leak into interactive chrome (controls/labels keep the mono);
+ * The gates hold the contract around the stacks:
+ *   - STACKS VERBATIM: both tokens are declared exactly as their
+ *     ordered triples — order matters (preferred -> system fallback ->
+ *     generic last resort);
+ *   - CONSUMPTION SCOPE: the serif serves ONLY headings (h1-h6) and the
+ *     analytical reading surface (.output-text); the mono serves the
+ *     TECHNICAL view (the JSON envelope: .output-text[data-format=json])
+ *     and the instrument chrome (body) — via TOKENS, never literal
+ *     stacks in main.css;
+ *   - BANNED FACE: JetBrains Mono is banned by project directive
+ *     (Russian-origin company) — the string 'jetbrains' must not occur
+ *     anywhere under client/;
  *   - NO EXTERNAL FONT TRANSPORT: no network @import, no CDN @font-face,
  *     no https url() in any client stylesheet — the page renders fully
  *     offline and the privacy notice promises zero third-party loads;
@@ -29,6 +35,7 @@ const TYPOGRAPHY = path.join(CSS_DIR, 'typography.css');
 const MAIN = path.join(CSS_DIR, 'main.css');
 
 const SERIF_STACK = "'Lora', 'Georgia', serif";
+const MONO_STACK = "'IBM Plex Mono', 'Courier New', monospace";
 
 async function walk(dir) {
   const out = [];
@@ -40,15 +47,17 @@ async function walk(dir) {
   return out;
 }
 
-test('typography.css declares the serif stack verbatim', async () => {
+test('typography.css declares both stacks verbatim', async () => {
   assert.ok((await stat(TYPOGRAPHY)).isFile(), 'client/src/css/typography.css exists');
   const css = await readText(TYPOGRAPHY);
   const serif = css.match(/--font-serif:\s*([^;]+);/);
   assert.ok(serif, '--font-serif is declared');
   assert.equal(serif[1].trim(), SERIF_STACK,
     `the serif stack must be exactly ${SERIF_STACK} (order matters)`);
-  // The mono stack stays the instrument stack from the scaffold.
-  assert.match(css, /--font-mono:\s*ui-monospace/, '--font-mono keeps the mono stack');
+  const mono = css.match(/--font-mono:\s*([^;]+);/);
+  assert.ok(mono, '--font-mono is declared');
+  assert.equal(mono[1].trim(), MONO_STACK,
+    `the mono stack must be exactly ${MONO_STACK} (order matters)`);
 });
 
 test('the serif is applied only to headings and analytical text', async () => {
@@ -89,6 +98,38 @@ test('main.css imports the type sheet (the stack is wired, not orphaned)', async
   const main = await readText(MAIN);
   assert.match(main, /@import\s+"\.\/typography\.css";/,
     'main.css @imports typography.css');
+});
+
+test('the mono stack serves technical data, scoring and the chrome', async () => {
+  const css = await readText(TYPOGRAPHY);
+  // The JSON envelope view (scores, ids, numeric fields) is the
+  // technical-data surface and must style with the mono TOKEN.
+  const technical = css.match(/\.output-text\[data-format=['"]json['"]\]\s*\{[^}]*\}/);
+  assert.ok(technical, 'the JSON view is a dedicated technical-data rule');
+  assert.ok(technical[0].includes('var(--font-mono)'),
+    'the technical rule styles with the --font-mono token');
+
+  // The instrument chrome (body) styles via the TOKEN too — main.css
+  // must hold no hardcoded font stack of its own (header contract).
+  // Note: the first `body {` match is the `html, body` reset block, so
+  // pick the block that actually carries the font declaration.
+  const main = (await readText(MAIN)).replace(/\/\*[\s\S]*?\*\//g, '');
+  const body = [...main.matchAll(/body\s*\{[^}]*\}/g)]
+    .map((m) => m[0])
+    .find((block) => block.includes('font-family'));
+  assert.ok(body, 'a body rule styles the font');
+  assert.ok(body.includes('var(--font-mono)'), 'body uses the --font-mono token');
+  const withoutTokens = main.replace(/var\([^)]*\)/g, '');
+  assert.ok(!/(ui-monospace|monospace|serif)\s*,/i.test(withoutTokens),
+    'main.css holds no hardcoded font stack of its own');
+});
+
+test('JetBrains Mono is banned from the entire client tree', async () => {
+  for (const file of await walk(CLIENT)) {
+    const text = await readText(file);
+    assert.ok(!/jetbrains/i.test(text),
+      `${path.relative(CLIENT, file)}: JetBrains Mono is banned by project directive`);
+  }
 });
 
 async function readText(file) {

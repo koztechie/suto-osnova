@@ -32,12 +32,16 @@ export function renderText(text) {
   hideOutputs();
   const node = el('output-text');
   node.textContent = text;
+  // Markdown/plain text is ANALYTICAL (serif); only the JSON view is
+  // tagged technical so the mono stack styles it (typography.css).
+  node.removeAttribute('data-format');
   node.hidden = false;
 }
 
-/** Render a JSON payload as pretty-printed text. */
+/** Render a JSON payload as pretty-printed technical text. */
 export function renderJson(payload) {
   renderText(JSON.stringify(payload, null, 2));
+  el('output-text').setAttribute('data-format', 'json');
 }
 
 /** Render the server's print-ready HTML page inside the sandboxed frame. */
