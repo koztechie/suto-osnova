@@ -44,8 +44,15 @@
 
   /* Layer 2 — derived (no new hex literals). */
   --line: color-mix(in srgb, var(--muted) 28%, transparent);
-  --surface-hi: color-mix(in srgb, var(--surface) 86%, var(--text));
   --focus-ring: color-mix(in srgb, var(--gold) 55%, transparent);
+  /* Interactive gold on slate cards (task 127): the frozen gold on the
+     frozen surface measures 7.18:1 — below the 7.26:1 bar (WCAG AAA).
+     --gold-hi lifts the gold toward white just enough: 85% gold + 15%
+     white -> rgb(218,181,109), measured 8.15:1 on the slate. It is
+     ONLY for interactive/status gold that sits ON a --surface card;
+     the frozen --gold stays for gold on the page floor (the brand
+     heading: 8.93:1 on --bg-page). Measured in tests/contrast.test.js. */
+  --gold-hi: color-mix(in srgb, var(--gold) 85%, white);
   /* Text-bearing backgrounds use --bg-page (task 126): the Archival
      Iron floor deepened by 35% black so the MAIN TEXT (--text) clears
      the 17.05:1 project bar (WCAG AAA is 7:1; the frozen --text on

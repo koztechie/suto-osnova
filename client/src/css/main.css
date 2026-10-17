@@ -134,8 +134,8 @@ button:focus-visible {
 button {
   width: 100%;
   cursor: pointer;
-  background: var(--surface-hi);
-  color: var(--gold);
+  background: var(--surface);
+  color: var(--gold-hi);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.86rem;
@@ -164,7 +164,7 @@ button:disabled {
 }
 
 .status[data-tone="ok"] {
-  color: var(--gold);
+  color: var(--gold-hi);
 }
 
 .output-panel {

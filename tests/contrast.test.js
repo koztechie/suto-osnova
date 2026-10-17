@@ -1,33 +1,36 @@
 /**
- * Contrast gate (task 126) — the MAIN TEXT must clear 17.05:1 against
- * the effective page background (WCAG AAA is 7:1; the project bar is
- * higher than the standard).
+ * Contrast gate (tasks 126-127) — the project's contrast bars, both
+ * higher than the WCAG floors:
  *
- * The facts that shaped the implementation:
+ *   MAIN TEXT on the page floor      >= 17.05:1 (WCAG AAA is 7:1)
+ *   GOLD interactive on slate cards  >=  7.26:1 (WCAG AAA is 7:1)
+ *
+ * The facts that shaped the implementations:
  *   - the six palette values and their mapping are FROZEN (task 123):
  *     --text #F4EFE6 on the raw --bg #101114 measures 16.48:1 — short
  *     of the 17.05:1 bar (and --text on --surface is 13.82:1);
- *   - therefore the only palette-compliant lever is a DERIVED page
- *     background (the sanctioned Layer-2 color-mix mechanism, exactly
- *     how --line/--surface-hi/--focus-ring are derived): --bg-page =
- *     color-mix(in srgb, var(--bg) 65%, black) -> rgb(10,11,13),
- *     measured 17.19:1 (the 70/30 mix cleared the bar by only 0.04 —
- *     inside rounding noise — so 65/35 was chosen for margin).
+ *     --gold #D4A853 on the raw --surface #1F2326 is 7.18:1 — short of
+ *     the 7.26:1 bar (and the old surface-hi button bed was 4.74:1);
+ *   - therefore the only palette-compliant levers are DERIVED tones
+ *     (the sanctioned Layer-2 color-mix mechanism, exactly how
+ *     --line/--focus-ring are derived): --bg-page = 65% bg + 35% black
+ *     -> 17.19:1 for the main text; --gold-hi = 85% gold + 15% white
+ *     -> 8.15:1 for interactive gold on the slate.
  *
  * The gates:
- *   - MEASURED RATIO: the effective 8-bit background colour (the same
- *     rounding a browser performs on the color-mix result) is computed
- *     from first principles (WCAG 2.x relative luminance) and must
- *     clear 17.05:1 against the frozen --text;
- *   - NECESSITY: the raw --text-on---bg pairing must measure BELOW the
- *     bar — proving the derivation is required, not decorative;
- *   - TOKEN FORM: --bg-page is declared exactly as the palette-compliant
- *     color-mix (references --bg, mixes the `black` keyword, no hex);
- *   - WIRING: every TEXT-BEARING background in main.css (body, the
- *     input/select/button controls, the .output-text reading surface)
- *     styles with var(--bg-page) and NO rule keeps `background:
- *     var(--bg)`; the frozen --bg remains consumed by the non-text
- *     iframe backdrop.
+ *   - MEASURED RATIOS: each effective 8-bit colour (the same rounding
+ *     a browser performs on a color-mix result) is computed from first
+ *     principles (WCAG 2.x relative luminance) and must clear its bar;
+ *   - NECESSITY: each raw frozen pairing must measure BELOW its bar
+ *     (while still clearing the WCAG AAA floor) — proving the
+ *     derivations are required, not decorative;
+ *   - TOKEN FORMS: each derived token is declared exactly as its
+ *     palette-compliant color-mix (references a palette token, uses a
+ *     colour keyword, contains no hex literal);
+ *   - WIRING: every consumer styles via the right TOKEN pair
+ *     (--text on --bg-page; --gold-hi on --surface), the frozen
+ *     pairings keep only their legal non-text/upper-floor roles, and
+ *     no token is left dead.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -71,6 +74,12 @@ function contrastRatio(a, b) {
 const tokensCss = await readFile(TOKENS_CSS, 'utf8');
 const mainCss = (await readFile(MAIN_CSS, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '');
 
+/** Parse `selector { body }` pairs (comments already stripped). */
+function parseRules(css) {
+  return [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .map(([, selector, body]) => ({ selector: selector.trim(), body }));
+}
+
 test('the main text clears 17.05:1 on the effective page background', () => {
   // The colour a browser actually renders for the color-mix result,
   // quantised to 8 bits per channel.
@@ -99,8 +108,7 @@ test('--bg-page is declared as the palette-compliant color-mix', () => {
 });
 
 test('every text-bearing background styles with --bg-page', () => {
-  const rules = [...mainCss.matchAll(/([^{}]+)\{([^}]*)\}/g)]
-    .map(([, selector, body]) => ({ selector: selector.trim(), body }));
+  const rules = parseRules(mainCss);
 
   const textBearing = rules.filter(({ selector }) =>
     selector === 'body'
@@ -121,4 +129,64 @@ test('every text-bearing background styles with --bg-page', () => {
   const textRuleBodies = textBearing.map(({ body }) => body).join('\n');
   assert.ok(!/background:\s*var\(--bg\);/.test(textRuleBodies),
     'no TEXT-BEARING rule keeps the raw --bg as its background');
+});
+
+// --- Gold interactive elements on slate cards (task 127) -------------
+
+const GOLD_HEX = '#d4a853'; // the frozen --gold (task 123)
+const SLATE_CHANNELS = [0x1f, 0x23, 0x26]; // the frozen --surface
+const SLATE_BAR = 7.26;
+const GOLD_KEEP = 0.85; // color-mix(in srgb, var(--gold) 85%, white)
+
+test('the raw gold-on-slate pairing misses the 7.26:1 bar', () => {
+  const naive = contrastRatio(hexToRgb(GOLD_HEX), SLATE_CHANNELS);
+  assert.ok(naive < SLATE_BAR,
+    `the frozen --gold on the frozen --surface measures ${naive.toFixed(2)}:1 — below ` +
+    `${SLATE_BAR}, which is exactly why --gold-hi exists`);
+  assert.ok(naive >= WCAG_AAA, 'and it still clears the WCAG AAA floor (7:1)');
+});
+
+test('--gold-hi is declared as the palette-compliant color-mix', () => {
+  const decl = tokensCss.match(/--gold-hi:\s*([^;]+);/);
+  assert.ok(decl, '--gold-hi is declared in tokens.css');
+  assert.equal(decl[1].trim(), 'color-mix(in srgb, var(--gold) 85%, white)',
+    'the lifted gold references --gold and the `white` keyword — no hex literal');
+  assert.ok(!/#[0-9a-fA-F]/.test(decl[1]), 'no hex literal inside the derivation');
+});
+
+test('interactive gold clears 7.26:1 on the slate card', () => {
+  // The colour a browser actually renders, quantised to 8 bits.
+  const effective = hexToRgb(GOLD_HEX)
+    .map((c) => Math.round(c * GOLD_KEEP + 255 * (1 - GOLD_KEEP)));
+  const ratio = contrastRatio(effective, SLATE_CHANNELS);
+  assert.ok(ratio >= SLATE_BAR,
+    `--gold-hi on --surface must be >= ${SLATE_BAR}:1, measured ${ratio.toFixed(2)}:1`);
+  assert.ok(ratio >= WCAG_AAA, 'clears the WCAG AAA floor (7:1) as well');
+});
+
+test('gold-on-slate consumers use --gold-hi on --surface', () => {
+  const rules = parseRules(mainCss);
+
+  const button = rules.find(({ selector }) => selector === 'button');
+  assert.ok(button, 'the button rule exists');
+  assert.match(button.body, /color:\s*var\(--gold-hi\);/,
+    'the button label is the lifted gold');
+  assert.match(button.body, /background:\s*var\(--surface\);/,
+    'the button sits on the slate card itself (never a lighter slate bed)');
+
+  const okStatus = rules.find(({ selector }) => selector === '.status[data-tone="ok"]');
+  assert.ok(okStatus, 'the ok-status rule exists');
+  assert.match(okStatus.body, /color:\s*var\(--gold-hi\);/,
+    'gold status text on the slate panel uses the lifted gold');
+
+  // The frozen --gold keeps only its legal role: gold on the PAGE
+  // FLOOR (the brand heading on --bg-page: 8.93:1) and non-text UI
+  // borders (hover/focus outlines on slate: 7.18:1 — no text involved).
+  const brand = rules.find(({ selector }) => selector === '.brand');
+  assert.ok(brand, 'the brand rule exists');
+  assert.match(brand.body, /color:\s*var\(--gold\);/,
+    'the brand heading keeps the frozen --gold on --bg-page');
+  const interactiveBodies = [button.body, okStatus.body].join('\n');
+  assert.ok(!/color:\s*var\(--gold\);/.test(interactiveBodies),
+    'no gold-on-slate TEXT rule keeps the raw (7.18:1) --gold');
 });
