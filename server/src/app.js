@@ -14,6 +14,7 @@
 
 import { corsMiddleware } from './middleware/cors.js';
 import { parseJsonBody } from './middleware/bodyParser.js';
+import { ClientRateLimiter, writeRateLimited } from './middleware/rateLimit.js';
 import { handleHealth } from './health.js';
 import { handleCategories } from './categories.js';
 import {
@@ -22,10 +23,17 @@ import {
 import { sendError, classifyError } from './httpErrors.js';
 import { createLogger } from './logger.js';
 import { newRequestId } from './ids.js';
+import { env } from './config/env.js';
 
 const log = createLogger('http');
 
 export function createHttpHandler() {
+  // Per-client spam protection (task 116): one limiter per handler
+  // instance (a fresh bucket set per server), configured from env.
+  const limiter = new ClientRateLimiter({
+    windowMs: env.INBOUND_RATE_WINDOW_MS,
+    maxRequests: env.INBOUND_RATE_LIMIT,
+  });
   return async function requestHandler(req, res) {
     // Global error boundary (task 35): EVERY failure — body parsing,
     // health, future routes — leaves as one structured envelope with an
@@ -50,25 +58,33 @@ export function createHttpHandler() {
         return;
       }
 
+      // Generate routes (tasks 111-113), spam-protected per client
+      // (task 116): the limiter runs BEFORE body parsing, so every
+      // generate attempt counts — malformed or not.
+      if (req.method === 'POST' && url.pathname.startsWith('/api/generate/')) {
+        const verdict = limiter.check(limiter.clientKey(req));
+        if (!verdict.allowed) {
+          writeRateLimited(res, requestId, verdict.retryAfterSeconds);
+          return;
+        }
+        await parseJsonBody(req);
+        if (url.pathname === '/api/generate/worldbuilder') {
+          await handleGenerateWorldbuilder(req, res, req.body, requestId);
+          return;
+        }
+        if (url.pathname === '/api/generate/experiential') {
+          await handleGenerateExperiential(req, res, req.body, requestId);
+          return;
+        }
+        if (url.pathname === '/api/generate/antithesis') {
+          await handleGenerateAntithesis(req, res, req.body, requestId);
+          return;
+        }
+      }
+
       // Body parsing errors (413/400) surface through the same global
       // boundary below: PAYLOAD_TOO_LARGE / INVALID_JSON envelopes.
       await parseJsonBody(req);
-
-      // Generate routes (tasks 111-112): the mode pipeline over the
-      // real Qloo clients. Errors here propagate to the global boundary.
-      if (req.method === 'POST' && url.pathname === '/api/generate/worldbuilder') {
-        await handleGenerateWorldbuilder(req, res, req.body, requestId);
-        return;
-      }
-      if (req.method === 'POST' && url.pathname === '/api/generate/experiential') {
-        await handleGenerateExperiential(req, res, req.body, requestId);
-        return;
-      }
-      if (req.method === 'POST' && url.pathname === '/api/generate/antithesis') {
-        await handleGenerateAntithesis(req, res, req.body, requestId);
-        return;
-      }
-
       res.writeHead(200, {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId,

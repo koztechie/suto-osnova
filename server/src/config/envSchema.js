@@ -39,6 +39,8 @@ const DEFAULTS = {
   SESSION_CACHE_DIR: '.cache/sessions',
   SESSION_CACHE_TTL_MS: 3_600_000,
   SESSION_CACHE_MAX_ENTRIES: 50,
+  INBOUND_RATE_LIMIT: 30,
+  INBOUND_RATE_WINDOW_MS: 60_000,
 };
 
 function parseNumber(raw, { min, int, field, issues }) {
@@ -101,6 +103,8 @@ export const envSchema = {
       ['QLOO_CACHE_TTL_MS', { min: 0, int: true }],
       ['QLOO_CACHE_TTL_ENTITIES_MS', { min: 0, int: true }],
       ['QLOO_CACHE_MAX_ENTRIES', { min: 1, int: true }],
+      ['INBOUND_RATE_LIMIT', { min: 1, int: true }],
+      ['INBOUND_RATE_WINDOW_MS', { min: 1, int: true }],
       ['PORT', {}],
     ];
     for (const [field, opts] of numeric) {
