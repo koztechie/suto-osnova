@@ -30,6 +30,7 @@
  */
 
 import { formatDossier } from './DossierFormatter.js';
+import { renderProvenanceTableHtml } from './ProvenanceTable.js';
 
 /** Module version. */
 export const HTML_EXPORTER_VERSION = 1;
@@ -97,6 +98,18 @@ section h2 {
 .body ul { margin: 0.4rem 0; padding-left: 1.1rem; }
 .body li { margin: 0.15rem 0; }
 .body li::marker { color: var(--rust); }
+.sources-summary { color: var(--muted); font-size: 0.82rem; margin: 0 0 0.6rem; }
+table.sources { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+table.sources th, table.sources td {
+  border: 1px solid var(--surface);
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+table.sources th { color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7rem; }
+table.sources td { color: var(--text); }
+table.sources td.unverified { color: var(--rust); }
 footer {
   color: var(--muted);
   font-size: 0.8rem;
@@ -271,7 +284,14 @@ export function exportHtml(dossierOrBundle, options = {}) {
     parts.push(
       '<section>',
       `<h2>${escapeHtml(section.title)}</h2>`,
-      `<div class="body">\n${bodyToHtml(section.body)}\n</div>`,
+      `<div class="body">\n${
+        // Task 106: the DATA SOURCES section renders as a real
+        // semantic <table> when the structured table rides along;
+        // otherwise the escaped text body is used.
+        section.id === 'sources' && section.rows
+          ? renderProvenanceTableHtml(section.rows)
+          : bodyToHtml(section.body)
+      }\n</div>`,
       '</section>'
     );
   }

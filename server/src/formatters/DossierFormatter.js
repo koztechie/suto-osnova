@@ -43,6 +43,9 @@ import { renderResonance } from '../modes/ResonanceIndex.js';
 import { renderFoodCuration } from '../modes/FoodCuration.js';
 import { renderAfterpartyEcosystem } from '../modes/AfterpartyEcosystem.js';
 import { renderAntithesisReport } from '../modes/AntithesisMode.js';
+import {
+  buildProvenanceTable, renderProvenanceTable,
+} from './ProvenanceTable.js';
 
 /** Module version. */
 export const DOSSIER_FORMATTER_VERSION = 1;
@@ -174,18 +177,30 @@ export const SECTION_REGISTRY = Object.freeze([
     present: (b) => Boolean(b.synthesis),
     render: (b) => renderNarrative(b),
   }),
+  Object.freeze({
+    // Task 106: the DATA SOURCES table. The section exists FOR
+    // verifiability, so it appears only when at least one entity is
+    // verifiable (carries a Qloo UUID); a name-only reference set is
+    // honestly absent. `render` gives the plain-text body;
+    // `structured` hands the frozen table to the print template so it
+    // can render a real <table>.
+    id: 'sources', title: 'DATA SOURCES',
+    present: (b) => buildProvenanceTable(b).stats.verified > 0,
+    render: (b) => renderProvenanceTable(buildProvenanceTable(b)),
+    structured: (b) => buildProvenanceTable(b),
+  }),
 ]);
 
 /** The documented layout order per mode (exported tuning contract). */
 export const LAYOUTS = Object.freeze({
   worldbuilder: Object.freeze([
-    'top', 'scene', 'materials', 'dialogue', 'narrative',
+    'top', 'scene', 'materials', 'dialogue', 'narrative', 'sources',
   ]),
   activation: Object.freeze([
     'resonance', 'audience', 'opening_acts', 'sponsors', 'vendors',
-    'food_zones', 'afterparty', 'narrative',
+    'food_zones', 'afterparty', 'narrative', 'sources',
   ]),
-  antithesis: Object.freeze(['blindspot', 'narrative']),
+  antithesis: Object.freeze(['blindspot', 'narrative', 'sources']),
 });
 
 const byId = new Map(SECTION_REGISTRY.map((section) => [section.id, section]));
@@ -228,15 +243,22 @@ export function formatDossier(bundle, options = {}) {
     const section = byId.get(id);
     if (!section.present(bundle)) continue; // absent blocks are skipped, never faked
     let body;
+    let rows;
     try {
       body = section.render(bundle);
+      // An optional `structured` hook hands richer data (e.g. the
+      // task-106 provenance table) to the print template, which can
+      // render a real semantic element instead of the text body.
+      if (typeof section.structured === 'function') rows = section.structured(bundle);
     } catch (error) {
       // One optional block must not kill the unified document —
       // degrade to an honest note and ledger the failure.
       body = `(${section.title.toLowerCase()} unavailable: ${String(error?.message ?? error).slice(0, 200)})`;
       failures.push(Object.freeze({ id, message: String(error?.message ?? error).slice(0, 300) }));
     }
-    sections.push(Object.freeze({ id, title: section.title, body }));
+    sections.push(Object.freeze({
+      id, title: section.title, body, ...(rows !== undefined ? { rows } : {}),
+    }));
   }
 
   // Assemble the document: title block, then each section under its
