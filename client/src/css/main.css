@@ -102,7 +102,7 @@ body {
 }
 
 label {
-  color: var(--muted);
+  color: var(--muted-hi);
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -156,7 +156,7 @@ button:disabled {
   min-height: 1.3em;
   margin: 0.8rem 0 0;
   font-size: 0.84rem;
-  color: var(--muted);
+  color: var(--muted-hi);
 }
 
 .status[data-tone="error"] {
@@ -175,7 +175,7 @@ button:disabled {
 
 .output-empty {
   margin: auto;
-  color: var(--muted);
+  color: var(--muted-hi);
 }
 
 .output-text {

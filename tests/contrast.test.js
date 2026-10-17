@@ -4,6 +4,7 @@
  *
  *   MAIN TEXT on the page floor      >= 17.05:1 (WCAG AAA is 7:1)
  *   GOLD interactive on slate cards  >=  7.26:1 (WCAG AAA is 7:1)
+ *   SECONDARY labels on slate plaques >= 6.15:1 (WCAG AA is 4.5:1)
  *
  * The facts that shaped the implementations:
  *   - the six palette values and their mapping are FROZEN (task 123):
@@ -22,7 +23,8 @@
  *     a browser performs on a color-mix result) is computed from first
  *     principles (WCAG 2.x relative luminance) and must clear its bar;
  *   - NECESSITY: each raw frozen pairing must measure BELOW its bar
- *     (while still clearing the WCAG AAA floor) — proving the
+ *     (while still clearing the applicable WCAG floor — AAA for the
+ *     main text and gold, AA for the muted labels) — proving the
  *     derivations are required, not decorative;
  *   - TOKEN FORMS: each derived token is declared exactly as its
  *     palette-compliant color-mix (references a palette token, uses a
@@ -72,6 +74,11 @@ function contrastRatio(a, b) {
 }
 
 const tokensCss = await readFile(TOKENS_CSS, 'utf8');
+// Declarations are parsed from the COMMENT-STRIPPED sheet: contract
+// prose may mention a token name followed by a colon (e.g. "--bg-page
+// at 7.53:1"), which a naive match would treat as a declaration and
+// swallow the NEXT real one up to its semicolon.
+const tokensCssBare = tokensCss.replace(/\/\*[\s\S]*?\*\//g, '');
 const mainCss = (await readFile(MAIN_CSS, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '');
 
 /** Parse `selector { body }` pairs (comments already stripped). */
@@ -100,7 +107,7 @@ test('the derivation is NECESSARY: the raw pairing misses the bar', () => {
 });
 
 test('--bg-page is declared as the palette-compliant color-mix', () => {
-  const decl = tokensCss.match(/--bg-page:\s*([^;]+);/);
+  const decl = tokensCssBare.match(/--bg-page:\s*([^;]+);/);
   assert.ok(decl, '--bg-page is declared in tokens.css');
   assert.equal(decl[1].trim(), 'color-mix(in srgb, var(--bg) 65%, black)',
     'the derived background references --bg and the `black` keyword — no hex literal');
@@ -147,7 +154,7 @@ test('the raw gold-on-slate pairing misses the 7.26:1 bar', () => {
 });
 
 test('--gold-hi is declared as the palette-compliant color-mix', () => {
-  const decl = tokensCss.match(/--gold-hi:\s*([^;]+);/);
+  const decl = tokensCssBare.match(/--gold-hi:\s*([^;]+);/);
   assert.ok(decl, '--gold-hi is declared in tokens.css');
   assert.equal(decl[1].trim(), 'color-mix(in srgb, var(--gold) 85%, white)',
     'the lifted gold references --gold and the `white` keyword — no hex literal');
@@ -189,4 +196,77 @@ test('gold-on-slate consumers use --gold-hi on --surface', () => {
   const interactiveBodies = [button.body, okStatus.body].join('\n');
   assert.ok(!/color:\s*var\(--gold\);/.test(interactiveBodies),
     'no gold-on-slate TEXT rule keeps the raw (7.18:1) --gold');
+});
+
+// --- Secondary labels on slate plaques (task 128) --------------------
+
+const MUTED_HEX = '#96a2a8'; // the frozen --muted (task 123)
+const MUTED_BAR = 6.15;
+const MUTED_KEEP = 0.9; // color-mix(in srgb, var(--muted) 90%, white)
+
+test('the raw muted-on-slate pairing misses the 6.15:1 bar', () => {
+  const naive = contrastRatio(hexToRgb(MUTED_HEX), SLATE_CHANNELS);
+  assert.ok(naive < MUTED_BAR,
+    `the frozen --muted on the frozen --surface measures ${naive.toFixed(2)}:1 — below ` +
+    `${MUTED_BAR}, which is exactly why --muted-hi exists`);
+  assert.ok(naive >= 4.5,
+    'and it clears the WCAG AA floor (4.5:1) — this pairing was AA-legal, just short of the bar');
+});
+
+test('--muted-hi is declared as the palette-compliant color-mix', () => {
+  const decl = tokensCssBare.match(/--muted-hi:\s*([^;]+);/);
+  assert.ok(decl, '--muted-hi is declared in tokens.css');
+  assert.equal(decl[1].trim(), 'color-mix(in srgb, var(--muted) 90%, white)',
+    'the lifted muted references --muted and the `white` keyword — no hex literal');
+  assert.ok(!/#[0-9a-fA-F]/.test(decl[1]), 'no hex literal inside the derivation');
+});
+
+test('secondary labels clear 6.15:1 on the slate plaque', () => {
+  // The colour a browser actually renders, quantised to 8 bits.
+  const effective = hexToRgb(MUTED_HEX)
+    .map((c) => Math.round(c * MUTED_KEEP + 255 * (1 - MUTED_KEEP)));
+  const ratio = contrastRatio(effective, SLATE_CHANNELS);
+  assert.ok(ratio >= MUTED_BAR,
+    `--muted-hi on --surface must be >= ${MUTED_BAR}:1, measured ${ratio.toFixed(2)}:1`);
+  // Hierarchy stays legible: the lifted muted must remain clearly
+  // BELOW the main text on the same slate (secondary vs primary).
+  const textOnSlate = contrastRatio(hexToRgb(TEXT_HEX), SLATE_CHANNELS);
+  assert.ok(ratio < textOnSlate / 2,
+    'the secondary label stays less than half the primary contrast (hierarchy intact)');
+});
+
+test('slate-plaque labels use --muted-hi; the page floor keeps --muted', () => {
+  const rules = parseRules(mainCss);
+
+  for (const selector of ['label', '.status', '.output-empty']) {
+    const rule = rules.find((r) => r.selector === selector);
+    assert.ok(rule, `the ${selector} rule exists`);
+    assert.match(rule.body, /color:\s*var\(--muted-hi\);/,
+      `${selector} sits on a slate plaque and labels with --muted-hi`);
+  }
+
+  // Legal frozen-@--muted roles: ON THE PAGE FLOOR (--bg-page: 7.53:1).
+  for (const selector of ['.tagline', '.site-footer']) {
+    const rule = rules.find((r) => r.selector === selector);
+    assert.match(rule.body, /color:\s*var\(--muted\);/,
+      `${selector} lives on --bg-page and keeps the frozen --muted`);
+  }
+  const placeholder = rules.find((r) => r.selector === 'input::placeholder');
+  assert.match(placeholder.body, /color:\s*var\(--muted\);/,
+    'placeholders sit on the --bg-page control bed and keep --muted');
+
+  // The disabled button sits on slate but is WCAG-EXEMPT and must
+  // still READ as disabled — it deliberately keeps the dimmer --muted.
+  const disabled = rules.find((r) => r.selector === 'button:disabled');
+  assert.match(disabled.body, /color:\s*var\(--muted\);/,
+    'disabled controls are contrast-exempt and keep the dim --muted');
+
+  // The rust error channel is NOT a secondary label (semantic accent):
+  // pinned here at its own floor — WCAG AA for normal text (4.5:1).
+  const errorStatus = rules.find((r) => r.selector === '.status[data-tone="error"]');
+  const rustOnSlate = contrastRatio(hexToRgb('#e06338'), SLATE_CHANNELS);
+  assert.match(errorStatus.body, /color:\s*var\(--rust\);/,
+    'the error tone keeps the frozen --rust');
+  assert.ok(rustOnSlate >= 4.5,
+    `the rust error channel clears WCAG AA on slate (${rustOnSlate.toFixed(2)}:1)`);
 });

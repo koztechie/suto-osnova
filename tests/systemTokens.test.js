@@ -47,10 +47,14 @@ const SYSTEM_TOKENS = Object.freeze({
 const tokensCss = await readFile(TOKENS_CSS, 'utf8');
 const mainCss = await readFile(MAIN_CSS, 'utf8');
 
-/** Parse `--name: value;` declarations into a Map (last wins). */
+/** Parse `--name: value;` declarations into a Map (last wins).
+ *  Comments are stripped first: contract prose may mention a token
+ *  name followed by a colon, which a naive match would treat as a
+ *  declaration and swallow the NEXT real one up to its semicolon. */
 function parseTokens(css) {
   const map = new Map();
-  for (const [, name, value] of css.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const [, name, value] of bare.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
     map.set(name, value.trim());
   }
   return map;
@@ -105,7 +109,7 @@ test('layer discipline: L1 references L0, L2 derives only from L1', () => {
     assert.match(value, /^var\(--palette-\w+\)$/,
       `${name} references exactly one Layer 0 token`);
   }
-  const derived = ['--line', '--focus-ring', '--bg-page', '--gold-hi'];
+  const derived = ['--line', '--focus-ring', '--bg-page', '--gold-hi', '--muted-hi'];
   for (const name of derived) {
     const value = tokens.get(name);
     assert.ok(value, `${name} is declared`);

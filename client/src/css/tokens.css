@@ -53,6 +53,14 @@
      the frozen --gold stays for gold on the page floor (the brand
      heading: 8.93:1 on --bg-page). Measured in tests/contrast.test.js. */
   --gold-hi: color-mix(in srgb, var(--gold) 85%, white);
+  /* Secondary labels on slate plaques (task 128): the frozen muted on
+     the frozen surface measures 6.05:1 — below the 6.15:1 bar. --muted-hi
+     lifts the muted toward white (90% muted + 10% white ->
+     rgb(161,171,177)), measured 6.77:1 on the slate. It is ONLY for
+     secondary labels that sit ON a --surface plaque; the frozen --muted
+     stays for muted on the page floor (tagline/footer/placeholder on
+     --bg-page at 7.53:1). Measured in tests/contrast.test.js. */
+  --muted-hi: color-mix(in srgb, var(--muted) 90%, white);
   /* Text-bearing backgrounds use --bg-page (task 126): the Archival
      Iron floor deepened by 35% black so the MAIN TEXT (--text) clears
      the 17.05:1 project bar (WCAG AAA is 7:1; the frozen --text on
