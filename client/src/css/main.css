@@ -1,0 +1,210 @@
+/*
+ * SUTO OSNOVA — client tokens.
+ * STRICT PALETTE (Archival Iron). These are the ONLY six hex values
+ * permitted anywhere in the client's UI. Every other shade is derived
+ * from them via color-mix()/opacity — never a new hex literal.
+ */
+:root {
+  --bg: #101114;
+  --surface: #1F2326;
+  --muted: #96A2A8;
+  --gold: #D4A853;
+  --rust: #E06338;
+  --text: #F4EFE6;
+
+  /* Derived (no new hex literals). */
+  --line: color-mix(in srgb, var(--muted) 28%, transparent);
+  --surface-hi: color-mix(in srgb, var(--surface) 86%, var(--text));
+  --focus-ring: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+/*
+ * Base reset. Deliberately small: the client is a single-workspace tool,
+ * not an app framework.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Layout --------------------------------------------------------- */
+
+.site-header,
+.site-footer {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-footer {
+  border-bottom: 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: auto;
+}
+
+.brand {
+  margin: 0;
+  color: var(--gold);
+  font-size: 1.35rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tagline {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 880px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+
+/* --- Controls ------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+}
+
+input::placeholder {
+  color: var(--muted);
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-color: var(--gold);
+}
+
+button {
+  width: 100%;
+  cursor: pointer;
+  background: var(--surface-hi);
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.86rem;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+
+button:disabled {
+  cursor: wait;
+  color: var(--muted);
+}
+
+/* --- Status + output ------------------------------------------------ */
+
+.status {
+  min-height: 1.3em;
+  margin: 0.8rem 0 0;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.status[data-tone="error"] {
+  color: var(--rust);
+}
+
+.status[data-tone="ok"] {
+  color: var(--gold);
+}
+
+.output-panel {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.output-empty {
+  margin: auto;
+  color: var(--muted);
+}
+
+.output-text {
+  margin: 0;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: auto;
+  max-height: 70vh;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.84rem;
+}
+
+.output-frame {
+  width: 100%;
+  min-height: 70vh;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--text);
+}

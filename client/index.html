@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="SUTO OSNOVA - autonomous cultural intelligence and mise-en-scene worldbuilding agent powered by Qloo Taste AI">
+  <title>SUTO OSNOVA - Cultural Intelligence Agent</title>
+  <link rel="icon" type="image/svg+xml" href="./public/favicon.svg">
+  <link rel="stylesheet" href="./src/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="brand">SUTO OSNOVA</h1>
+    <p class="tagline">Autonomous cultural intelligence and mise-en-scene worldbuilding agent</p>
+  </header>
+
+  <main class="workspace">
+    <form id="generate-form" class="panel controls" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="seed">Cultural anchor</label>
+        <input id="seed" name="seed" type="text" required
+               placeholder="e.g. A24 Psychological Horror" spellcheck="false">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="mode">Mode</label>
+          <select id="mode" name="mode">
+            <option value="worldbuilder">Worldbuilder - character &amp; scene dossier</option>
+            <option value="experiential">Experiential activation - live events</option>
+            <option value="antithesis">Taste antithesis - cultural divergence</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="format">Format</label>
+          <select id="format" name="format">
+            <option value="json">JSON envelope</option>
+            <option value="markdown">Markdown document</option>
+            <option value="html">Print-ready HTML</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="generate" type="submit">Generate dossier</button>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="panel output-panel" aria-label="Generated dossier">
+      <iframe id="output-frame" class="output-frame" hidden
+              sandbox="allow-same-origin" title="Generated dossier"></iframe>
+      <pre id="output-text" class="output-text" hidden></pre>
+      <p id="output-empty" class="output-empty">No dossier yet. Submit an anchor to begin.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>All taste intelligence is computed by the local backend gateway. This page stores nothing and tracks nobody.</p>
+  </footer>
+
+  <script type="module" src="./src/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+/**
+ * SUTO OSNOVA — DOM rendering.
+ * Text payloads are always inserted via textContent (never innerHTML).
+ * The html format is rendered into a sandboxed iframe via srcdoc, so
+ * server HTML cannot touch this document's DOM or cookies.
+ */
+
+const el = (id) => document.getElementById(id);
+
+export function setStatus(message, tone = 'neutral') {
+  const node = el('status');
+  node.textContent = message;
+  if (tone === 'neutral') {
+    node.removeAttribute('data-tone');
+  } else {
+    node.setAttribute('data-tone', tone);
+  }
+}
+
+export function setBusy(busy) {
+  el('generate').disabled = busy;
+}
+
+function hideOutputs() {
+  el('output-frame').hidden = true;
+  el('output-text').hidden = true;
+  el('output-empty').hidden = true;
+}
+
+/** Render a markdown (or plain-text) payload as preformatted text. */
+export function renderText(text) {
+  hideOutputs();
+  const node = el('output-text');
+  node.textContent = text;
+  node.hidden = false;
+}
+
+/** Render a JSON payload as pretty-printed text. */
+export function renderJson(payload) {
+  renderText(JSON.stringify(payload, null, 2));
+}
+
+/** Render the server's print-ready HTML page inside the sandboxed frame. */
+export function renderHtml(html) {
+  hideOutputs();
+  const frame = el('output-frame');
+  frame.srcdoc = html;
+  frame.hidden = false;
+}
+
+/** Route a ({kind,payload}) result from the api client to the right renderer. */
+export function renderResult({ kind, payload }) {
+  if (kind === 'json') {
+    renderJson(payload);
+  } else if (kind === 'html') {
+    renderHtml(payload);
+  } else {
+    renderText(payload);
+  }
+}
+
+export function renderError(error) {
+  const suffix = error?.requestId ? ` (request ${error.requestId})` : '';
+  setStatus(`${error?.code ?? 'ERROR'}: ${error?.message ?? 'Unknown failure'}${suffix}`, 'error');
+}
