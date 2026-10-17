@@ -5,6 +5,7 @@
  *
  * Routes:
  *   GET  /api/health                     -> system health incl. Qloo connectivity (health.js)
+ *   GET  /api/categories                 -> the supported categories / domains (categories.js)
  *   POST /api/generate/worldbuilder      -> Mode 1 Character & Scene Dossier (generate.js)
  *   POST /api/generate/experiential      -> Mode 2 Live Event Activation (generate.js)
  *   POST /api/generate/antithesis        -> Mode 3 Taste Antithesis Report (generate.js)
@@ -14,6 +15,7 @@
 import { corsMiddleware } from './middleware/cors.js';
 import { parseJsonBody } from './middleware/bodyParser.js';
 import { handleHealth } from './health.js';
+import { handleCategories } from './categories.js';
 import {
   handleGenerateWorldbuilder, handleGenerateExperiential, handleGenerateAntithesis,
 } from './generate.js';
@@ -39,6 +41,12 @@ export function createHttpHandler() {
       const url = new URL(req.url ?? '/', 'http://internal');
       if (req.method === 'GET' && url.pathname === '/api/health') {
         await handleHealth(req, res, url);
+        return;
+      }
+      // Static categories metadata (task 114): a GET with no body, so
+      // it skips JSON parsing like health.
+      if (req.method === 'GET' && url.pathname === '/api/categories') {
+        await handleCategories(req, res, requestId);
         return;
       }
 
