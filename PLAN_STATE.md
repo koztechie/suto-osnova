@@ -966,3 +966,27 @@ Date: 2026-10-17
 Deliverable: docs/architecture/MODES_SPECIFICATION.md (NEW) — the architectural specification of the three operational modes, a companion to AGENT_PIPELINE.md. Sections: (0) THE THREE MODES — the registry table (id/label/output/layers/selection/requires/thresholds), the default mode, the alias tables with the InvalidModeError-vs-TypeError ingress split, and the honest `thresholds: null` rationale for antithesis; (1) LAYER -> DOMAIN MAPPING (LAYER_DOMAINS) incl. the live-verified rule that fashion/dining require BOTH the type AND the qualifying tag family; (2) SELECTION STRATEGIES (non_obvious_affinity vs lowest_correlation, and why the antithesis chain honestly skips the acceptance machinery); (3-5) one section per mode — input/output/orchestrator, the pipeline, the mode-specific modules with their task numbers, the bundle blocks, the HTTP route and the control test (Kyiv Underground Archivist / Dark Ambient Live / Mainstream Pop Icon); (6) the HTTP SURFACE (the three generate routes + categories + health, validation, formats, spam protection); (7) ISOLATION & DETERMINISM (tasks 117-118: mode isolation, the generation budget, determinism); (8) EXTENSION RULES (how to add a mode end to end). Verified against the source of truth: every mode label and output string in the doc matches ModeDispatcher.js verbatim (grep-confirmed); the HTTP routes, control tests, budgets and module task numbers match the committed implementation. Documentation-only change; no code touched.
 
 Verification: the doc's factual claims were cross-referenced against server/src/engine/ModeDispatcher.js (labels + outputs byte-identical), the generate/categories routes (app.js), the control-test names (tasks 108-110), and the measured budget (task 117). npm run lint clean; the test suite is unaffected by a docs-only change.
+
+## EPIC — the three operational modes (tasks 81-120)
+
+Status: COMPLETE
+Date: 2026-10-17
+Commit: feat: implement worldbuilder, experiential and taste antithesis modes
+
+The three PRD-3 modes are implemented, exposed over HTTP, isolated, budget-verified, documented, and pinned by control tests.
+
+MODE ORCHESTRATORS (each drives the shared FSM + six-phase ladder; a mode CONFIGURES the run, never forks the phase machine):
+- 697e071 ModeDispatcher (task 81): the frozen MODES registry + run plans (id/label/output/layers/selection/requires/thresholds), the alias tables, the InvalidModeError-vs-TypeError ingress split, DEFAULT_MODE worldbuilder, LAYER_DOMAINS.
+- 576437a WorldbuilderMode (task 82): Mode 1 — the 5-layer dossier, the math chain (56-61 + 67), connections/tonality/graph, synthesis, persistence, scene context (84).
+- e12f519 ExperientialMode (task 87): Mode 2 — the first-class audience-insights leg, the 3 activation domains, dual-evidence marking, afterparty (89) / foodZones (92) / resonance (93).
+- 7a7e919 AntithesisMode (task 94): Mode 3 — the inverted chain (lowest_correlation), the honest null thresholds, the blindspot matrix + conflictDrivers + sponsorshipRisks + the protagonist fingerprint.
+
+SUPPORTING MODULES: Mode-specific templates (SceneDossier 83, SceneContext 84, MaterialsSpec 85, DialogueContext 86; AudienceAnalysis 88, OpeningActs 90, BrandPartners 91, FoodCuration 92, ResonanceIndex 93, SponsorshipBlindspots 98; TasteInverter e9b68ce 95, DissonanceFilter 5b2c765 96, AntagonistProfile 864f620 97).
+
+HTTP SURFACE (111-116): POST /api/generate/{worldbuilder 07e5f69, experiential 4804640, antithesis cd2163d} + GET /api/categories d34923f; the lightweight JSON-Schema validation (5713a92, 115) and the per-client spam protection (e86e1a9, 116).
+
+CONTROL TESTS (108-110): Kyiv Underground Archivist (b56acb3, Mode 1), Dark Ambient Live (c76dee6, Mode 2), Mainstream Pop Icon (ef39604, Mode 3).
+
+GATES: the generation-time budget (edc9c4a, 117 — Mode 1 + LLM ~20ms compute, ~1.5s with a simulated LLM, under the PRD 4.5s) and full mode isolation (0024270, 118). The modes architecture doc: docs/architecture/MODES_SPECIFICATION.md (2577c16, 119).
+
+Suite: 926/926 (two consecutive stable runs), lint clean. Zero new dependencies.
