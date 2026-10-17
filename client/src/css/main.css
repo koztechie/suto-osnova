@@ -1,10 +1,12 @@
 /*
  * SUTO OSNOVA — main stylesheet.
  * Colour comes exclusively from tokens.css (the canonical Archival Iron
- * palette); this file styles structure and behaviour only and must
- * never introduce a hex literal of its own.
+ * palette); typography comes from typography.css (the font stacks).
+ * This file styles structure and behaviour only and must never
+ * introduce a hex literal or a font stack of its own.
  */
 @import "./tokens.css";
+@import "./typography.css";
 
 /*
  * Base reset. Deliberately small: the client is a single-workspace tool,

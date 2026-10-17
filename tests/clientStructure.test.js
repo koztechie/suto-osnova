@@ -144,18 +144,25 @@ test('main.css imports tokens.css and defines no colour of its own', async () =>
 });
 
 test('every var() reference resolves to a declared token', async () => {
-  const tokens = await readText(path.join(CSS_DIR, 'tokens.css'));
-  const declared = new Set([...tokens.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));
+  // Declarations are merged across every :root sheet (tokens.css owns
+  // the palette, typography.css owns the font stacks).
+  const cssFiles = (await walk(CSS_DIR)).filter((f) => f.endsWith('.css'));
+  const declared = new Set();
+  for (const file of cssFiles) {
+    for (const [, name] of (await readText(file)).matchAll(/(--[\w-]+)\s*:/g)) {
+      declared.add(name);
+    }
+  }
 
   const referencing = [
-    path.join(CSS_DIR, 'main.css'),
+    ...cssFiles,
     ...(await walk(PUBLIC_DIR)).filter((f) => /\.(svg|css)$/.test(f)),
   ];
   for (const file of referencing) {
     const text = await readText(file);
     for (const [, name] of text.matchAll(/var\((--[\w-]+)/g)) {
       assert.ok(declared.has(name),
-        `${path.relative(CLIENT, file)}: ${name} is not declared in tokens.css`);
+        `${path.relative(CLIENT, file)}: ${name} is not declared in the css token sheets`);
     }
   }
 });

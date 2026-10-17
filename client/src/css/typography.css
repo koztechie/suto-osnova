@@ -1,0 +1,44 @@
+/*
+ * SUTO OSNOVA — typography tokens + rules (task 124).
+ *
+ * FONT STACKS:
+ *   --font-serif  'Lora', 'Georgia', serif — HEADINGS and ANALYTICAL
+ *     text (the dossier reading surface). Lora is preferred when it is
+ *     present (self-hosted or installed); Georgia is the ubiquitous
+ *     system serif with near-universal coverage; the generic `serif`
+ *     guarantees a serif face even where both are missing — the stack
+ *     degrades gracefully and NEVER depends on a network fetch.
+ *   --font-mono   the instrument stack (controls, labels, data) —
+ *     kept from the original scaffold; serif must not leak into
+ *     interactive chrome.
+ *
+ * NO EXTERNAL FONT TRANSPORT: no @import over the network, no CDN
+ * @font-face, no https url() — the page renders fully offline and the
+ * privacy notice promises zero third-party loads (no trackers).
+ *
+ * Layer note: tokens.css owns the PALETTE custom properties; this file
+ * owns the TYPOGRAPHY custom properties. Both are :root sheets merged
+ * by the cascade — neither redefines the other's names.
+ */
+:root {
+  --font-serif: 'Lora', 'Georgia', serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* Headings — the serif carries the archival voice. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Analytical text — the generated dossier reading surface. */
+.output-text {
+  font-family: var(--font-serif);
+  line-height: 1.6;
+}
