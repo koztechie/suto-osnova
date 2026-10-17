@@ -46,6 +46,7 @@ import { renderAntithesisReport } from '../modes/AntithesisMode.js';
 import {
   buildProvenanceTable, renderProvenanceTable,
 } from './ProvenanceTable.js';
+import { renderPrivacyNotice } from './PrivacyNotice.js';
 
 /** Module version. */
 export const DOSSIER_FORMATTER_VERSION = 1;
@@ -189,18 +190,26 @@ export const SECTION_REGISTRY = Object.freeze([
     render: (b) => renderProvenanceTable(buildProvenanceTable(b)),
     structured: (b) => buildProvenanceTable(b),
   }),
+  Object.freeze({
+    // Task 107: the PRIVACY & no-personal-data disclaimer. A fixed
+    // policy statement, not data — so it appears on EVERY document
+    // regardless of mode, last, as the closing block.
+    id: 'privacy', title: 'PRIVACY NOTICE',
+    present: () => true,
+    render: () => renderPrivacyNotice(),
+  }),
 ]);
 
 /** The documented layout order per mode (exported tuning contract). */
 export const LAYOUTS = Object.freeze({
   worldbuilder: Object.freeze([
-    'top', 'scene', 'materials', 'dialogue', 'narrative', 'sources',
+    'top', 'scene', 'materials', 'dialogue', 'narrative', 'sources', 'privacy',
   ]),
   activation: Object.freeze([
     'resonance', 'audience', 'opening_acts', 'sponsors', 'vendors',
-    'food_zones', 'afterparty', 'narrative', 'sources',
+    'food_zones', 'afterparty', 'narrative', 'sources', 'privacy',
   ]),
-  antithesis: Object.freeze(['blindspot', 'narrative', 'sources']),
+  antithesis: Object.freeze(['blindspot', 'narrative', 'sources', 'privacy']),
 });
 
 const byId = new Map(SECTION_REGISTRY.map((section) => [section.id, section]));

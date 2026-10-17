@@ -29,10 +29,11 @@ const noLlm = { synthesis: false };
 
 test('registry guards: absent blocks are skipped, never faked', () => {
   const doc = formatDossier({ mode: 'activation', entity: { name: 'X' } });
-  assert.deepEqual([...doc.sectionIndex], [], 'no block data -> no sections');
+  assert.deepEqual([...doc.sectionIndex], ['privacy'],
+    'only the fixed privacy notice remains — no data block was faked');
   assert.match(doc.document, /^DOSSIER — Experiential Activation \(Live Events\)$/m);
   assert.match(doc.document, /^ANCHOR: X$/m);
-  assert.match(doc.document, /FOOTER: 0 section\(s\)/);
+  assert.match(doc.document, /FOOTER: 1 section\(s\)/);
   assert.equal(doc.output, 'activation_curation');
   assert.equal(doc.stats.unavailable, 0);
 });
@@ -62,12 +63,12 @@ test('per-section failure isolation: one bad block never kills the document', ()
     resonance: {},
     audience: { available: false, error: 'upstream', count: 0, top: [] },
   });
-  assert.deepEqual([...doc.sectionIndex], ['resonance', 'audience']);
+  assert.deepEqual([...doc.sectionIndex], ['resonance', 'audience', 'privacy']);
   assert.match(doc.document, /^\(event resonance index unavailable: /m);
   assert.match(doc.document, /^AUDIENCE INSIGHTS: unavailable \(upstream\)$/m);
   assert.equal(doc.stats.unavailable, 1);
   assert.equal(doc.stats.sectionFailures[0].id, 'resonance');
-  assert.match(doc.document, /FOOTER: 2 section\(s\), 1 unavailable/);
+  assert.match(doc.document, /FOOTER: 3 section\(s\), 1 unavailable/);
 });
 
 test('real worldbuilder bundle formats end to end', async () => {
