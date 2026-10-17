@@ -50,15 +50,17 @@ test('inverted selection: divergence ordering, tiers, measurable-only', () => {
 
   // The inverted order: WEAKEST correlation first, popularity then
   // name as tiebreaks; the high-affinity anchor-adjacent row (0.98)
-  // sinks to the bottom.
+  // sinks to the bottom. The dining pair (popularity 0.1 = midstream)
+  // is NOISE-CUT by the task-96 default mainstream encounter bar.
   const flat = block.matrix.flatMap((z) => z.entries.map((e) => e.name));
   assert.deepEqual(flat, [
     'Zzz Corrupt', 'Rust Choir',            // music: 0.02 then 0.4
     'Null Correlate', 'Faint Signal',       // film: 0 then 0.15
-    'Tie A', 'Tie B',                       // dining: equal -> name order
   ], 'per-domain inversion, popularity/name tiebreaks, cap perDomain=2');
   assert.ok(!flat.includes('Static Ash Live'), 'the anchor-adjacent row is not blindspot');
   assert.ok(!flat.includes('No Score Book'), 'unmeasurable rows are never placed');
+  assert.deepEqual(block.dissonance.cut.map((c) => c.name), ['Tie A', 'Tie B'],
+    'the midstream-popularity pair is ledgered as noise, not silently dropped');
 
   const music = block.matrix.find((z) => z.domain === 'music');
   assert.equal(music.entries[0].tier, ANTITHESIS_TIERS.LOWEST_CORRELATION);
@@ -69,15 +71,16 @@ test('inverted selection: divergence ordering, tiers, measurable-only', () => {
   assert.equal(film.entries[0].tier, ANTITHESIS_TIERS.ZERO_AFFINITY,
     'an explicit 0 correlation is its own tier');
 
-  // Empty domain stays visible with count 0 (fashion), unmeasurable
-  // counted honestly.
+  // Empty domain stays visible with count 0 (books, dining after the
+  // noise cut, fashion), unmeasurable counted honestly.
   assert.deepEqual(block.matrix.map((z) => [z.domain, t_count(z)]),
-    [['music', 2], ['film', 2], ['books', 0], ['dining', 2], ['fashion', 0]]);
+    [['music', 2], ['film', 2], ['books', 0], ['dining', 0], ['fashion', 0]]);
   assert.equal(block.stats.candidates, 8);
   assert.equal(block.stats.measurable, 7);
   assert.equal(block.stats.unmeasurable, 1);
   assert.equal(block.stats.zeroAffinity, 1);
-  assert.equal(block.stats.domainsCovered, 3);
+  assert.equal(block.stats.domainsCovered, 2);
+  assert.equal(block.stats.noiseCut, 2);
   assert.equal(block.strategy, 'lowest_correlation');
   assert.equal(block.thresholds, null, 'the plan honest null: nothing accepted on affinity');
 });

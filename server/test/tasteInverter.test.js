@@ -194,9 +194,10 @@ test('mode integration: signed rows earn the negative_correlation tier', () => {
 
   assert.equal(block.coefficientDomain, 'mixed');
   assert.deepEqual({ ...block.stats }, {
-    candidates: 3, measurable: 2, unmeasurable: 1, selected: 2,
+    candidates: 3, measurable: 2, unmeasurable: 1, noiseCut: 0, selected: 2,
     domainsCovered: 1, zeroAffinity: 0, negatives: 1, mainstreamRisks: 2,
-    // both matrix picks carry mainstream popularity (0.99 and 0.5)
+    // both matrix picks carry mainstream popularity (0.99 and 0.5),
+    // so both survive the task-96 noise filter (broad encounter)
   });
 
   const document = renderAntithesisReport(block);

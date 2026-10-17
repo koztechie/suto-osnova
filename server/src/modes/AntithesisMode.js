@@ -81,6 +81,9 @@ import { annotateUniqueness } from '../engine/UniquenessCoefficient.js';
 import {
   invertTasteVector, INVERTER_STRATEGIES, COEFFICIENT_KINDS,
 } from '../engine/TasteInverter.js';
+import {
+  filterConsciousDissonance, ENCOUNTER_TIERS,
+} from '../engine/DissonanceFilter.js';
 import { deepFreeze } from '../engine/deepFreeze.js';
 import { flattenExpansion } from '../engine/CrossDomainExpander.js';
 import { validateSynthesis } from '../engine/OutputValidator.js';
@@ -134,6 +137,14 @@ const validateOptions = (options) => {
       || options.conflictLimit < 1 || options.conflictLimit > 50)) {
     throw new TypeError('runAntithesis: conflictLimit must be an integer in 1..50');
   }
+  if (options.keepMinimal !== undefined && typeof options.keepMinimal !== 'boolean') {
+    throw new TypeError('runAntithesis: keepMinimal must be a boolean');
+  }
+  if (options.minEncounterTier !== undefined && !ENCOUNTER_TIERS.includes(options.minEncounterTier)) {
+    throw new TypeError(
+      `runAntithesis: minEncounterTier must be one of ${ENCOUNTER_TIERS.join(' | ')}`
+    );
+  }
 };
 
 /**
@@ -159,6 +170,14 @@ export function buildAntithesisBlock(pieces) {
   if (!Number.isInteger(conflictLimit) || conflictLimit < 1 || conflictLimit > 50) {
     throw new TypeError('buildAntithesisBlock: conflictLimit must be an integer in 1..50');
   }
+  if (pieces.keepMinimal !== undefined && typeof pieces.keepMinimal !== 'boolean') {
+    throw new TypeError('buildAntithesisBlock: keepMinimal must be a boolean');
+  }
+  if (pieces.minEncounterTier !== undefined && !ENCOUNTER_TIERS.includes(pieces.minEncounterTier)) {
+    throw new TypeError(
+      `buildAntithesisBlock: minEncounterTier must be one of ${ENCOUNTER_TIERS.join(' | ')}`
+    );
+  }
 
   const candidates = Array.isArray(pieces.candidates) ? pieces.candidates : [];
 
@@ -173,10 +192,19 @@ export function buildAntithesisBlock(pieces) {
     strategy: INVERTER_STRATEGIES.LOWEST,
     take: Math.min(1000, Math.max(1, annotated.entries.length)),
   });
+  // 3. NOISE FILTRATION (task 96): accidental low-correlation rows
+  //    (unproven encounter / obscure tail) are cut into the ledger;
+  //    the matrix and the lanes are built from CONSCIOUS-dissonance
+  //    records only.
+  const filtered = filterConsciousDissonance(inverted.records, {
+    ...(pieces.keepMinimal !== undefined ? { keepMinimal: pieces.keepMinimal } : {}),
+    ...(pieces.minEncounterTier !== undefined
+      ? { minEncounterTier: pieces.minEncounterTier } : {}),
+  });
   const byKey = new Map(
     annotated.entries.map((entry) => [entry.id ?? entry.name, entry])
   );
-  const records = inverted.records.map((record) => {
+  const records = filtered.kept.map((record) => {
     const entry = byKey.get(record.id ?? record.name);
     const uniquenessTier = entry?.uniqueness?.tier ?? null;
     return Object.freeze({
@@ -196,6 +224,8 @@ export function buildAntithesisBlock(pieces) {
       divergencePercent: record.divergencePercent,
       negativeCorrelation: record.negativeCorrelation,
       popularity: record.popularity,
+      dissonanceClass: record.dissonanceClass,
+      encounter: record.encounter,
       uniquenessTier,
       tier: record.negativeCorrelation === true
         ? ANTITHESIS_TIERS.NEGATIVE_CORRELATION
@@ -232,6 +262,13 @@ export function buildAntithesisBlock(pieces) {
     strategy: SELECTION_STRATEGIES.LOWEST_CORRELATION,
     thresholds: null, // the plan's honest null: nothing accepted on affinity
     coefficientDomain: inverted.coefficientDomain,
+    dissonance: Object.freeze({
+      minEncounterTier: filtered.minEncounterTier,
+      keepMinimal: filtered.keepMinimal,
+      classes: filtered.stats.classes,
+      reasons: filtered.stats.reasons,
+      cut: filtered.cut,
+    }),
     perDomain,
     matrix,
     conflictDrivers,
@@ -245,6 +282,7 @@ export function buildAntithesisBlock(pieces) {
       candidates: candidates.length,
       measurable: inverted.stats.measurable,
       unmeasurable: inverted.stats.unmeasurable,
+      noiseCut: filtered.stats.cut,
       selected,
       domainsCovered: matrix.filter((zone) => zone.count > 0).length,
       zeroAffinity: inverted.stats.zeros,
@@ -358,6 +396,9 @@ export async function runAntithesis(input, options = {}) {
     domains: plan.domains,
     perDomain,
     conflictLimit,
+    ...(options.keepMinimal !== undefined ? { keepMinimal: options.keepMinimal } : {}),
+    ...(options.minEncounterTier !== undefined
+      ? { minEncounterTier: options.minEncounterTier } : {}),
   });
 
   // 5. Narrative synthesis (62-64): honest typed skip or isolated
@@ -475,6 +516,7 @@ export async function runAntithesis(input, options = {}) {
     stats: deepFreeze({
       candidates: candidates.length,
       measurable: block.stats.measurable,
+      noiseCut: block.stats.noiseCut,
       selected: block.stats.selected,
       domainsCovered: block.stats.domainsCovered,
       domainFailures: vector.failed,
@@ -513,6 +555,14 @@ export function renderAntithesisReport(block) {
   }
   if (block.sponsorshipRisks.length > 0) {
     lines.push(`SPONSORSHIP RISKS: ${block.sponsorshipRisks.map((r) => r.name).join(', ')}`);
+  }
+  if (block.dissonance && block.dissonance.cut.length > 0) {
+    lines.push(
+      `NOISE CUT (${block.dissonance.cut.length}): ` +
+        block.dissonance.cut
+          .map((c) => `${c.name} [${c.reason.replace(/_/g, ' ')}]`)
+          .join(', ')
+    );
   }
   return lines.join('\n');
 }
