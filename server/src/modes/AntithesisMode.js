@@ -21,28 +21,37 @@
  * What DOES run: uniqueness annotation (57) — its `mainstream`
  * tier is the sponsorship-risk marker.
  *
- * SELECTION MATH (buildAntithesisBlock, exported and pure):
+ * SELECTION MATH (buildAntithesisBlock, exported and pure): the
+ * inversion itself is DELEGATED to the engine-level
+ * TasteInverter (task 95) — the coefficient chain (a declared
+ * signed `correlation` first, then the unsigned task-60 chain,
+ * range-checked; corrupt values rejected, never salvaged), the
+ * bounded divergence and the pool ordering live there, proven and
+ * reusable; this module adds the report framing:
  *   1. MEASURABLE-ONLY discipline (task 48): a candidate without a
- *      finite connection score is UNMEASURED — the absence of
+ *      measurable coefficient is UNMEASURED — the absence of
  *      evidence is never treated as divergence; such rows are
  *      excluded and honestly counted (`unmeasurable`);
- *   2. divergence = 1 - affinity; entries sort affinity ASCENDING
- *      (divergence DESC), then popularity DESCENDING (a mainstream
- *      blindspot pick is the strongest conflict/risk material),
- *      then name;
+ *   2. entries sort divergence DESCENDING, then popularity
+ *      DESCENDING (a mainstream blindspot pick is the strongest
+ *      conflict/risk material), then name;
  *   3. per-domain matrix: the top `perDomain` weakest correlations
  *      for EVERY planned domain (an empty domain stays visible with
  *      count 0 — honest coverage);
- *   4. TIERS: `zero_affinity` when the graph explicitly returns 0
- *      (a proven non-correlation) vs `lowest_correlation` (the
- *      weakest MEASURED correlation); `sponsorshipRisk` marks
- *      mainstream-tier picks — mass-market names the anchor's
- *      taste does NOT justify (association reads inauthentic).
- *      The flag reuses the task-57 tier VERBATIM: its normalized
- *      coefficient (minProbability 1e-6, maxBits ~19.93) puts the
- *      mainstream band at popularity >= ~0.126 — deliberately
- *      generous: every blindspot pick with meaningful mass
- *      recognition lands in the review queue.
+ *   4. TIERS: `negative_correlation` (a PROVEN signed c < 0 — the
+ *      strongest antithesis evidence) > `zero_affinity` (the graph
+ *      explicitly returns 0 — a proven non-correlation) >
+ *      `lowest_correlation` (the weakest MEASURED correlation);
+ *      `sponsorshipRisk` marks mainstream-tier picks — mass-market
+ *      names the anchor's taste does NOT justify (association reads
+ *      inauthentic). The flag reuses the task-57 tier VERBATIM: its
+ *      normalized coefficient (minProbability 1e-6, maxBits ~19.93)
+ *      puts the mainstream band at popularity >= ~0.126 —
+ *      deliberately generous: every blindspot pick with meaningful
+ *      mass recognition lands in the review queue. Records carry
+ *      BOTH conventions honestly: unsigned rows report `affinity`,
+ *      signed rows report `correlation` — never coerced into each
+ *      other.
  *
  * LENSES (the PRD's three use cases): `perDomain` — the blindspot
  * matrix for antagonist design; `conflictDrivers` — the strongest
@@ -69,7 +78,9 @@ import {
 } from '../engine/AgentStateMachine.js';
 import { AgentPhase, PhaseEvent } from '../engine/AgentPhases.js';
 import { annotateUniqueness } from '../engine/UniquenessCoefficient.js';
-import { connectionScoreOf } from '../engine/ScoreNormalizer.js';
+import {
+  invertTasteVector, INVERTER_STRATEGIES, COEFFICIENT_KINDS,
+} from '../engine/TasteInverter.js';
 import { deepFreeze } from '../engine/deepFreeze.js';
 import { flattenExpansion } from '../engine/CrossDomainExpander.js';
 import { validateSynthesis } from '../engine/OutputValidator.js';
@@ -97,13 +108,10 @@ export const ANTITHESIS_CODES = Object.freeze({
 
 /** Divergence tiers (exported vocabulary). */
 export const ANTITHESIS_TIERS = Object.freeze({
+  NEGATIVE_CORRELATION: 'negative_correlation',
   ZERO_AFFINITY: 'zero_affinity',
   LOWEST_CORRELATION: 'lowest_correlation',
 });
-
-const round12 = (value) => Math.round(value * 1e12) / 1e12;
-const finiteNumber = (value) =>
-  typeof value === 'number' && Number.isFinite(value) ? value : null;
 
 const validateOptions = (options) => {
   if (typeof options.affinityFn !== 'function') {
@@ -154,44 +162,51 @@ export function buildAntithesisBlock(pieces) {
 
   const candidates = Array.isArray(pieces.candidates) ? pieces.candidates : [];
 
-  // 1. MEASURABLE-ONLY: unmeasured rows are not divergence (they
-  //    are counted honestly, never placed).
-  const measurable = candidates.filter(
-    (entry) => connectionScoreOf(entry) !== null
+  // 1+2. THE INVERSION (task 95): the engine-level TasteInverter
+  //      runs the coefficient chain (declared signed `correlation`
+  //      first, then the unsigned task-60 chain, range-checked;
+  //      corrupt values are rejected, never salvaged), computes the
+  //      bounded divergence and orders the pool. Uniqueness (57)
+  //      annotates the SAME rows for the sponsorship-risk marker.
+  const annotated = annotateUniqueness(candidates);
+  const inverted = invertTasteVector(annotated.entries, {
+    strategy: INVERTER_STRATEGIES.LOWEST,
+    take: Math.min(1000, Math.max(1, annotated.entries.length)),
+  });
+  const byKey = new Map(
+    annotated.entries.map((entry) => [entry.id ?? entry.name, entry])
   );
-  const unmeasurable = candidates.length - measurable.length;
-
-  // 2. Inverted records over the task-57 uniqueness annotation (its
-  //    `mainstream` tier is the sponsorship-risk marker).
-  const annotated = annotateUniqueness(measurable);
-  const records = annotated.entries.map((entry) => {
-    const affinity = round12(connectionScoreOf(entry));
-    const uniquenessTier = entry.uniqueness?.tier ?? null;
+  const records = inverted.records.map((record) => {
+    const entry = byKey.get(record.id ?? record.name);
+    const uniquenessTier = entry?.uniqueness?.tier ?? null;
     return Object.freeze({
-      id: entry.id ?? null,
-      name: entry.name,
-      domain: entry.domain ?? null,
-      subtype: entry.subtype ?? null,
-      affinity,
-      affinityPercent: Math.round(affinity * 100),
-      divergencePercent: Math.round((1 - affinity) * 100),
-      popularity: finiteNumber(entry.popularity),
+      id: record.id,
+      name: record.name,
+      domain: record.domain,
+      subtype: record.subtype,
+      // Unsigned rows keep the historical affinity shape; signed
+      // rows report the correlation VERBATIM (no coercion between
+      // the two conventions).
+      affinity: record.coefficientKind === COEFFICIENT_KINDS.UNSIGNED
+        ? record.coefficient : null,
+      correlation: record.coefficientKind === COEFFICIENT_KINDS.SIGNED
+        ? record.coefficient : null,
+      affinityPercent: record.coefficientKind === COEFFICIENT_KINDS.UNSIGNED
+        ? Math.round(record.coefficient * 100) : null,
+      divergencePercent: record.divergencePercent,
+      negativeCorrelation: record.negativeCorrelation,
+      popularity: record.popularity,
       uniquenessTier,
-      tier: affinity === 0
-        ? ANTITHESIS_TIERS.ZERO_AFFINITY
-        : ANTITHESIS_TIERS.LOWEST_CORRELATION,
+      tier: record.negativeCorrelation === true
+        ? ANTITHESIS_TIERS.NEGATIVE_CORRELATION
+        : (record.zeroAffinity === true
+          ? ANTITHESIS_TIERS.ZERO_AFFINITY
+          : ANTITHESIS_TIERS.LOWEST_CORRELATION),
       sponsorshipRisk: uniquenessTier === 'mainstream',
-      pitch: `the graph's weakest measured correlation in ${entry.domain ?? 'the pool'}` +
-        ` (${Math.round((1 - affinity) * 100)}% divergence)`,
+      pitch: `the graph's weakest measured correlation in ${record.domain ?? 'the pool'}` +
+        ` (${record.divergencePercent}% divergence)`,
     });
   });
-
-  // 3. Divergence DESC (affinity ASC), popularity DESC, name.
-  records.sort((a, b) =>
-    a.affinity - b.affinity
-    || (b.popularity ?? -1) - (a.popularity ?? -1)
-    || a.name.localeCompare(b.name)
-  );
 
   // 4. The blindspot matrix: every planned domain, top perDomain
   //    weakest correlations (empty domains stay visible).
@@ -216,6 +231,7 @@ export function buildAntithesisBlock(pieces) {
     }),
     strategy: SELECTION_STRATEGIES.LOWEST_CORRELATION,
     thresholds: null, // the plan's honest null: nothing accepted on affinity
+    coefficientDomain: inverted.coefficientDomain,
     perDomain,
     matrix,
     conflictDrivers,
@@ -227,11 +243,12 @@ export function buildAntithesisBlock(pieces) {
       : `No measurable blindspot evidence — nothing the graph can prove as opposition to ${pieces.anchor.name}.`,
     stats: Object.freeze({
       candidates: candidates.length,
-      measurable: measurable.length,
-      unmeasurable,
+      measurable: inverted.stats.measurable,
+      unmeasurable: inverted.stats.unmeasurable,
       selected,
       domainsCovered: matrix.filter((zone) => zone.count > 0).length,
-      zeroAffinity: records.filter((record) => record.tier === ANTITHESIS_TIERS.ZERO_AFFINITY).length,
+      zeroAffinity: inverted.stats.zeros,
+      negatives: inverted.stats.negatives,
       mainstreamRisks: sponsorshipRisks.length,
     }),
   });
