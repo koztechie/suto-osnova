@@ -258,6 +258,21 @@ export function formatDossier(bundle, options = {}) {
     output: MODES[bundle.mode]?.output ?? null,
     title,
     subtitle,
+    // The run-identity block the printed title block fixes (task
+    // 105): the request id, the normalized input, the stable entity
+    // identity, the scene context and the persisted session id (null
+    // when the run was not persisted — reported, never faked).
+    meta: Object.freeze({
+      requestId: bundle.requestId ?? null,
+      seed: bundle.seed ?? null,
+      entity: Object.freeze({
+        id: entity.id ?? null,
+        name: entity.name ?? null,
+        category: entity.category ?? null,
+      }),
+      scene: bundle.scene ?? null,
+      session: bundle.session?.id ?? null,
+    }),
     sections: Object.freeze(sections),
     sectionIndex: Object.freeze(sections.map((s) => s.id)),
     document,

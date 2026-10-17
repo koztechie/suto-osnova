@@ -133,3 +133,88 @@ test('the TypeError matrix and determinism', async () => {
   assert.equal(exportHtml(bundle), exportHtml(formatDossier(bundle)),
     'a bundle and its dossier result produce the same document');
 });
+
+test('the printed title block fixes input params, timestamp and session id', async () => {
+  const bundle = await runWorldbuilder('Static Ash Live', {
+    affinityFn: affinityStub,
+    search: searchStub,
+    searchFn: async () => ({ results: [] }),
+    tagsFn: tagsStub,
+    synthesis: false,
+    scene: { era: '1980s', location: 'Berlin' },
+  });
+  const html = exportHtml(bundle, { now: '2026-01-01T00:00:00Z' });
+
+  assert.match(html, /<dl class="meta">/);
+  assert.match(html, /<dt>Request<\/dt><dd>wb-a1000100-1111-4222-8333-444455556666<\/dd>/);
+  assert.match(html, /<dt>Seed<\/dt><dd>Static Ash Live<\/dd>/);
+  assert.match(html, /<dt>Entity<\/dt><dd>Midsommar \(film\)<\/dd>/);
+  assert.match(html, /<dt>Scene<\/dt><dd>era=1980s; location=Berlin<\/dd>/,
+    'the scene context is fixed as key=value pairs');
+  assert.match(html, /<dt>Generated<\/dt><dd>2026-01-01T00:00:00Z<\/dd>/,
+    'the caller-injected timestamp is fixed');
+  assert.ok(!/<dt>Session<\/dt>/.test(html),
+    'the run was not persisted -> the session row is honestly omitted');
+});
+
+test('the session id is fixed when the run was persisted', () => {
+  // A dossier result carrying a persisted session id (task 70).
+  const html = exportHtml({
+    mode: 'activation',
+    entity: { id: 'e1', name: 'X', category: 'music' },
+    session: { id: 'sess-abc-123', state: 'delivered', phase: 'completed' },
+  });
+  assert.match(html, /<dt>Session<\/dt><dd>sess-abc-123<\/dd>/);
+});
+
+test('title-block values are escaped (untrusted seed / session ids)', () => {
+  const html = exportHtml({
+    mode: 'activation',
+    seed: { normalized: '<b>&"seed"' },
+    entity: { id: 'e1', name: 'X', category: 'music' },
+    session: { id: "sess<script>'x'</script>" },
+  });
+  assert.ok(!/<script/i.test(html), 'a session id never executes');
+  assert.ok(html.includes('<dt>Seed</dt><dd>&lt;b&gt;&amp;&quot;seed&quot;</dd>'),
+    'the seed is escaped');
+  assert.ok(html.includes('sess&lt;script&gt;&#39;x&#39;&lt;/script&gt;'),
+    'the session id is escaped');
+});
+
+test('honest omission: no scene / no clock / no session -> fewer rows', async () => {
+  const bundle = await runWorldbuilder('Static Ash Live', {
+    affinityFn: affinityStub,
+    search: searchStub,
+    searchFn: async () => ({ results: [] }),
+    tagsFn: tagsStub,
+    synthesis: false,
+  });
+  const html = exportHtml(bundle);
+  assert.match(html, /<dt>Request<\/dt>/);
+  assert.match(html, /<dt>Seed<\/dt>/);
+  assert.match(html, /<dt>Entity<\/dt>/);
+  assert.ok(!/<dt>Scene<\/dt>/.test(html), 'no scene was supplied');
+  assert.ok(!/<dt>Session<\/dt>/.test(html), 'not persisted');
+  assert.ok(!/<dt>Generated<\/dt>/.test(html), 'no clock is read without options.now');
+});
+
+test('the title block stays palette-clean, and now is validated', async () => {
+  const bundle = await runWorldbuilder('Static Ash Live', {
+    affinityFn: affinityStub,
+    search: searchStub,
+    searchFn: async () => ({ results: [] }),
+    tagsFn: tagsStub,
+    synthesis: false,
+    scene: { era: '1980s', location: 'Berlin' },
+  });
+  const ALLOWED = new Set(Object.values(PALETTE).map((h) => h.toLowerCase()));
+  for (const h of hexes(exportHtml(bundle))) {
+    assert.ok(ALLOWED.has(h), `banned color: ${h}`);
+  }
+  assert.throws(() => exportHtml(bundle, { now: 42 }), TypeError);
+  assert.equal(
+    exportHtml(bundle, { now: '2026-01-01T00:00:00Z' }),
+    exportHtml(bundle, { now: '2026-01-01T00:00:00Z' }),
+    'deterministic under an injected clock'
+  );
+});
