@@ -49,7 +49,26 @@ const TYPED_INPUT_ERROR_NAMES = new Set([
   'CrossDomainAffinityError',
   'AudienceInsightsError',
   'DomainMappingError',
+  // Caller-input problems at the generate routes' edges (tasks 111+):
+  // an unusable/unresolvable seed or a malformed request body is a
+  // 4xx, never a 500.
+  'RequestValidationError',
+  'InvalidSeedError',
+  'SeedResolutionError',
 ]);
+
+/**
+ * Typed 400 for malformed caller input at a route's validation edge.
+ * The `code` is forwarded verbatim into the error envelope so a client
+ * can distinguish a missing seed from a bad format.
+ */
+export class RequestValidationError extends Error {
+  constructor(message, code = 'INVALID_REQUEST') {
+    super(message);
+    this.name = 'RequestValidationError';
+    this.code = code;
+  }
+}
 
 const TIMEOUT_CAUSE_CODES = new Set(['ETIMEDOUT', 'ESOCKETTIMEDOUT', 'ABORT_ERR']);
 const TIMEOUT_CAUSE_NAMES = new Set(['AbortError', 'TimeoutError']);

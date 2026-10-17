@@ -4,13 +4,15 @@
  * on an ephemeral port without importing the process entrypoint.
  *
  * Routes:
- *   GET /api/health -> system health incl. Qloo connectivity (health.js)
- *   anything else   -> legacy echo behavior (pre-existing contract).
+ *   GET  /api/health                     -> system health incl. Qloo connectivity (health.js)
+ *   POST /api/generate/worldbuilder      -> Mode 1 Character & Scene Dossier (generate.js)
+ *   anything else                        -> legacy echo behavior (pre-existing contract).
  */
 
 import { corsMiddleware } from './middleware/cors.js';
 import { parseJsonBody } from './middleware/bodyParser.js';
 import { handleHealth } from './health.js';
+import { handleGenerateWorldbuilder } from './generate.js';
 import { sendError, classifyError } from './httpErrors.js';
 import { createLogger } from './logger.js';
 import { newRequestId } from './ids.js';
@@ -39,6 +41,14 @@ export function createHttpHandler() {
       // Body parsing errors (413/400) surface through the same global
       // boundary below: PAYLOAD_TOO_LARGE / INVALID_JSON envelopes.
       await parseJsonBody(req);
+
+      // Generate routes (task 111): the mode pipeline over the real
+      // Qloo clients. Errors here propagate to the global boundary.
+      if (req.method === 'POST' && url.pathname === '/api/generate/worldbuilder') {
+        await handleGenerateWorldbuilder(req, res, req.body, requestId);
+        return;
+      }
+
       res.writeHead(200, {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId,
