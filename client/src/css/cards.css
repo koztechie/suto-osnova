@@ -60,3 +60,60 @@
   letter-spacing: 0.06em;
   word-break: break-all;
 }
+
+/* Sonic Architecture featured card (task 139): music & ambient as a
+   full-width plate above the domain grid, artists | albums columns.
+   Gold on the slate card uses the LIFTED tone (task-127 family). */
+.sonic-card {
+  grid-column: 1 / -1;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.sonic-title {
+  color: var(--gold-hi);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sonic-subtitle {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+}
+
+.sonic-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.sonic-group-title {
+  display: block;
+  color: var(--muted-hi);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.sonic-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sonic-item {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.sonic-item-meta {
+  color: var(--muted-hi);
+  font-size: 0.76rem;
+}

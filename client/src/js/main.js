@@ -10,6 +10,7 @@ import { startAnchorInput } from './anchorInput.js';
 import { startPresets } from './presets.js';
 import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
+import { startSonicCard } from './sonicCard.js';
 
 const form = document.getElementById('generate-form');
 
@@ -63,3 +64,7 @@ startPresets();
 // The cultural domain cards (task 138): plates from /api/categories;
 // a failed probe leaves the section hidden.
 startDomainCards();
+
+// The Sonic Architecture featured card (task 139): revealed only when
+// the registry confirms the music domain queries artist + album.
+startSonicCard();
