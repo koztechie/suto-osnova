@@ -2,13 +2,15 @@
  * SUTO OSNOVA — main stylesheet.
  * Colour comes exclusively from tokens.css (the canonical Archival Iron
  * palette); typography comes from typography.css (the font stacks);
- * safe-zone insets come from safe-area.css (the env() wrappers). This
- * file styles structure and behaviour only and must never introduce a
- * hex literal, a font stack or a raw env() of its own.
+ * safe-zone insets come from safe-area.css (the env() wrappers);
+ * cultural domain cards come from cards.css. This file styles
+ * structure and behaviour only and must never introduce a hex literal,
+ * a font stack or a raw env() of its own.
  */
 @import "./tokens.css";
 @import "./typography.css";
 @import "./safe-area.css";
+@import "./cards.css";
 
 /*
  * Base reset. Deliberately small: the client is a single-workspace tool,

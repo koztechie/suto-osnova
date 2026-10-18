@@ -9,6 +9,7 @@ import { startConnectivityMonitor } from './connectivity.js';
 import { startAnchorInput } from './anchorInput.js';
 import { startPresets } from './presets.js';
 import { startProgress } from './progress.js';
+import { startDomainCards } from './domainCards.js';
 
 const form = document.getElementById('generate-form');
 
@@ -58,3 +59,7 @@ startAnchorInput();
 
 // The demo presets (task 135): one-tap seed + mode substitution.
 startPresets();
+
+// The cultural domain cards (task 138): plates from /api/categories;
+// a failed probe leaves the section hidden.
+startDomainCards();

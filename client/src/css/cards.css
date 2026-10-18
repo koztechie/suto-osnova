@@ -1,0 +1,62 @@
+/*
+ * SUTO OSNOVA — cultural domain cards (task 138).
+ * The five Qloo domains rendered as archival plates under the
+ * workspace, populated from the LOCAL GET /api/categories.
+ *
+ * THE CARD CONTRACT (task 138, pinned by tests/domainCards.test.js):
+ *   - background: var(--surface) — an OPAQUE palette token (never a
+ *     color-mix with alpha: nothing behind the card may show through);
+ *   - border: 1px solid var(--muted) — the full muted frame (a
+ *     deliberate departure from the 28%-alpha --line used by panels:
+ *     a card is a mounted plate, it gets a real frame). The border
+ *     clears the UI-boundary floor against both neighbours (6.05:1 vs
+ *     the card interior, 7.53:1 vs the page floor).
+ * Card text: the name in the primary tone (--text on --surface:
+ * 13.82:1), the entity types in the lifted secondary tone
+ * (--muted-hi on --surface: 6.77:1 — the task-128 family holds).
+ * The grid auto-fills, so the plate count adapts from 2 to 5 columns
+ * with the viewport; the section spans BOTH workspace columns.
+ */
+.domains {
+  grid-column: 1 / -1;
+}
+
+.section-heading {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.domain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.domain-card {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.domain-card-name {
+  color: var(--text);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.domain-card-types {
+  color: var(--muted-hi);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  word-break: break-all;
+}
