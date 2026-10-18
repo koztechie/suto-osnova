@@ -238,7 +238,7 @@ test('secondary labels clear 6.15:1 on the slate plaque', () => {
 test('slate-plaque labels use --muted-hi; the page floor keeps --muted', () => {
   const rules = parseRules(mainCss);
 
-  for (const selector of ['label', '.status', '.output-empty', '.panel-heading', '.tab-label', '.mode-legend', '.suggestion']) {
+  for (const selector of ['label', '.status', '.output-empty', '.panel-heading', '.tab-label', '.mode-legend', '.suggestion', '.presets-label', '.preset']) {
     const rule = rules.find((r) => r.selector === selector);
     assert.ok(rule, `the ${selector} rule exists`);
     assert.match(rule.body, /color:\s*var\(--muted-hi\);/,

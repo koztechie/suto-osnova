@@ -362,6 +362,39 @@ button:focus-visible {
   background: var(--bg-page);
 }
 
+/* Demo presets (task 135): inset chips that prefill the anchor and
+   the mode; type="button" so they never submit the form. */
+.presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.presets-label {
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.preset {
+  width: auto;
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-page);
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.preset:hover:not(:disabled),
+.preset:focus-visible {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+
 button {
   width: 100%;
   cursor: pointer;

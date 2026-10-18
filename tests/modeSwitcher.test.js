@@ -31,7 +31,7 @@ import path from 'node:path';
 process.env.QLOO_API_KEY = 'mode-switcher-key';
 
 const CLIENT = fileURLToPath(new URL('../client', import.meta.url));
-const { DEFAULT_MODE } = await import('../server/src/engine/ModeDispatcher.js');
+const { DEFAULT_MODE, resolveMode } = await import('../server/src/engine/ModeDispatcher.js');
 
 const html = await readFile(path.join(CLIENT, 'index.html'), 'utf8');
 const css = (await readFile(path.join(CLIENT, 'src', 'css', 'main.css'), 'utf8'))
@@ -55,9 +55,14 @@ test('three labelled radios in one fieldset, values matching the server', () => 
     /<input class="tab-input" type="radio" name="mode" value="(\w+)"( checked)?>/g,
   )];
   assert.equal(inputs.length, 3, 'exactly three mode radios');
+  // The values are the HTTP ROUTE vocabulary (main.js posts
+  // /api/generate/<mode>) — each must also RESOLVE server-side.
   assert.deepEqual(inputs.map((m) => m[1]).sort(),
     ['antithesis', 'experiential', 'worldbuilder'],
-    'the values are the three server mode ids');
+    'the values are the three route names');
+  for (const [, value] of inputs) {
+    assert.ok(resolveMode(value), `value "${value}" resolves in the dispatcher`);
+  }
 
   const checked = inputs.filter((m) => m[2]).map((m) => m[1]);
   assert.deepEqual(checked, [DEFAULT_MODE],

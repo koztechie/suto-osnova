@@ -7,6 +7,7 @@ import { generateDossier } from './api.js';
 import { renderResult, renderError, setStatus, setBusy } from './ui.js';
 import { startConnectivityMonitor } from './connectivity.js';
 import { startAnchorInput } from './anchorInput.js';
+import { startPresets } from './presets.js';
 
 const form = document.getElementById('generate-form');
 
@@ -46,3 +47,6 @@ startConnectivityMonitor();
 // The anchor combobox (task 134): Qloo category hints over the
 // free-text field; a failed categories probe degrades to no hints.
 startAnchorInput();
+
+// The demo presets (task 135): one-tap seed + mode substitution.
+startPresets();
