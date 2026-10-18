@@ -33,6 +33,21 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/*
+ * Scrollbars hidden, SCROLLING PRESERVED (task 151): the standard
+ * property where supported (Firefox, Chromium 121+), the WebKit
+ * pseudo-element elsewhere. Only the VISUAL bar disappears — every
+ * scroll CONTAINER keeps its overflow: auto unchanged, and each
+ * scrollable surface retains a bordered frame as its affordance.
+ */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
 html,
 body {
   margin: 0;

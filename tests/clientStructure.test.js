@@ -186,6 +186,22 @@ test('the mobile tap highlight is blocked (task 150)', async () => {
     'the universal -webkit-tap-highlight-color rule exists verbatim');
 });
 
+test('scrollbars are hidden while scrolling stays functional (task 151)', async () => {
+  const css = await readText(path.join(CSS_DIR, 'main.css'));
+  assert.match(css, /\*\s*\{\s*scrollbar-width:\s*none;\s*\}/,
+    'the STANDARD property hides the bar (Firefox/Chromium 121+)');
+  assert.match(css, /\*::-webkit-scrollbar\s*\{\s*display:\s*none;\s*\}/,
+    'the WebKit pseudo-element hides it elsewhere');
+
+  // The functionality half of the contract: every scroll CONTAINER
+  // still scrolls (only the visual bar is gone).
+  for (const selector of ['\\.output-text', '\\.suggestions', '\\.inspector-panel', '\\.inspector-code']) {
+    const rule = css.match(new RegExp(`${selector}\\s*\\{[^}]*\\}`))?.[0] ?? '';
+    assert.match(rule, /overflow:\s*(?:auto|scroll);/,
+      `${selector.replace(/\\/g, '')} keeps its overflow scrolling`);
+  }
+});
+
 test('safe zones: env() is tokenised, and top/bottom are consumed', async () => {
   // Task 131: the safe-area insets live in ONE sheet (safe-area.css)
   // as env(..., 0px) tokens; every consumer styles via var(--sa-*).

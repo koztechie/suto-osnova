@@ -1268,3 +1268,12 @@ Date: 2026-10-18
 Deliverable: the universal reset rule in client/src/css/main.css — `* { -webkit-tap-highlight-color: transparent; }` — placed in the base reset block (task 121) with the honest rationale documented: WebKit's default click flash is a decoration that doubles the visual noise on mobile; the affordance MOVES rather than disappears — interaction feedback is carried by the :focus-visible gold frame (tasks 133/149) and the pressed/hover states the controls already define (no focus-visible contract is weakened by this rule). No new hex, no new token — a keyword-only declaration.
 
 Verification: tests/clientStructure.test.js gained a gate (now 12 tests in the file): the universal rule must exist VERBATIM (`*` selector + the exact property/value, comment-stripped not required — the rule is code, the probe matches the declaration block). All prior client gates unaffected (the `*` block is inert for the CSS-parsing gates: no pinned selector collides, no hex is introduced). npm test 1055/1055 (two consecutive stable runs; baseline 1054), npm run lint clean. Zero new dependencies.
+
+## Task 151 — hide default scrollbars, preserve scrolling
+
+Status: DONE
+Date: 2026-10-18
+
+Deliverable: the reset block in client/src/css/main.css gained the two hiding declarations — `* { scrollbar-width: none; }` (the STANDARD property: Firefox and Chromium 121+) and `*::-webkit-scrollbar { display: none; }` (the WebKit/Blink pseudo-element for older engines). THE FUNCTIONALITY HALF IS THE CONTRACT: only the VISUAL bar disappears — every scroll CONTAINER keeps its overflow: auto/scroll unchanged (.output-text, .suggestions, .inspector-panel, .inspector-code), and each scrollable surface retains its bordered frame as the affordance that the hidden bar used to provide. The a11y rationale is documented in the rule's comment: the surfaces are few, bordered and visibly clipped, so scrollability stays discoverable without the bar.
+
+Verification: tests/clientStructure.test.js gained a gate (13 tests in the file now): BOTH declarations must exist verbatim, AND the functionality-preservation probe asserts every pinned scroll container still declares overflow auto/scroll (a future "cleanup" that removed scrolling to hide the bar would fail). All prior client gates unaffected (the new `*` block is inert for the parsing gates; no hex introduced — keyword values only). npm test 1056/1056 (two consecutive stable runs; baseline 1055), npm run lint clean. Zero new dependencies.
