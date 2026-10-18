@@ -1,12 +1,14 @@
 /*
  * SUTO OSNOVA — main stylesheet.
  * Colour comes exclusively from tokens.css (the canonical Archival Iron
- * palette); typography comes from typography.css (the font stacks).
- * This file styles structure and behaviour only and must never
- * introduce a hex literal or a font stack of its own.
+ * palette); typography comes from typography.css (the font stacks);
+ * safe-zone insets come from safe-area.css (the env() wrappers). This
+ * file styles structure and behaviour only and must never introduce a
+ * hex literal, a font stack or a raw env() of its own.
  */
 @import "./tokens.css";
 @import "./typography.css";
+@import "./safe-area.css";
 
 /*
  * Base reset. Deliberately small: the client is a single-workspace tool,
@@ -33,12 +35,11 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* viewport-fit=cover (task 130): keep content clear of notches and
-     home indicators via the safe-area insets (0 where the OS reports
-     none; engines without env() support drop these declarations and
-     keep the base padding). */
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  /* Safe zones via the --sa-* tokens (safe-area.css, task 131):
+     content stays clear of notches (left/right) and the home
+     indicator; insets are 0px where the OS reports none. */
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
 }
 
 /* --- Layout --------------------------------------------------------- */
@@ -50,7 +51,7 @@ body {
 }
 
 .site-header {
-  padding-top: calc(1.25rem + env(safe-area-inset-top));
+  padding-top: calc(1.25rem + var(--sa-top));
 }
 
 .site-footer {
@@ -59,7 +60,7 @@ body {
   color: var(--muted);
   font-size: 0.82rem;
   margin-top: auto;
-  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(1.25rem + var(--sa-bottom));
 }
 
 .brand {
@@ -91,8 +92,8 @@ body {
 
 .skip-nav .skip-link:focus {
   position: fixed;
-  left: 1rem;
-  top: 1rem;
+  left: calc(1rem + var(--sa-left));
+  top: calc(1rem + var(--sa-top));
   z-index: 10;
   width: auto;
   height: auto;

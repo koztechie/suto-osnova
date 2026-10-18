@@ -155,7 +155,10 @@ test('every var() reference resolves to a declared token', async () => {
   const cssFiles = (await walk(CSS_DIR)).filter((f) => f.endsWith('.css'));
   const declared = new Set();
   for (const file of cssFiles) {
-    for (const [, name] of (await readText(file)).matchAll(/(--[\w-]+)\s*:/g)) {
+    // Comments stripped: prose may MENTION a token name followed by a
+    // colon, which a naive match would treat as a declaration.
+    const bare = (await readText(file)).replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [, name] of bare.matchAll(/(--[\w-]+)\s*:/g)) {
       declared.add(name);
     }
   }
@@ -165,7 +168,9 @@ test('every var() reference resolves to a declared token', async () => {
     ...(await walk(PUBLIC_DIR)).filter((f) => /\.(svg|css)$/.test(f)),
   ];
   for (const file of referencing) {
-    const text = await readText(file);
+    // Strip comments first: contract prose may SHOWCASE a token
+    // spelling (e.g. var(--sa-*)) which is not a real reference.
+    const text = (await readText(file)).replace(/\/\*[\s\S]*?\*\//g, '');
     for (const [, name] of text.matchAll(/var\((--[\w-]+)/g)) {
       assert.ok(declared.has(name),
         `${path.relative(CLIENT, file)}: ${name} is not declared in the css token sheets`);
@@ -173,35 +178,64 @@ test('every var() reference resolves to a declared token', async () => {
   }
 });
 
-test('viewport-fit=cover is honoured by safe-area padding', async () => {
-  // The meta alone is a half-measure: content must stay clear of
-  // notches and home indicators, so the shell consumes the safe-area
-  // environment insets (0 where the OS reports none).
+test('safe zones: env() is tokenised, and top/bottom are consumed', async () => {
+  // Task 131: the safe-area insets live in ONE sheet (safe-area.css)
+  // as env(..., 0px) tokens; every consumer styles via var(--sa-*).
+  const sheetPath = path.join(CSS_DIR, 'safe-area.css');
+  assert.ok((await stat(sheetPath)).isFile(), 'client/src/css/safe-area.css exists');
+  const sheet = await readText(sheetPath);
+
+  for (const [token, inset] of [
+    ['--sa-top', 'safe-area-inset-top'],
+    ['--sa-bottom', 'safe-area-inset-bottom'],
+    ['--sa-left', 'safe-area-inset-left'],
+    ['--sa-right', 'safe-area-inset-right'],
+  ]) {
+    const decl = sheet.match(new RegExp(`${token}:\\s*([^;]+);`));
+    assert.ok(decl, `${token} is declared`);
+    assert.equal(decl[1].trim(), `env(${inset}, 0px)`,
+      `${token} wraps env(${inset}) with the explicit 0px fallback`);
+  }
+
+  // SINGLE SOURCE: a raw env(safe-area-inset-*) may appear ONLY in the
+  // token sheet — consumers go through var(--sa-*).
+  for (const file of (await walk(CSS_DIR)).filter((f) => f.endsWith('.css'))) {
+    if (file === sheetPath) continue;
+    const css = await readText(file);
+    assert.ok(!/env\(\s*safe-area-inset-/.test(css),
+      `${path.relative(CLIENT, file)}: raw env() is banned — use the --sa-* tokens`);
+  }
+
+  // The wired consumers (comments stripped; compound-selector traps
+  // disambiguated by property probes).
   const css = (await readText(path.join(CSS_DIR, 'main.css')))
     .replace(/\/\*[\s\S]*?\*\//g, '');
-
-  const body = [...css.matchAll(/body\s*\{[^}]*\}/g)]
+  const rule = (pattern, probe) => [...css.matchAll(new RegExp(pattern, 'g'))]
     .map((m) => m[0])
-    .find((block) => block.includes('background'));
-  assert.ok(body, 'the main body rule exists');
-  assert.match(body, /padding-left:\s*env\(safe-area-inset-left\);/,
-    'body honours the left notch inset');
-  assert.match(body, /padding-right:\s*env\(safe-area-inset-right\);/,
-    'body honours the right notch inset');
+    .find((block) => block.includes(probe));
 
-  const header = [...css.matchAll(/\.site-header\s*\{[^}]*\}/g)]
-    .map((m) => m[0])
-    .find((block) => block.includes('padding-top'));
-  assert.ok(header, 'a .site-header rule adjusts the top inset');
-  assert.match(header, /padding-top:\s*calc\(1\.25rem \+ env\(safe-area-inset-top\)\);/,
-    'the header clears the notch (top inset added to its base padding)');
+  const body = rule('body\\s*\\{[^}]*\\}', 'background');
+  assert.match(body, /padding-left:\s*var\(--sa-left\);/, 'body honours the left notch');
+  assert.match(body, /padding-right:\s*var\(--sa-right\);/, 'body honours the right notch');
 
-  const footer = [...css.matchAll(/\.site-footer\s*\{[^}]*\}/g)]
-    .map((m) => m[0])
-    .find((block) => block.includes('padding-bottom'));
-  assert.ok(footer, 'a .site-footer rule adjusts the bottom inset');
-  assert.match(footer, /padding-bottom:\s*calc\(1\.25rem \+ env\(safe-area-inset-bottom\)\);/,
-    'the footer clears the home indicator (bottom inset added)');
+  const header = rule('\\.site-header\\s*\\{[^}]*\\}', 'padding-top');
+  assert.match(header, /padding-top:\s*calc\(1\.25rem \+ var\(--sa-top\)\);/,
+    'the header clears the notch (top safe zone)');
+
+  const footer = rule('\\.site-footer\\s*\\{[^}]*\\}', 'padding-bottom');
+  assert.match(footer, /padding-bottom:\s*calc\(1\.25rem \+ var\(--sa-bottom\)\);/,
+    'the footer clears the home indicator (bottom safe zone)');
+
+  // The focused skip chip is position:fixed — it must respect the
+  // top/left safe zones too (landscape notches).
+  const chip = rule('\\.skip-nav \\.skip-link:focus\\s*\\{[^}]*\\}', 'position: fixed');
+  assert.ok(chip, 'the focused skip-link chip rule exists');
+  assert.match(chip, /left:\s*calc\(1rem \+ var\(--sa-left\)\);/, 'the chip clears the left notch');
+  assert.match(chip, /top:\s*calc\(1rem \+ var\(--sa-top\)\);/, 'the chip clears the notch (top)');
+
+  // The task's explicit pair is consumed, not just declared.
+  assert.match(css, /var\(--sa-top\)/, '--sa-top has a consumer');
+  assert.match(css, /var\(--sa-bottom\)/, '--sa-bottom has a consumer');
 });
 
 test('the JS is framework-free ES6+ over native fetch', async () => {

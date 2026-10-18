@@ -1,0 +1,25 @@
+/*
+ * SUTO OSNOVA — safe-area tokens (task 131).
+ * SINGLE SOURCE OF TRUTH for the mobile safe-zone insets.
+ *
+ * viewport-fit=cover (task 130) lets content extend under the notch
+ * and the home indicator; these tokens pull it back out. Each token
+ * wraps env(safe-area-inset-*) with an explicit `0px` fallback:
+ *   - devices reporting no inset resolve to 0px (no visual change);
+ *   - engines WITHOUT env() support (early iOS 11) get the fallback
+ *     instead of an invalid declaration;
+ *   - every consumer styles via var(--sa-*), never a raw env() — the
+ *     probe in tests/clientStructure.test.js fails on a raw env()
+ *     outside this file.
+ *
+ * Consumers (main.css): body (left/right notches), .site-header
+ * (top: status bar / notch), .site-footer (bottom: home indicator),
+ * the focused skip-link chip (top + left — it is position: fixed and
+ * would otherwise land under the notch in landscape).
+ */
+:root {
+  --sa-top: env(safe-area-inset-top, 0px);
+  --sa-bottom: env(safe-area-inset-bottom, 0px);
+  --sa-left: env(safe-area-inset-left, 0px);
+  --sa-right: env(safe-area-inset-right, 0px);
+}
