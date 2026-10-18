@@ -8,6 +8,7 @@ import { renderResult, renderError, setStatus, setBusy } from './ui.js';
 import { startConnectivityMonitor } from './connectivity.js';
 import { startAnchorInput } from './anchorInput.js';
 import { startPresets } from './presets.js';
+import { startProgress } from './progress.js';
 
 const form = document.getElementById('generate-form');
 
@@ -26,6 +27,12 @@ async function onSubmit(event) {
 
   setBusy(true);
   setStatus(`Running ${mode} mode...`);
+  // The terminal progress readout (task 136): discrete monospace
+  // frames while the graph is polled; decorative (aria-hidden) and
+  // stopped — and emptied — the moment the request settles.
+  const stopProgress = startProgress({
+    element: document.getElementById('progress'),
+  });
 
   try {
     const result = await generateDossier({ seed, mode, format });
@@ -34,6 +41,7 @@ async function onSubmit(event) {
   } catch (error) {
     renderError(error);
   } finally {
+    stopProgress();
     setBusy(false);
   }
 }

@@ -431,6 +431,18 @@ button:disabled {
   color: var(--gold-hi);
 }
 
+/* Terminal progress readout (task 136): discrete monospace frames,
+   the technical stack (task 125), lifted gold on the slate plaque. */
+.progress {
+  display: block;
+  min-width: 18ch;
+  margin-top: 0.2rem;
+  color: var(--gold-hi);
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+  white-space: pre;
+}
+
 .output-panel {
   min-height: 420px;
   display: flex;
