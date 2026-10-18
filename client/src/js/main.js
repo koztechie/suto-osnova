@@ -13,6 +13,7 @@ import { startDomainCards } from './domainCards.js';
 import { startActions } from './actions.js';
 import { attachCopyButton, attachCopyDelegation } from './clipboard.js';
 import { startInspector } from './inspector.js';
+import { startKeyboard } from './keyboard.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
@@ -93,6 +94,12 @@ attachCopyDelegation({ root: document.getElementById('literary-quotes') });
 // The Raw API Call Inspector (task 148): the judges' modal over the
 // client call log + the backend's raw Qloo provenance.
 startInspector();
+
+// Keyboard control (task 149): Ctrl/Cmd+Enter submits through the
+// SAME pipeline as the button (requestSubmit -> one event, one
+// validation, one busy cycle). The Tab contract of the mode switcher
+// is native (a radio group) — deliberately untouched.
+startKeyboard({ form });
 
 // The Sonic Architecture featured card (task 139): revealed only when
 // the registry confirms the music domain queries artist + album.

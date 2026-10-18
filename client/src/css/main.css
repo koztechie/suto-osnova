@@ -488,6 +488,17 @@ button:focus-visible {
   margin: 0 0 0 0.75rem;
 }
 
+/* Keyboard shortcut hint (task 149): decorative (the ARIA contract
+   lives on the button's aria-keyshortcuts). */
+.kbd-hint {
+  margin: 0.35rem 0 0;
+  color: var(--muted-hi);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-align: right;
+}
+
 .inspector {
   position: fixed;
   inset: 0;
