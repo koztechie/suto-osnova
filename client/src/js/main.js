@@ -13,6 +13,7 @@ import { startDomainCards } from './domainCards.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
+import { startGastronomyCard } from './gastronomyCard.js';
 
 const form = document.getElementById('generate-form');
 
@@ -79,3 +80,8 @@ startLiteraryCard();
 // when the registry confirms the fashion domain queries brands under
 // the fashion genre family.
 startMaterialCard();
+
+// The Gastronomic Topology featured card (task 142): revealed only
+// when the registry confirms the dining domain queries places under
+// the restaurant genre family.
+startGastronomyCard();
