@@ -12,6 +12,7 @@ import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
+import { startMaterialCard } from './materialCard.js';
 
 const form = document.getElementById('generate-form');
 
@@ -73,3 +74,8 @@ startSonicCard();
 // The Literary Substrate featured card (task 140): revealed only when
 // the registry confirms the books domain queries the book entity.
 startLiteraryCard();
+
+// The Material Culture & Form featured card (task 141): revealed only
+// when the registry confirms the fashion domain queries brands under
+// the fashion genre family.
+startMaterialCard();
