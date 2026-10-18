@@ -221,6 +221,12 @@ body {
   gap: 1.25rem;
   padding: 1.5rem;
   align-items: start;
+  /* Desktop composition (task 152): at 1920/1200 monitors the
+     workspace is capped and centered so the results column stays
+     readable instead of stretching to the bezel; below the cap it is
+     simply full width. */
+  max-width: 100rem;
+  margin-inline: auto;
 }
 
 @media (max-width: 880px) {
@@ -603,6 +609,34 @@ button:focus-visible {
   word-break: break-word;
   max-height: 14rem;
   overflow: auto;
+}
+
+/* Small-viewport refinement (task 152): a 1080x2400 phone at DPR 3
+   reports ~360 CSS px (DPR 2.6 ~ 412) — tighten the chrome so nothing
+   overflows in the 320-420 band (the two-column layout only exists
+   above 880, so its 320px floor never meets a narrow screen).
+   Deliberately LAST in the sheet: refinements win the cascade and the
+   earlier rules stay parseable as complete declarations. */
+@media (max-width: 420px) {
+  .workspace {
+    padding: 1rem 0.75rem;
+  }
+
+  .tab-label {
+    padding: 0.5rem 0.35rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+  }
+
+  .preset,
+  .action {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.72rem;
+  }
+
+  .inspector-panel {
+    padding: 0.9rem;
+  }
 }
 
 button {
