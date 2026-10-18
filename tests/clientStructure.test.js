@@ -178,6 +178,14 @@ test('every var() reference resolves to a declared token', async () => {
   }
 });
 
+test('the mobile tap highlight is blocked (task 150)', async () => {
+  // The universal rule blocks WebKit's grey click flash; interaction
+  // feedback lives in the :focus-visible gold frame and pressed states.
+  const css = await readText(path.join(CSS_DIR, 'main.css'));
+  assert.match(css, /\*\s*\{\s*-webkit-tap-highlight-color:\s*transparent;\s*\}/,
+    'the universal -webkit-tap-highlight-color rule exists verbatim');
+});
+
 test('safe zones: env() is tokenised, and top/bottom are consumed', async () => {
   // Task 131: the safe-area insets live in ONE sheet (safe-area.css)
   // as env(..., 0px) tokens; every consumer styles via var(--sa-*).

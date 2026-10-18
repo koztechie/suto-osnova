@@ -22,6 +22,17 @@
   box-sizing: border-box;
 }
 
+/*
+ * No grey tap flash on touch (task 150): WebKit's default click
+ * highlight is a decoration that doubles the visual noise on mobile.
+ * The affordance MOVES, it does not disappear — interaction feedback
+ * is carried by the :focus-visible gold frame and the pressed/hover
+ * states the controls already define.
+ */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html,
 body {
   margin: 0;
