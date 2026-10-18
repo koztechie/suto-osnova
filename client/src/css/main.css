@@ -48,6 +48,26 @@
   display: none;
 }
 
+/*
+ * Reduced motion (task 154): the system preference FORCE-DISABLES
+ * transitions and animations. No transition or animation exists in
+ * the sheets today (the design is discrete by contract — task 136) —
+ * this universal block is the GUARDRAIL: any future transition/
+ * animation is neutralised the day it lands, without touching this
+ * file again. Functional timers (the clipboard label revert, the
+ * progress CAP) are not motion and stay.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 html,
 body {
   margin: 0;

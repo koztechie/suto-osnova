@@ -22,6 +22,16 @@
  */
 import { setTextIfChanged } from './renderGuard.js';
 
+/**
+ * Pure-over-injection: does the user prefer reduced motion? Absent
+ * windows, absent matchMedia and non-matching queries all say false —
+ * the animated path is the default, the static path the exception.
+ */
+export function prefersReducedMotion(win) {
+  const scope = win ?? (typeof window !== 'undefined' ? window : undefined);
+  return scope?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+}
+
 /** How often the readout steps to the next frame. */
 export const PROGRESS_INTERVAL_MS = 160;
 
@@ -51,15 +61,26 @@ export function progressFrame(tick, width = 10) {
 /**
  * Start the readout on an element. Returns a stop() handle that clears
  * every timer and EMPTIES the element (the request settled).
+ *
+ * REDUCED MOTION (task 154): with prefers-reduced-motion the stepping
+ * is NEVER scheduled — the readout lands on ONE static working frame
+ * (the honest "still working" signal without the motion) and stop()
+ * empties it. No interval, no cap timer, no delay.
  */
 export function startProgress({
   element,
   intervalMs = PROGRESS_INTERVAL_MS,
   maxDurationMs = PROGRESS_MAX_DURATION_MS,
+  win,
 } = {}) {
   if (!element) return () => {};
   let tick = 0;
   let capped = false;
+
+  if (prefersReducedMotion(win)) {
+    setTextIfChanged(element, `${barFrame(0)} working`);
+    return () => { element.textContent = ''; };
+  }
 
   // Every write is CONDITIONAL (task 153): an already-displayed frame
   // (a restart, or the cap frame landing twice) costs zero DOM work.

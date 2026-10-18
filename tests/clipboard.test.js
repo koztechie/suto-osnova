@@ -209,7 +209,13 @@ test('markup, wiring and style: the document copy button and the tones', () => {
   assert.match(copied, /color:\s*var\(--gold-hi\);/, 'success tone: the lifted gold');
   const failed = mainCss.match(/\[data-feedback="failed"\]\s*\{[^}]*\}/)[0];
   assert.match(failed, /color:\s*var\(--rust\);/, 'failure tone: the oxide channel');
-  assert.ok(!/!important/.test(mainCss), 'the cascade order does the work, no !important');
+  // The feedback tones rely on CASCADE ORDER — !important is allowed
+  // ONLY inside the reduced-motion guardrail (task 154), where forced
+  // priority is the entire point.
+  const withoutGuardrail = mainCss
+    .replace(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n\}/g, '');
+  assert.ok(!/!important/.test(withoutGuardrail),
+    'no !important outside the reduced-motion guardrail');
   assert.ok(!/innerHTML/.test(source.replace(/\/\*[\s\S]*?\*\//g, '')),
     'the clipboard module never touches innerHTML');
 });
