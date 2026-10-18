@@ -65,6 +65,59 @@ body {
   font-size: 0.86rem;
 }
 
+/* Skip link: visually hidden until focused (WCAG 2.4.1). */
+.skip-nav .skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.skip-nav .skip-link:focus {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  clip-path: none;
+  overflow: visible;
+  background: var(--surface);
+  color: var(--gold-hi);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* In-page workspace navigation (header, on the page floor). */
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(320px, 420px) 1fr;
@@ -84,6 +137,15 @@ body {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 1.25rem;
+}
+
+/* Panel headings sit ON the slate plaque -> the lifted muted (task 128). */
+.panel-heading {
+  margin: 0 0 1rem;
+  color: var(--muted-hi);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 /* --- Controls ------------------------------------------------------- */

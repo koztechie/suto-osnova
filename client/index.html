@@ -11,45 +11,57 @@
   <link rel="stylesheet" href="./src/css/main.css">
 </head>
 <body>
+  <nav class="skip-nav" aria-label="Skip links">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+  </nav>
+
   <header class="site-header">
     <h1 class="brand">SUTO OSNOVA</h1>
     <p class="tagline">Autonomous cultural intelligence and mise-en-scene worldbuilding agent</p>
+    <nav class="site-nav" aria-label="Workspace">
+      <a href="#generate-form">New dossier</a>
+      <a href="#output-panel">Dossier output</a>
+    </nav>
   </header>
 
-  <main class="workspace">
-    <form id="generate-form" class="panel controls" autocomplete="off" novalidate>
-      <div class="field">
-        <label for="seed">Cultural anchor</label>
-        <input id="seed" name="seed" type="text" required
-               placeholder="e.g. A24 Psychological Horror" spellcheck="false">
-      </div>
-
-      <div class="field-row">
+  <main id="main-content" class="workspace">
+    <section class="panel controls" aria-labelledby="controls-heading">
+      <h2 id="controls-heading" class="panel-heading">New dossier</h2>
+      <form id="generate-form" autocomplete="off" novalidate>
         <div class="field">
-          <label for="mode">Mode</label>
-          <select id="mode" name="mode">
-            <option value="worldbuilder">Worldbuilder - character &amp; scene dossier</option>
-            <option value="experiential">Experiential activation - live events</option>
-            <option value="antithesis">Taste antithesis - cultural divergence</option>
-          </select>
+          <label for="seed">Cultural anchor</label>
+          <input id="seed" name="seed" type="text" required
+                 placeholder="e.g. A24 Psychological Horror" spellcheck="false">
         </div>
 
-        <div class="field">
-          <label for="format">Format</label>
-          <select id="format" name="format">
-            <option value="json">JSON envelope</option>
-            <option value="markdown">Markdown document</option>
-            <option value="html">Print-ready HTML</option>
-          </select>
+        <div class="field-row">
+          <div class="field">
+            <label for="mode">Mode</label>
+            <select id="mode" name="mode">
+              <option value="worldbuilder">Worldbuilder - character &amp; scene dossier</option>
+              <option value="experiential">Experiential activation - live events</option>
+              <option value="antithesis">Taste antithesis - cultural divergence</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="format">Format</label>
+            <select id="format" name="format">
+              <option value="json">JSON envelope</option>
+              <option value="markdown">Markdown document</option>
+              <option value="html">Print-ready HTML</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <button id="generate" type="submit">Generate dossier</button>
+        <button id="generate" type="submit">Generate dossier</button>
 
-      <p id="status" class="status" role="status" aria-live="polite"></p>
-    </form>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
 
-    <section class="panel output-panel" aria-label="Generated dossier">
+    <section id="output-panel" class="panel output-panel" aria-labelledby="output-heading">
+      <h2 id="output-heading" class="panel-heading">Dossier</h2>
       <iframe id="output-frame" class="output-frame" hidden
               sandbox="allow-same-origin" title="Generated dossier"></iframe>
       <pre id="output-text" class="output-text" hidden></pre>
