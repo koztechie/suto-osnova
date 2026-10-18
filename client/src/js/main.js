@@ -11,6 +11,7 @@ import { startPresets } from './presets.js';
 import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
 import { startSonicCard } from './sonicCard.js';
+import { startLiteraryCard } from './literaryCard.js';
 
 const form = document.getElementById('generate-form');
 
@@ -68,3 +69,7 @@ startDomainCards();
 // The Sonic Architecture featured card (task 139): revealed only when
 // the registry confirms the music domain queries artist + album.
 startSonicCard();
+
+// The Literary Substrate featured card (task 140): revealed only when
+// the registry confirms the books domain queries the book entity.
+startLiteraryCard();

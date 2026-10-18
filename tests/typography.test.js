@@ -62,22 +62,30 @@ test('typography.css declares both stacks verbatim', async () => {
 
 test('the serif is applied only to headings and analytical text', async () => {
   const css = await readText(TYPOGRAPHY);
+  // The consumption scope spans BOTH sheets: typography.css rules AND
+  // the documented analytical-reading family in cards.css (quotes and
+  // literary work titles are reading surfaces — task 140).
+  const cards = await readText(path.join(CSS_DIR, 'cards.css'));
   // Every rule block that styles with the serif token.
-  const serifSelectors = [...css.matchAll(/([^{}]+)\{[^}]*var\(--font-serif\)[^}]*\}/g)]
+  const serifSelectors = [...(css + cards).matchAll(/([^{}]+)\{[^}]*var\(--font-serif\)[^}]*\}/g)]
     .map((m) => m[1].replace(/\/\*[\s\S]*?\*\//g, '').trim())
     .filter((selector) => !selector.startsWith('/*') && selector.length > 0);
 
+  const READING_FAMILY = new Set(['.literary-quote', '.literary-text']);
   assert.ok(serifSelectors.length >= 2, 'the serif is consumed by at least two rules');
   for (const selector of serifSelectors) {
     const isHeadingGroup = /^h1(,\s*h[2-6])*$/i.test(selector.replace(/\s+/g, ''));
     const isAnalytical = selector === '.output-text';
-    assert.ok(isHeadingGroup || isAnalytical,
-      `"${selector}": the serif serves ONLY h1-h6 and .output-text`);
+    const isReadingFamily = READING_FAMILY.has(selector);
+    assert.ok(isHeadingGroup || isAnalytical || isReadingFamily,
+      `"${selector}": the serif serves ONLY h1-h6, .output-text and the literary reading family`);
   }
   // Both targets are actually present.
   assert.ok(serifSelectors.some((s) => /h1/i.test(s)), 'a heading rule uses the serif');
   assert.ok(serifSelectors.some((s) => s === '.output-text'),
     'the analytical reading surface uses the serif');
+  assert.ok([...READING_FAMILY].every((name) => serifSelectors.includes(name)),
+    'both literary reading surfaces use the serif');
 });
 
 test('no external font transport anywhere in the client css', async () => {
