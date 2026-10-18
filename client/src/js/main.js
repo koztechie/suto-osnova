@@ -11,6 +11,7 @@ import { startPresets } from './presets.js';
 import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
 import { startActions } from './actions.js';
+import { attachCopyButton, attachCopyDelegation } from './clipboard.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
@@ -76,6 +77,17 @@ startActions({
   onStatus: (message, tone) => setStatus(message, tone),
   onBusy: (busy) => setBusy(busy),
 });
+
+// Clipboard fragments with instant feedback (task 147): the whole
+// rendered document, and every literary quote via delegation.
+attachCopyButton({
+  button: document.getElementById('copy-document'),
+  getText: () => {
+    const node = document.getElementById('output-text');
+    return node && !node.hidden ? node.textContent : '';
+  },
+});
+attachCopyDelegation({ root: document.getElementById('literary-quotes') });
 
 // The Sonic Architecture featured card (task 139): revealed only when
 // the registry confirms the music domain queries artist + album.

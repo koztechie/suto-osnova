@@ -441,6 +441,47 @@ button:focus-visible {
   visibility: hidden;
 }
 
+/* Clipboard feedback (task 147): the button itself is the indicator —
+   the LABEL swaps first (text, never colour-only), the tone follows
+   via data-feedback (copied = lifted gold, failed = the oxide error
+   channel, both AA-legal on the slate). */
+.copy-action {
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.quote-copy {
+  width: auto;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--muted-hi);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.quote-copy:hover,
+.quote-copy:focus-visible {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+
+/* Later in the cascade than .quote-copy/.action, so these win without
+   any !important. */
+[data-feedback="copied"] {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+
+[data-feedback="failed"] {
+  color: var(--rust);
+  border-color: var(--rust);
+}
+
 button {
   width: 100%;
   cursor: pointer;

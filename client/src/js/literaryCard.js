@@ -73,8 +73,17 @@ export function renderLiterary(card, doc) {
     const meta = doc.createElement('span');
     meta.className = 'literary-meta';
     meta.textContent = ` — ${quote.author}, ${quote.source}`;
+    // The copy affordance (task 147): the fragment travels as a data
+    // attribute (setAttribute — never markup interpolation).
+    const copy = doc.createElement('button');
+    copy.className = 'quote-copy';
+    copy.setAttribute('type', 'button');
+    copy.setAttribute('aria-live', 'polite');
+    copy.setAttribute('data-copy', `${quote.text} — ${quote.author}, ${quote.source}`);
+    copy.textContent = 'Copy';
     item.appendChild(line);
     item.appendChild(meta);
+    item.appendChild(copy);
     quotes.appendChild(item);
   }
 
