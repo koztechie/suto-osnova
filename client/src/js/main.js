@@ -10,6 +10,7 @@ import { startAnchorInput } from './anchorInput.js';
 import { startPresets } from './presets.js';
 import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
+import { startActions } from './actions.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
@@ -68,6 +69,13 @@ startPresets();
 // The cultural domain cards (task 138): plates from /api/categories;
 // a failed probe leaves the section hidden.
 startDomainCards();
+
+// The interactive actions panel (task 146): export/print against the
+// real backend documents; empty anchors report, never request.
+startActions({
+  onStatus: (message, tone) => setStatus(message, tone),
+  onBusy: (busy) => setBusy(busy),
+});
 
 // The Sonic Architecture featured card (task 139): revealed only when
 // the registry confirms the music domain queries artist + album.

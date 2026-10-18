@@ -86,6 +86,12 @@
 
         <button id="generate" type="submit">Generate dossier</button>
 
+        <div class="actions" role="group" aria-label="Dossier actions">
+          <button type="button" id="action-markdown" class="action">Export Markdown</button>
+          <button type="button" id="action-json" class="action">Download JSON</button>
+          <button type="button" id="action-print" class="action">Print PDF Dossier</button>
+        </div>
+
         <p id="status" class="status" role="status" aria-live="polite"></p>
         <span id="progress" class="progress" aria-hidden="true"></span>
       </form>
@@ -97,6 +103,8 @@
       <section id="antithesis" class="antithesis" aria-label="Cultural antipode" hidden></section>
       <iframe id="output-frame" class="output-frame" hidden
               sandbox="allow-same-origin" title="Generated dossier"></iframe>
+      <iframe id="print-frame" class="print-frame" hidden
+              sandbox="allow-modals" title="Print dossier"></iframe>
       <pre id="output-text" class="output-text" hidden></pre>
       <p id="output-empty" class="output-empty">No dossier yet. Submit an anchor to begin.</p>
     </section>

@@ -406,6 +406,41 @@ button:focus-visible {
   border-color: var(--gold);
 }
 
+/* Interactive actions panel (task 146): export/print chips in the
+   preset visual language; type="button" so they never submit. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.action {
+  width: auto;
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-page);
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.action:hover:not(:disabled),
+.action:focus-visible {
+  color: var(--gold-hi);
+  border-color: var(--gold);
+}
+
+/* The print frame is VISUALLY empty (the print dialog does the work)
+   but must exist in the layout for srcdoc to render. */
+.print-frame {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  visibility: hidden;
+}
+
 button {
   width: 100%;
   cursor: pointer;
