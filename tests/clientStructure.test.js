@@ -63,7 +63,13 @@ test('index.html is HTML5 and wires only existing local assets', async () => {
   const html = await readText(INDEX);
   assert.ok(html.startsWith('<!doctype html>'), 'the doctype is HTML5');
   assert.match(html, /<meta charset="utf-8">/, 'charset is declared');
-  assert.match(html, /name="viewport"/, 'the viewport meta exists');
+
+  // The viewport contract (task 130): device-width, 1.0 scale,
+  // safe-area coverage for notched devices.
+  const viewport = html.match(/<meta name="viewport" content="([^"]+)">/);
+  assert.ok(viewport, 'the viewport meta exists');
+  assert.equal(viewport[1], 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+    'the viewport meta carries the exact required content');
 
   const moduleScript = html.match(/<script type="module" src="([^"]+)"><\/script>/);
   assert.ok(moduleScript, 'a native ES-module entry script is loaded');
@@ -165,6 +171,37 @@ test('every var() reference resolves to a declared token', async () => {
         `${path.relative(CLIENT, file)}: ${name} is not declared in the css token sheets`);
     }
   }
+});
+
+test('viewport-fit=cover is honoured by safe-area padding', async () => {
+  // The meta alone is a half-measure: content must stay clear of
+  // notches and home indicators, so the shell consumes the safe-area
+  // environment insets (0 where the OS reports none).
+  const css = (await readText(path.join(CSS_DIR, 'main.css')))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+
+  const body = [...css.matchAll(/body\s*\{[^}]*\}/g)]
+    .map((m) => m[0])
+    .find((block) => block.includes('background'));
+  assert.ok(body, 'the main body rule exists');
+  assert.match(body, /padding-left:\s*env\(safe-area-inset-left\);/,
+    'body honours the left notch inset');
+  assert.match(body, /padding-right:\s*env\(safe-area-inset-right\);/,
+    'body honours the right notch inset');
+
+  const header = [...css.matchAll(/\.site-header\s*\{[^}]*\}/g)]
+    .map((m) => m[0])
+    .find((block) => block.includes('padding-top'));
+  assert.ok(header, 'a .site-header rule adjusts the top inset');
+  assert.match(header, /padding-top:\s*calc\(1\.25rem \+ env\(safe-area-inset-top\)\);/,
+    'the header clears the notch (top inset added to its base padding)');
+
+  const footer = [...css.matchAll(/\.site-footer\s*\{[^}]*\}/g)]
+    .map((m) => m[0])
+    .find((block) => block.includes('padding-bottom'));
+  assert.ok(footer, 'a .site-footer rule adjusts the bottom inset');
+  assert.match(footer, /padding-bottom:\s*calc\(1\.25rem \+ env\(safe-area-inset-bottom\)\);/,
+    'the footer clears the home indicator (bottom inset added)');
 });
 
 test('the JS is framework-free ES6+ over native fetch', async () => {

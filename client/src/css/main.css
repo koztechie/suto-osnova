@@ -33,6 +33,12 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* viewport-fit=cover (task 130): keep content clear of notches and
+     home indicators via the safe-area insets (0 where the OS reports
+     none; engines without env() support drop these declarations and
+     keep the base padding). */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* --- Layout --------------------------------------------------------- */
@@ -43,12 +49,17 @@ body {
   border-bottom: 1px solid var(--line);
 }
 
+.site-header {
+  padding-top: calc(1.25rem + env(safe-area-inset-top));
+}
+
 .site-footer {
   border-bottom: 0;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.82rem;
   margin-top: auto;
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
 }
 
 .brand {
