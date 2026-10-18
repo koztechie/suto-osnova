@@ -21,6 +21,7 @@
  * unit-pinned by tests/anchorInput.test.js.
  */
 import { fetchCategories } from './api.js';
+import { setAttrIfChanged } from './renderGuard.js';
 
 /** How many hints a query may surface. */
 export const SUGGESTION_LIMIT = 6;
@@ -69,7 +70,9 @@ export function startAnchorInput({ fetchImpl = fetchCategories, doc } = {}) {
 
   let categories = null; // null = not loaded yet (fetch once, lazily)
   let options = []; // the category objects currently rendered
+  let optionNodes = []; // the rendered <li> nodes (targeted writes)
   let active = -1; // the keyboard-highlighted option index
+  let lastSignature = null; // the on-screen match set (render skip)
 
   const close = () => {
     list.hidden = true;
@@ -77,16 +80,24 @@ export function startAnchorInput({ fetchImpl = fetchCategories, doc } = {}) {
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
     options = [];
+    optionNodes = [];
+    lastSignature = null; // a closed list re-renders on the next query
     active = -1;
   };
 
+  // TARGETED highlight (task 153): only the two affected options are
+  // touched (the one leaving, the one entering) — no querySelectorAll
+  // scan and no N attribute rewrites per arrow key.
   const highlight = (index) => {
-    const items = list.querySelectorAll('[role="option"]');
-    items.forEach((item, i) => item.setAttribute('aria-selected', String(i === index)));
+    const previous = active;
     active = index;
-    if (index >= 0 && items[index]) {
-      input.setAttribute('aria-activedescendant', items[index].id);
-      items[index].scrollIntoView?.({ block: 'nearest' });
+    if (previous >= 0 && previous !== index && optionNodes[previous]) {
+      setAttrIfChanged(optionNodes[previous], 'aria-selected', 'false');
+    }
+    if (index >= 0 && optionNodes[index]) {
+      setAttrIfChanged(optionNodes[index], 'aria-selected', 'true');
+      input.setAttribute('aria-activedescendant', optionNodes[index].id);
+      optionNodes[index].scrollIntoView?.({ block: 'nearest' });
     } else {
       input.removeAttribute('aria-activedescendant');
     }
@@ -100,6 +111,7 @@ export function startAnchorInput({ fetchImpl = fetchCategories, doc } = {}) {
 
   const render = (matches) => {
     options = matches;
+    optionNodes = [];
     list.textContent = '';
     matches.forEach((category, index) => {
       const option = scope.createElement('li');
@@ -114,10 +126,12 @@ export function startAnchorInput({ fetchImpl = fetchCategories, doc } = {}) {
         applyHint(category);
       });
       list.appendChild(option);
+      optionNodes.push(option);
     });
     list.hidden = matches.length === 0;
     input.setAttribute('aria-expanded', String(matches.length > 0));
-    highlight(-1);
+    active = -1;
+    input.removeAttribute('aria-activedescendant');
   };
 
   const refresh = async () => {
@@ -128,7 +142,13 @@ export function startAnchorInput({ fetchImpl = fetchCategories, doc } = {}) {
         categories = []; // degrade: no hints, the input is unaffected
       }
     }
-    render(filterCategories(categories, input.value));
+    const matches = filterCategories(categories, input.value);
+    // SKIP identical renders (task 153): typing within the same match
+    // set ("mus" -> "music") must cost ZERO DOM work.
+    const signature = matches.map((category) => category.id ?? category.label).join('|');
+    if (signature === lastSignature) return;
+    lastSignature = signature;
+    render(matches);
   };
 
   const onKeyDown = (event) => {

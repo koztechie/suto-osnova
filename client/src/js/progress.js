@@ -20,6 +20,7 @@
  *
  * Import-safe in Node: no document at load; the element is injected.
  */
+import { setTextIfChanged } from './renderGuard.js';
 
 /** How often the readout steps to the next frame. */
 export const PROGRESS_INTERVAL_MS = 160;
@@ -60,12 +61,14 @@ export function startProgress({
   let tick = 0;
   let capped = false;
 
-  element.textContent = progressFrame(0);
+  // Every write is CONDITIONAL (task 153): an already-displayed frame
+  // (a restart, or the cap frame landing twice) costs zero DOM work.
+  setTextIfChanged(element, progressFrame(0));
 
   const interval = setInterval(() => {
     if (capped) return;
     tick += 1;
-    element.textContent = progressFrame(tick);
+    setTextIfChanged(element, progressFrame(tick));
   }, intervalMs);
 
   const cap = setTimeout(() => {
@@ -73,7 +76,7 @@ export function startProgress({
     // "still working" signal remains.
     capped = true;
     clearInterval(interval);
-    element.textContent = `${barFrame(0)} still working`;
+    setTextIfChanged(element, `${barFrame(0)} still working`);
   }, maxDurationMs);
 
   return () => {

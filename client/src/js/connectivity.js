@@ -18,6 +18,7 @@
  */
 import { fetchHealth } from './api.js';
 import { noteHealth } from './inspector.js';
+import { setAttrIfChanged, setTextIfChanged } from './renderGuard.js';
 
 /** The exact state set the DOM contract uses (data-state). */
 export const CONNECTIVITY_STATES = Object.freeze(
@@ -60,19 +61,26 @@ export function stateFromProbe(probe) {
  * "checking" until it answers) and a slow poll; re-probes when the
  * browser regains network (window "online"). Returns a stop() handle.
  */
-export function startConnectivityMonitor({ intervalMs = POLL_INTERVAL_MS, win } = {}) {
+export function startConnectivityMonitor({
+  intervalMs = POLL_INTERVAL_MS,
+  win,
+  fetchImpl,
+} = {}) {
   const scope = win ?? (typeof window !== 'undefined' ? window : undefined);
   const node = document.getElementById('connectivity');
   const labelNode = document.getElementById('connectivity-label');
   if (!node || !labelNode) return () => {};
 
+  // CONDITIONAL writes (task 153): the 30s poll re-applies the SAME
+  // state most of the time — an unchanged indicator costs zero DOM
+  // work (no attribute write, no text write, no live-region churn).
   const apply = (state) => {
-    node.setAttribute('data-state', state);
-    labelNode.textContent = CONNECTIVITY_LABELS[state];
+    setAttrIfChanged(node, 'data-state', state);
+    setTextIfChanged(labelNode, CONNECTIVITY_LABELS[state]);
   };
 
   const tick = async () => {
-    const probe = await probeHealth();
+    const probe = await probeHealth(fetchImpl);
     // Feed the Raw API Call Inspector (task 148) with the last
     // SUCCESSFUL report (a degraded/failed probe has no body to show).
     if (probe.ok) noteHealth(probe.payload);

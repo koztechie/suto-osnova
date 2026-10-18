@@ -7,16 +7,19 @@
 import { extractAffinities, renderAffinityWidget } from './affinityMeter.js';
 import { extractAntithesis, renderAntithesisBlock } from './antithesisBlock.js';
 import { noteEnvelope } from './inspector.js';
+import { setAttrIfChanged, setTextIfChanged } from './renderGuard.js';
 
 const el = (id) => document.getElementById(id);
 
 export function setStatus(message, tone = 'neutral') {
   const node = el('status');
-  node.textContent = message;
+  // CONDITIONAL writes (task 153): an identical status repeat costs
+  // zero DOM work and no live-region churn.
+  setTextIfChanged(node, message);
   if (tone === 'neutral') {
-    node.removeAttribute('data-tone');
+    if (node.hasAttribute?.('data-tone')) node.removeAttribute('data-tone');
   } else {
-    node.setAttribute('data-tone', tone);
+    setAttrIfChanged(node, 'data-tone', tone);
   }
 }
 
