@@ -14,6 +14,7 @@ import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
 import { startGastronomyCard } from './gastronomyCard.js';
+import { startVisualCard } from './visualCard.js';
 
 const form = document.getElementById('generate-form');
 
@@ -85,3 +86,7 @@ startMaterialCard();
 // when the registry confirms the dining domain queries places under
 // the restaurant genre family.
 startGastronomyCard();
+
+// The Visual Chiaroscuro featured card (task 143): revealed only when
+// the registry confirms the film domain queries the movie entity.
+startVisualCard();
