@@ -4,6 +4,7 @@
  * local Node gateway; this module never touches upstream directly and
  * never holds an API key.
  */
+import { recordCall } from './inspector.js';
 
 const API_BASE = '/api';
 
@@ -27,12 +28,24 @@ async function parseBody(response) {
 }
 
 async function request(path, init) {
+  const method = init?.method ?? 'GET';
+  const started = Date.now();
+  const record = (response) => recordCall({
+    method,
+    path: `/api${path}`,
+    status: response?.status ?? 0,
+    ok: response?.ok === true,
+    ms: Date.now() - started,
+  });
+
   let response;
   try {
     response = await fetch(`${API_BASE}${path}`, init);
   } catch (cause) {
+    record(null); // a transport failure: status 0, still logged
     throw new ApiError('Backend is unreachable (network failure)', { code: 'NETWORK', cause });
   }
+  record(response);
 
   const body = await parseBody(response);
 

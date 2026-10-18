@@ -74,15 +74,20 @@ test('every section carries a resolvable accessible name', () => {
   }
 });
 
-test('heading order: one h1, h2s after it, no skipped levels', () => {
+test('heading order: one h1, every deeper level follows its parent', () => {
   const h1 = tags('h1');
-  const h2 = tags('h2');
   assert.equal(h1.length, 1, 'exactly one h1');
-  assert.ok(h2.length >= 2, 'both panels are headed by h2');
+  const h2 = tags('h2');
+  assert.ok(h2.length >= 2, 'the panels are headed by h2');
   for (const heading of h2) {
     assert.ok(heading.at > h1[0].at, 'every h2 follows the h1 in document order');
   }
-  assert.equal(tags('h3').length, 0, 'no deeper levels to skip into');
+  // h3 sub-headings are legal INSIDE later sections (the inspector
+  // modal, task 148) — the invariant is no SKIPPED level.
+  for (const heading of tags('h3')) {
+    const priorH2 = h2.some((candidate) => candidate.at < heading.at);
+    assert.ok(priorH2, 'every h3 has a preceding h2 (no skipped levels)');
+  }
 });
 
 test('every in-page anchor resolves to a real id', () => {

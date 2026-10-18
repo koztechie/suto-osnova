@@ -17,6 +17,7 @@
  * unit-pinned by tests/titlebar.test.js.
  */
 import { fetchHealth } from './api.js';
+import { noteHealth } from './inspector.js';
 
 /** The exact state set the DOM contract uses (data-state). */
 export const CONNECTIVITY_STATES = Object.freeze(
@@ -71,7 +72,11 @@ export function startConnectivityMonitor({ intervalMs = POLL_INTERVAL_MS, win } 
   };
 
   const tick = async () => {
-    apply(stateFromProbe(await probeHealth()));
+    const probe = await probeHealth();
+    // Feed the Raw API Call Inspector (task 148) with the last
+    // SUCCESSFUL report (a degraded/failed probe has no body to show).
+    if (probe.ok) noteHealth(probe.payload);
+    apply(stateFromProbe(probe));
   };
 
   apply('checking');

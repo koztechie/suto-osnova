@@ -6,6 +6,7 @@
  */
 import { extractAffinities, renderAffinityWidget } from './affinityMeter.js';
 import { extractAntithesis, renderAntithesisBlock } from './antithesisBlock.js';
+import { noteEnvelope } from './inspector.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -46,6 +47,9 @@ export function renderText(text) {
 export function renderJson(payload) {
   renderText(JSON.stringify(payload, null, 2));
   el('output-text').setAttribute('data-format', 'json');
+  // Feed the Raw API Call Inspector (task 148) with the envelope's
+  // provenance ledger — shown raw, never rewritten.
+  noteEnvelope(payload);
   // The affinity widget (task 144): a discrete summary of the
   // backend-measured connection percentages. renderText hid it; here
   // it shows ONLY when the envelope really carries measured values.

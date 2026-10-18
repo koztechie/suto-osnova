@@ -12,6 +12,7 @@ import { startProgress } from './progress.js';
 import { startDomainCards } from './domainCards.js';
 import { startActions } from './actions.js';
 import { attachCopyButton, attachCopyDelegation } from './clipboard.js';
+import { startInspector } from './inspector.js';
 import { startSonicCard } from './sonicCard.js';
 import { startLiteraryCard } from './literaryCard.js';
 import { startMaterialCard } from './materialCard.js';
@@ -88,6 +89,10 @@ attachCopyButton({
   },
 });
 attachCopyDelegation({ root: document.getElementById('literary-quotes') });
+
+// The Raw API Call Inspector (task 148): the judges' modal over the
+// client call log + the backend's raw Qloo provenance.
+startInspector();
 
 // The Sonic Architecture featured card (task 139): revealed only when
 // the registry confirms the music domain queries artist + album.

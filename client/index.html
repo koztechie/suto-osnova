@@ -25,6 +25,7 @@
         <span class="connectivity-dot" aria-hidden="true"></span>
         <span id="connectivity-label" class="connectivity-label">Qloo link: checking</span>
       </p>
+      <button type="button" id="open-inspector" class="action inspector-trigger">API Inspector</button>
     </div>
     <p class="tagline">Autonomous cultural intelligence and mise-en-scene worldbuilding agent</p>
     <nav class="site-nav" aria-label="Workspace">
@@ -198,6 +199,31 @@
   <footer class="site-footer">
     <p>All taste intelligence is computed by the local backend gateway. This page stores nothing and tracks nobody.</p>
   </footer>
+
+  <div id="inspector" class="inspector" hidden role="dialog" aria-modal="true"
+       aria-labelledby="inspector-title">
+    <div id="inspector-backdrop" class="inspector-backdrop"></div>
+    <div class="inspector-panel">
+      <div class="inspector-head">
+        <h2 id="inspector-title" class="inspector-title">Raw API Call Inspector</h2>
+        <button type="button" id="inspector-close" class="action" aria-live="polite">Close</button>
+      </div>
+      <p class="inspector-note">Client calls to the local gateway and the backend's own Qloo
+        provenance, as recorded. Raw values, never rewritten.</p>
+      <section class="inspector-section" aria-labelledby="inspector-calls-title">
+        <h3 id="inspector-calls-title" class="inspector-section-title">Client call log</h3>
+        <pre id="inspector-calls" class="inspector-code"></pre>
+      </section>
+      <section class="inspector-section" aria-labelledby="inspector-qloo-title">
+        <h3 id="inspector-qloo-title" class="inspector-section-title">Qloo connectivity (last successful probe)</h3>
+        <pre id="inspector-qloo" class="inspector-code"></pre>
+      </section>
+      <section class="inspector-section" aria-labelledby="inspector-provenance-title">
+        <h3 id="inspector-provenance-title" class="inspector-section-title">Provenance ledger (last dossier)</h3>
+        <pre id="inspector-provenance" class="inspector-code"></pre>
+      </section>
+    </div>
+  </div>
 
   <script type="module" src="./src/js/main.js"></script>
 </body>
