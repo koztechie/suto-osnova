@@ -485,3 +485,50 @@ button:disabled {
   border-radius: 4px;
   background: var(--bg);
 }
+
+/* Affinity strength widget (task 144): MONOCHROME DISCRETE meters —
+   one accent hue (lifted gold) over neutral empties, 10 cells at 10%
+   steps, the percentage always present as TEXT (role=meter). */
+.affinity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.affinity-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 12rem) minmax(6rem, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.affinity-label {
+  color: var(--text);
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.affinity-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.affinity-cell {
+  width: 0.55rem;
+  height: 0.85rem;
+  background: var(--muted);
+  border-radius: 1px;
+}
+
+.affinity-cell-filled {
+  background: var(--gold-hi);
+}
+
+.affinity-value {
+  color: var(--muted-hi);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}

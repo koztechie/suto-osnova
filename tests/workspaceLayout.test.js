@@ -68,14 +68,19 @@ test('source order: inputs first, results second (mobile stack order)', () => {
 });
 
 test('the results zone hosts the three display modes with bounded scroll', () => {
-  const panel = html.match(/<section id="output-panel"[^>]*>([\s\S]*?)<\/section>/);
-  assert.ok(panel, 'the results panel exists');
+  // Nesting-aware: the panel CONTAINS a nested <section> (#affinity,
+  // task 144), so slice from the panel opening tag to the end of
+  // main instead of a naive first-</section> match.
+  const main = html.match(/<main[^>]*>([\s\S]*?)<\/main>/)[1];
+  const panelAt = main.indexOf('id="output-panel"');
+  assert.ok(panelAt >= 0, 'the results panel exists');
+  const panel = main.slice(panelAt);
   for (const node of [
     /<iframe id="output-frame"[\s\S]*?<\/iframe>/,
     /<pre id="output-text"[^>]*><\/pre>/,
     /<p id="output-empty"[^>]*>[\s\S]*?<\/p>/,
   ]) {
-    assert.ok(node.test(panel[1]), 'the panel hosts a display mode');
+    assert.ok(node.test(panel), 'the panel hosts a display mode');
   }
 
   const panelRule = rule('\\.output-panel');

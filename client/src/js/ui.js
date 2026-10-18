@@ -4,6 +4,7 @@
  * The html format is rendered into a sandboxed iframe via srcdoc, so
  * server HTML cannot touch this document's DOM or cookies.
  */
+import { extractAffinities, renderAffinityWidget } from './affinityMeter.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -25,6 +26,7 @@ function hideOutputs() {
   el('output-frame').hidden = true;
   el('output-text').hidden = true;
   el('output-empty').hidden = true;
+  el('affinity').hidden = true;
 }
 
 /** Render a markdown (or plain-text) payload as preformatted text. */
@@ -42,6 +44,10 @@ export function renderText(text) {
 export function renderJson(payload) {
   renderText(JSON.stringify(payload, null, 2));
   el('output-text').setAttribute('data-format', 'json');
+  // The affinity widget (task 144): a discrete summary of the
+  // backend-measured connection percentages. renderText hid it; here
+  // it shows ONLY when the envelope really carries measured values.
+  renderAffinityWidget(el('affinity'), extractAffinities(payload), document);
 }
 
 /** Render the server's print-ready HTML page inside the sandboxed frame. */
