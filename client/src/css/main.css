@@ -178,9 +178,18 @@ body {
   text-decoration: underline;
 }
 
+/* The MAIN WORKSPACE (task 137): the controls panel on the left, the
+ * RESULTS-DISPLAY panel on the right. Two columns on desktop; below
+ * the pinned 880px breakpoint the grid collapses to ONE column and the
+ * panels stack in SOURCE order (inputs first, results second — the
+ * right reading order for a phone). The results column is
+ * minmax(0, 1fr): it MUST be able to shrink below its content's
+ * min-width, so long unbroken lines (JSON ids, URLs) can never blow
+ * the layout out. The contract is pinned by tests/workspaceLayout.
+ * test.js. */
 .workspace {
   display: grid;
-  grid-template-columns: minmax(320px, 420px) 1fr;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
   gap: 1.25rem;
   padding: 1.5rem;
   align-items: start;
