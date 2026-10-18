@@ -99,8 +99,11 @@ test('every in-page anchor resolves to a real id', () => {
 });
 
 test('the main.js/ui.js id contract survives the restructure', () => {
+  // Note (task 133): the mode control is a native radio group wired by
+  // NAME (form.mode -> RadioNodeList.value), so it carries no id —
+  // every other node stays id-wired.
   const required = [
-    'generate-form', 'seed', 'mode', 'format', 'generate', 'status',
+    'generate-form', 'seed', 'format', 'generate', 'status',
     'output-frame', 'output-text', 'output-empty',
   ];
   for (const id of required) {

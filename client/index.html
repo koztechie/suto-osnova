@@ -43,24 +43,31 @@
                  placeholder="e.g. A24 Psychological Horror" spellcheck="false">
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="mode">Mode</label>
-            <select id="mode" name="mode">
-              <option value="worldbuilder">Worldbuilder - character &amp; scene dossier</option>
-              <option value="experiential">Experiential activation - live events</option>
-              <option value="antithesis">Taste antithesis - cultural divergence</option>
-            </select>
+        <fieldset class="field mode-switch">
+          <legend class="mode-legend">Agent mode</legend>
+          <div class="tab-bar">
+            <label class="tab" title="Character &amp; scene dossier across all five domains">
+              <input class="tab-input" type="radio" name="mode" value="worldbuilder" checked>
+              <span class="tab-label">Worldbuilder</span>
+            </label>
+            <label class="tab" title="Live event activation with audience insights and curation">
+              <input class="tab-input" type="radio" name="mode" value="experiential">
+              <span class="tab-label">Experiential</span>
+            </label>
+            <label class="tab" title="Cultural divergence: the taste antithesis report">
+              <input class="tab-input" type="radio" name="mode" value="antithesis">
+              <span class="tab-label">Taste antithesis</span>
+            </label>
           </div>
+        </fieldset>
 
-          <div class="field">
-            <label for="format">Format</label>
-            <select id="format" name="format">
-              <option value="json">JSON envelope</option>
-              <option value="markdown">Markdown document</option>
-              <option value="html">Print-ready HTML</option>
-            </select>
-          </div>
+        <div class="field">
+          <label for="format">Format</label>
+          <select id="format" name="format">
+            <option value="json">JSON envelope</option>
+            <option value="markdown">Markdown document</option>
+            <option value="html">Print-ready HTML</option>
+          </select>
         </div>
 
         <button id="generate" type="submit">Generate dossier</button>

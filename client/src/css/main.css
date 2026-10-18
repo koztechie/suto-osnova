@@ -217,10 +217,80 @@ body {
   margin-bottom: 0.9rem;
 }
 
-.field-row {
+/* Mode switcher (task 133): a MONOLITHIC tab bar over a native radio
+   group — arrows/free keyboard support come from the radios; the tabs
+   are a visual skin (a choice control, not tabpanels, so the ARIA
+   tabs pattern would be dishonest here). */
+.mode-switch {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.mode-legend {
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0;
+  margin-bottom: 0.35rem;
+}
+
+.tab-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+}
+
+.tab + .tab {
+  border-left: 1px solid var(--line);
+}
+
+/* The native radio stays focusable but visually replaced. */
+.tab-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.tab-label {
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+  text-align: center;
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+/* Selected tab: lifted gold + an inset gold underline. */
+.tab-input:checked + .tab-label {
+  color: var(--gold-hi);
+  box-shadow: inset 0 -2px 0 0 var(--gold);
+}
+
+.tab-input:hover:not(:checked) + .tab-label {
+  color: var(--text);
+}
+
+/* The GOLD FOCUS FRAME (task 133): drawn on the tab around the
+   focused radio — sibling selector, no :has() dependency. */
+.tab-input:focus-visible + .tab-label {
+  outline: 2px solid var(--gold);
+  outline-offset: -3px;
 }
 
 label {
