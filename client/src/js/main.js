@@ -6,6 +6,7 @@
 import { generateDossier } from './api.js';
 import { renderResult, renderError, setStatus, setBusy } from './ui.js';
 import { startConnectivityMonitor } from './connectivity.js';
+import { startAnchorInput } from './anchorInput.js';
 
 const form = document.getElementById('generate-form');
 
@@ -41,3 +42,7 @@ form.addEventListener('submit', onSubmit);
 // The status titlebar indicator (task 132): an immediate health probe
 // plus a slow poll; offline -> online transitions re-probe.
 startConnectivityMonitor();
+
+// The anchor combobox (task 134): Qloo category hints over the
+// free-text field; a failed categories probe degrades to no hints.
+startAnchorInput();

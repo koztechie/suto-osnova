@@ -323,6 +323,45 @@ button:focus-visible {
   border-color: var(--gold);
 }
 
+/* Anchor combobox hints (task 134): an absolutely-positioned listbox
+   (no layout shift), a slate plaque with palette-token colours. */
+.anchor-field {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.suggestions[hidden] {
+  display: none;
+}
+
+.suggestion {
+  padding: 0.45rem 0.7rem;
+  color: var(--muted-hi);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.suggestion:hover,
+.suggestion[aria-selected="true"] {
+  color: var(--gold-hi);
+  background: var(--bg-page);
+}
+
 button {
   width: 100%;
   cursor: pointer;

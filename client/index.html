@@ -37,10 +37,14 @@
     <section class="panel controls" aria-labelledby="controls-heading">
       <h2 id="controls-heading" class="panel-heading">New dossier</h2>
       <form id="generate-form" autocomplete="off" novalidate>
-        <div class="field">
+        <div class="field anchor-field">
           <label for="seed">Cultural anchor</label>
           <input id="seed" name="seed" type="text" required
-                 placeholder="e.g. A24 Psychological Horror" spellcheck="false">
+                 placeholder="e.g. A24 Psychological Horror" spellcheck="false"
+                 autocomplete="off" role="combobox" aria-expanded="false"
+                 aria-autocomplete="list" aria-controls="anchor-suggestions">
+          <ul id="anchor-suggestions" class="suggestions" role="listbox"
+              aria-label="Qloo category hints" hidden></ul>
         </div>
 
         <fieldset class="field mode-switch">
