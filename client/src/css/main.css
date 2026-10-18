@@ -532,3 +532,58 @@ button:disabled {
   font-family: var(--font-mono);
   font-size: 0.78rem;
 }
+
+/* Cultural Antipode block (task 145): the OXIDE accent — var(--rust)
+   resolves to the frozen oxide value through the token chain (the
+   exact mapping is pinned by tests/antithesisBlock.test.js). Rust on
+   the slate panel clears WCAG AA for normal text (the pinned
+   error-channel precedent); every divergence is TEXT (role=meter). */
+.antithesis {
+  border-left: 2px solid var(--rust);
+  padding-left: 0.85rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.antithesis-title {
+  color: var(--rust);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.antithesis-domain {
+  color: var(--muted-hi);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.25rem;
+}
+
+.antithesis-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+}
+
+.antithesis-name {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.antithesis-empty {
+  color: var(--muted-hi);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.antithesis-divergence {
+  color: var(--rust);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}

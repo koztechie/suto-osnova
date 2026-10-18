@@ -5,6 +5,7 @@
  * server HTML cannot touch this document's DOM or cookies.
  */
 import { extractAffinities, renderAffinityWidget } from './affinityMeter.js';
+import { extractAntithesis, renderAntithesisBlock } from './antithesisBlock.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -27,6 +28,7 @@ function hideOutputs() {
   el('output-text').hidden = true;
   el('output-empty').hidden = true;
   el('affinity').hidden = true;
+  el('antithesis').hidden = true;
 }
 
 /** Render a markdown (or plain-text) payload as preformatted text. */
@@ -48,6 +50,9 @@ export function renderJson(payload) {
   // backend-measured connection percentages. renderText hid it; here
   // it shows ONLY when the envelope really carries measured values.
   renderAffinityWidget(el('affinity'), extractAffinities(payload), document);
+  // The Cultural Antipode block (task 145): the oxide-accented
+  // antithesis display — shown ONLY when Mode 3 data is present.
+  renderAntithesisBlock(el('antithesis'), extractAntithesis(payload), document);
 }
 
 /** Render the server's print-ready HTML page inside the sandboxed frame. */
