@@ -270,3 +270,12 @@ test('slate-plaque labels use --muted-hi; the page floor keeps --muted', () => {
   assert.ok(rustOnSlate >= 4.5,
     `the rust error channel clears WCAG AA on slate (${rustOnSlate.toFixed(2)}:1)`);
 });
+
+test('the degraded titlebar label clears WCAG AA on the page floor', () => {
+  // The status titlebar lives on --bg-page (the page floor), not on
+  // slate — its degraded warning label is frozen --rust text there.
+  const floor = BG_CHANNELS.map((c) => Math.round(c * BG_KEEP));
+  const ratio = contrastRatio(hexToRgb('#e06338'), floor);
+  assert.ok(ratio >= 4.5,
+    `--rust on --bg-page must clear WCAG AA (4.5:1), measured ${ratio.toFixed(2)}:1`);
+});

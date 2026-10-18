@@ -5,6 +5,7 @@
  */
 import { generateDossier } from './api.js';
 import { renderResult, renderError, setStatus, setBusy } from './ui.js';
+import { startConnectivityMonitor } from './connectivity.js';
 
 const form = document.getElementById('generate-form');
 
@@ -36,3 +37,7 @@ async function onSubmit(event) {
 }
 
 form.addEventListener('submit', onSubmit);
+
+// The status titlebar indicator (task 132): an immediate health probe
+// plus a slow poll; offline -> online transitions re-probe.
+startConnectivityMonitor();

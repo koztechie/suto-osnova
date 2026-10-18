@@ -16,7 +16,16 @@
   </nav>
 
   <header class="site-header">
-    <h1 class="brand">SUTO OSNOVA</h1>
+    <div class="titlebar">
+      <img class="titlebar-logo" src="./public/favicon.svg"
+           width="28" height="28" alt="">
+      <h1 class="brand">SUTO OSNOVA</h1>
+      <p id="connectivity" class="connectivity" role="status" aria-live="polite"
+         data-state="checking">
+        <span class="connectivity-dot" aria-hidden="true"></span>
+        <span id="connectivity-label" class="connectivity-label">Qloo link: checking</span>
+      </p>
+    </div>
     <p class="tagline">Autonomous cultural intelligence and mise-en-scene worldbuilding agent</p>
     <nav class="site-nav" aria-label="Workspace">
       <a href="#generate-form">New dossier</a>

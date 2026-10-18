@@ -50,6 +50,18 @@ async function request(path, init) {
 }
 
 /**
+ * Fetch system health (GET /api/health). Resolves only on HTTP 200
+ * (status "ok" — Qloo reachable); an HTTP 503 (status "degraded") or a
+ * transport failure rejects with an ApiError carrying .status (0 for a
+ * network failure), so callers can tell "backend up, Qloo down" from
+ * "everything down".
+ * Returns { status, service, version, uptimeSeconds, timestamp, ... }.
+ */
+export function fetchHealth() {
+  return request('/health');
+}
+
+/**
  * Fetch the static domain registry (GET /api/categories).
  * Returns { status, domains: [...] }.
  */
