@@ -99,8 +99,15 @@ export const ENTITY_ID_PATTERN =
 /** Quota guard: how many probes one resolution may try. */
 export const MAX_PROBE_ATTEMPTS = 3;
 
-/** Canonical name comparison key (same rule as the MCP resolve tool). */
+/**
+ * Canonical name comparison key (same rule as the MCP resolve tool).
+ * RELIABILITY: non-string input yields the empty key instead of a raw
+ * TypeError — upstream pages carry hostile shapes (missing/numeric
+ * names) and a malformed candidate must degrade to "no name match",
+ * never crash the resolution pipeline.
+ */
 export function normalizeNameKey(value) {
+  if (typeof value !== 'string') return '';
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
@@ -161,6 +168,12 @@ export function extractProbes(classification, seed) {
  *            sawName: boolean, sawMapped: boolean}}}
  */
 export function selectBestCandidate(results, options = {}) {
+  // RELIABILITY: same rule as resolveTextQuery — a non-object options
+  // bag degrades to defaults instead of crashing the destructure.
+  const safeOptions =
+    options !== null && typeof options === 'object' && !Array.isArray(options)
+      ? options
+      : {};
   const {
     queryKey,
     allowFuzzy = true,
@@ -170,9 +183,13 @@ export function selectBestCandidate(results, options = {}) {
     queryWords = [],
     targetDomain = null,
     weights = undefined,
-  } = options;
+  } = safeOptions;
 
-  const list = Array.isArray(results) ? results : [];
+  // RELIABILITY: upstream pages can carry null/primitive entries — a
+  // hostile page must shrink the pool, never crash selection.
+  const list = (Array.isArray(results) ? results : []).filter(
+    (entry) => entry !== null && typeof entry === 'object' && !Array.isArray(entry)
+  );
   const validPool = requireValidId
     ? list.filter((e) => typeof e.id === 'string' && ENTITY_ID_PATTERN.test(e.id))
     : list;
@@ -181,9 +198,13 @@ export function selectBestCandidate(results, options = {}) {
       ? validPool
       : validPool.filter((e) => (e.popularity ?? 0) >= minPopularity);
 
-  const exactPool = popPool.filter((e) => normalizeNameKey(e.name) === queryKey);
+  // RELIABILITY: name matching requires a USABLE string name — a
+  // candidate without one cannot be name-matched (it degrades to the
+  // fuzzy pool under allowFuzzy, or out of selection entirely).
+  const namedPool = popPool.filter((e) => typeof e.name === 'string');
+  const exactPool = namedPool.filter((e) => normalizeNameKey(e.name) === queryKey);
   const namePool =
-    exactPool.length > 0 ? exactPool : allowFuzzy ? popPool : [];
+    exactPool.length > 0 ? exactPool : allowFuzzy ? namedPool : [];
   const mappedPool = requireMapped
     ? namePool.filter((e) => classifyEntity(e) !== null)
     : namePool;
@@ -214,7 +235,10 @@ export function selectBestCandidate(results, options = {}) {
 
   const top = byScoreThenDeterminism[0];
   const best = top.candidate;
-  const rankedPool = rankCandidates(popPool, context, { weights });
+  // Alternatives rank the NAMEABLE pool (not popPool): the ranker's
+  // determinism tie-break calls localeCompare on names, and a nameless
+  // candidate must never reach it.
+  const rankedPool = rankCandidates(namedPool, context, { weights });
   const alternatives = rankedPool
     .filter((entry) => entry.candidate !== best)
     .slice(0, 6)
@@ -306,6 +330,13 @@ function failureFrom(diagnostics, seed, attempts) {
  *         no_mapped_entity | upstream_error.
  */
 export async function resolveTextQuery(rawText, options = {}) {
+  // RELIABILITY: options may arrive as null/array/garbage from callers
+  // and MCP wrappers — anything non-object degrades to {} (defaults),
+  // never a raw destructure TypeError.
+  const safeOptions =
+    options !== null && typeof options === 'object' && !Array.isArray(options)
+      ? options
+      : {};
   const {
     domain = undefined,
     minPopularity = undefined,
@@ -316,7 +347,7 @@ export async function resolveTextQuery(rawText, options = {}) {
     extraTypes = undefined,
     weights = undefined,
     search = searchEntities,
-  } = options;
+  } = safeOptions;
 
   // Steps 1-2: pure engine work, no I/O — typed failures propagate.
   const seed = resolveSeed(rawText, domain !== undefined ? { domain } : undefined);
