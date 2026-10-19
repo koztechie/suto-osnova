@@ -1578,3 +1578,14 @@ CRITICAL DISCOVERY (blocks the naive deploy path): the repo has NO git remote (`
 RECOMMENDED PATH (local repo, no GitHub needed, deploys static + functions together): Netlify CLI — `npm i -g netlify-cli`, `netlify login` (browser OAuth, the account step), `netlify init` (create/link the site), set env vars, `netlify deploy --prod` (runs `npm run build`, publishes `dist/`, ships `netlify/functions/`). Alternative (CI on push): create the GitHub repo, `git remote add origin … && git push -u origin main`, then Netlify "Add new site -> Import an existing project".
 
 DEPLOY-SIDE FACTS for the guide: env vars to set = QLOO_API_KEY (real key, NEVER committed), MOCK_MODE=false; build settings already pinned in netlify.toml (command `npm run build`, publish `dist`, functions `netlify/functions`, NODE_VERSION=22); same-origin `/api` means CORS does NOT block the Netlify deploy (the client and function share the site domain), but if the client/API are later split across domains, add `https://<site>.netlify.app` to ALLOWED_ORIGINS in server/src/middleware/cors.js; disk caches are per-instance/ephemeral on serverless (by design).
+
+## Task 176 — connect GitHub repo suto-osnova to the Netlify project
+
+Status: DONE (automatable parts) + ONE manual browser-OAuth step remains
+Date: 2026-10-19
+
+STATE FOUND: gh CLI authenticated as `koztechie`; Netlify CLI authenticated (Eugene Kozlovsky, team koztechie); Netlify project `suto-osnova` EXISTS (id 52afdc2b-b727-46f4-ac8a-6d87e83cc218, https://suto-osnova.netlify.app) from task 175; BUT the GitHub repo `koztechie/suto-osnova` did NOT exist yet ("Repository not found") and git had no remote.
+
+DONE (automated): created the PRIVATE GitHub repo `koztechie/suto-osnova` via `gh repo create --private --source=. --remote=origin --push`; full `main` history pushed; verified local main == origin/main == e4d61ee, only the `main` branch, repo visibility PRIVATE (safe default — one click to make public if the hackathon needs it).
+
+REMAINS (manual, browser OAuth): linking the repo to the Netlify project did NOT stick via API — `netlify api updateSite` with a `repo:{provider:github,repo:koztechie/suto-osnova,...}` payload returned 200 but `getSite` shows `repo: undefined` (the API silently ignores the repo attach because the Netlify GitHub App is not yet authorized on the koztechie GitHub account — the attach needs the App's installation_id, which only the browser OAuth grant provides; `gh api /user/installations` is 403 on the user token, so the gap is confirmed by the silent no-op). The one manual step: in the Netlify dashboard for the suto-osnova project -> Build & deploy -> Continuous deployment -> "Link site to a Git repo" -> GitHub -> authorize the Netlify GitHub App (one click) -> pick `koztechie/suto-osnova`. After that authorization the link can also be completed from the CLI (retry the updateSite repo payload) — offered to run it for the user once they authorize.
