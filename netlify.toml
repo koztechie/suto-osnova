@@ -1,0 +1,36 @@
+# Netlify production configuration (task 173).
+#
+# FORMAT NOTE: Netlify reads `netlify.toml` (TOML) — there is no
+# `netlify.json`; a JSON config file would be silently IGNORED and the
+# deploy would ship unconfigured. This TOML is the working config.
+#
+# TOPOLOGY: the vanilla client is built to `dist/` (npm run build) and
+# served as STATIC assets by Netlify's CDN; the Node `/api/*` gateway is
+# adapted to a serverless Function (netlify/functions/api.mjs) so the
+# whole app runs on Netlify's FREE tier with zero servers.
+
+[build]
+  # Build the client (Vite) -> dist/ (CSS minify + JS compress).
+  command = "npm run build"
+  # Static assets (the client) are published from dist/.
+  publish = "dist"
+  # The Node API gateway lives here as a Netlify Function.
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Route the API to the serverless function (first match wins, so this
+# MUST precede the SPA fallback below).
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# SPA fallback: any path with no matching static file serves the shell.
+# Netlify serves existing files in `publish/` BEFORE redirects (no force),
+# so dist/index.html, dist/robots.txt and dist/assets/* are untouched.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
