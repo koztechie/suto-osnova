@@ -1,7 +1,8 @@
 /**
- * CLIENT BUILD gate (task 171) — verifies the Vite production build
+ * CLIENT BUILD gate (tasks 171-172) — verifies the Vite production build
  * actually MINIFIES CSS and COMPRESSES JS, preserves the same-origin
- * `/api` gateway, leaks no secret, and keeps the asset contract.
+ * `/api` gateway, leaks no secret, keeps the asset contract, and the
+ * final HTML+CSS+JS bundle stays under the 180 KB budget.
  *
  * The build is run ONCE for the file (via scripts/buildClient.mjs) and
  * the emitted `dist/` (gitignored) is asserted against the raw
@@ -110,4 +111,25 @@ test('the asset contract holds: hashed assets, robots.txt at root, og:image pres
   assert.ok(!html.includes('./public/'), 'Vite rewrote the ./public refs (no broken paths)');
   assert.ok((await readFile(path.join(DIST, 'robots.txt'))).includes('User-agent'),
     'robots.txt ships at the web root');
+});
+
+test('final bundle (HTML + CSS + JS) stays under the 180 KB budget', async () => {
+  // Task 172: the DEPLOYED payload — the built HTML + the single CSS +
+  // the single JS — must not exceed 180 KB. Images (favicon,
+  // social-card) are excluded by the task wording (HTML+CSS+JS only).
+  const BUDGET_BYTES = 180 * 1024;
+  const htmlBytes = Buffer.byteLength(await readFile(path.join(DIST, 'index.html')));
+  const cssBytes = Buffer.byteLength(await builtAsset('.css'));
+  const jsBytes = Buffer.byteLength(await builtAsset('.js'));
+  const total = htmlBytes + cssBytes + jsBytes;
+
+  assert.ok(
+    total <= BUDGET_BYTES,
+    `the built bundle is ${total}B (${(total / 1024).toFixed(1)}KB) — over the 180KB budget ` +
+      `(html ${htmlBytes}B + css ${cssBytes}B + js ${jsBytes}B)`
+  );
+  // Headroom is the point of a budget: report it so a slow creep toward
+  // the ceiling is visible long before it trips the assertion.
+  const headroom = ((1 - total / BUDGET_BYTES) * 100).toFixed(1);
+  assert.ok(Number(headroom) > 0, `bundle uses ${(100 - Number(headroom)).toFixed(1)}% of the budget (${headroom}% headroom)`);
 });
