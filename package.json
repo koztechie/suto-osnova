@@ -14,6 +14,8 @@
     "verify:trackers": "node scripts/verify_no_trackers.js",
     "test": "NODE_ENV=test node --test",
     "test:stress": "node tests/stress-test.js",
+    "audit": "npm audit",
+    "audit:prod": "npm audit --omit=dev",
     "test:gc": "NODE_ENV=test node --expose-gc --test server/test/memoryIsolation.test.js",
     "lint": "node --check server/src/**/*.js"
   },
