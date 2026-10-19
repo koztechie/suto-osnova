@@ -209,6 +209,71 @@ export function renderIco() {
   return Buffer.concat([header, ...images.map((image) => image.png)]);
 }
 
+/** The social preview card geometry (OpenGraph, task 156). */
+export const SOCIAL_CARD = Object.freeze({
+  width: 1200,
+  height: 630,
+  monogramSize: 360,
+  frameInset: 28,
+  frameHalfWidth: 3,
+});
+
+/**
+ * The 1200x630 OpenGraph card RASTER: the archival floor, a muted
+ * inset frame (the plate edge) and the monogram centered — pure
+ * shapes, no font, palette-quantized like the favicons.
+ */
+export function renderSocialCardRaster() {
+  const { width, height, monogramSize, frameInset, frameHalfWidth } = SOCIAL_CARD;
+  const monogram = renderMonogramRaster(monogramSize);
+  const ox = Math.round((width - monogramSize) / 2);
+  const oy = Math.round((height - monogramSize) / 2);
+  const palette = [colors.bg, colors.ring, colors.mark]
+    .map((hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]);
+  const [bg, frameColour] = [palette[0], palette[1]];
+  const canvas = Buffer.alloc(width * height * 4);
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      let base = bg;
+      // The inset frame: a stroked rectangle near the canvas edge.
+      const edgeDistance = Math.min(x, y, width - 1 - x, height - 1 - y);
+      if (Math.abs(edgeDistance - frameInset) <= frameHalfWidth) base = frameColour;
+
+      let [r, g, b] = base;
+      // Overlay the centered monogram (alpha compositing).
+      const mx = x - ox;
+      const my = y - oy;
+      if (mx >= 0 && mx < monogramSize && my >= 0 && my < monogramSize) {
+        const index = (my * monogramSize + mx) * 4;
+        const alpha = monogram[index + 3] / 255;
+        if (alpha > 0) {
+          r = Math.round(monogram[index] * alpha + r * (1 - alpha));
+          g = Math.round(monogram[index + 1] * alpha + g * (1 - alpha));
+          b = Math.round(monogram[index + 2] * alpha + b * (1 - alpha));
+        }
+      }
+
+      // Quantize to the palette (silhouette blends snap back).
+      const nearest = palette
+        .map((entry) => ({ entry, distance: (entry[0] - r) ** 2 + (entry[1] - g) ** 2 + (entry[2] - b) ** 2 }))
+        .sort((left, right) => left.distance - right.distance)[0].entry;
+      const offset = (y * width + x) * 4;
+      canvas[offset] = nearest[0];
+      canvas[offset + 1] = nearest[1];
+      canvas[offset + 2] = nearest[2];
+      canvas[offset + 3] = 255;
+    }
+  }
+  return canvas;
+}
+
+/** The 1200x630 OpenGraph card as a PNG. */
+export function renderSocialCard() {
+  const { width, height } = SOCIAL_CARD;
+  return encodePng(width, height, renderSocialCardRaster());
+}
+
 /** CLI: regenerate both favicon files. */
 const isCli = process.argv[1]
   && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
@@ -216,5 +281,6 @@ if (isCli) {
   const publicDir = fileURLToPath(new URL('../client/public/', import.meta.url));
   writeFileSync(path.join(publicDir, 'favicon.svg'), renderMonogramSvg());
   writeFileSync(path.join(publicDir, 'favicon.ico'), renderIco());
-  process.stdout.write('favicon.svg + favicon.ico regenerated\n');
+  writeFileSync(path.join(publicDir, 'social-card.png'), renderSocialCard());
+  process.stdout.write('favicon.svg + favicon.ico + social-card.png regenerated\n');
 }
