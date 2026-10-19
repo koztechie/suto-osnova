@@ -25,6 +25,10 @@
  *   502 QLOO_UPSTREAM         upstream 5xx
  *   502 QLOO_REJECTED         other upstream 4xx (our params refused)
  *   502 QLOO_NETWORK          DNS/connection failures after retries
+ *                             (also: a seed resolution that failed with
+ *                              code `upstream_error` — the Qloo CALL died,
+ *                              so it is reported as the transport outage it
+ *                              is, never as a caller-side 400; task 167)
  *   400 PII_DETECTED          privacy guard refused the input (task 25)
  *   400 <typed codes>         domain validators (INVALID_DOMAIN, …)
  *   413 PAYLOAD_TOO_LARGE     request body over the limit
@@ -121,6 +125,25 @@ export function classifyError(err) {
   // --- privacy guard (task 25) -------------------------------------------
   if (err?.name === 'PrivacyError') {
     return { httpStatus: 400, code: 'PII_DETECTED', message: err.message };
+  }
+
+  // --- seed resolution TRANSPORT failure (task 167) ------------------------
+  // A SeedResolutionError with code `upstream_error` means the QLOO CALL
+  // itself failed (DNS / connection refused / timeout) — a TRANSPORT
+  // outage, NOT a caller mistake. It must never be reported as a 400
+  // (which would blame the client for an internet blip): it inherits the
+  // SAME transport codes as a raw Qloo failure, so a temporary outage
+  // yields 502 QLOO_NETWORK (or 504 on timeout) with an honest
+  // retry-later signal. The other resolution codes (no_results,
+  // no_valid_id, no_mapped_entity) stay 4xx — those ARE caller/content
+  // problems and legitimately route through the typed-input branch below.
+  if (err?.name === 'SeedResolutionError' && err.code === 'upstream_error') {
+    // The resolver preserves the underlying QlooApiError as `cause`;
+    // delegating to it keeps the full upstream {status, attempts} detail.
+    if (err.cause?.name === 'QlooApiError') return classifyError(err.cause);
+    return isTimeoutCause(err.cause)
+      ? { httpStatus: 504, code: 'QLOO_TIMEOUT', message: 'Qloo request timed out' }
+      : { httpStatus: 502, code: 'QLOO_NETWORK', message: 'Qloo is unreachable (network failure)' };
   }
 
   // --- typed domain validators: forward their precise code ---------------
