@@ -1565,3 +1565,16 @@ HARDENING (netlify/functions/api.mjs): a `canonicalPath()` step — ensure a lea
 VERIFICATION (2 NEW tests, gate now 8): ROUTE COVERAGE — every API route answers 200 ok through the bridge: GET /api/health, GET /api/categories, and POST /api/generate/{worldbuilder,experiential,antithesis} (all three modes run serverless in MOCK_MODE); PATH-FORM NORMALIZATION — the same health route answers 200 ok under ALL THREE forms (`/api/health`, `/health`, `/.netlify/functions/api/health`) proving the normalization, plus the bare-splat form of a generate route (`/generate/worldbuilder`) routes correctly with a POST body. The redirect ORDER (`/api/*` before `/*`) remains pinned from task 173.
 
 npm test 1177/1177 (two consecutive stable runs; baseline 1175 = +2 routing tests), npm run lint clean, node --check on the adapter clean. Zero new dependencies. Note: the `status = 200` redirect is an internal REWRITE (proxy), not a browser redirect, so the client always talks same-origin `/api` and the function serves it serverlessly.
+
+## Task 175 — Netlify account (koztechie) — MANUAL, requires human credentials
+
+Status: MANUAL (cannot be automated — needs the user's identity/credentials + CAPTCHA/2FA; a step-by-step guide was delivered instead)
+Date: 2026-10-19
+
+WHY MANUAL: creating/logging into a Netlify account under the `koztechie` identity requires the user's email/password or OAuth session and 2FA/CAPTCHA. The agent has no credentials and must not handle the user's account secrets. Everything that CAN be prepared was verified: netlify.toml (build/publish/functions), the serverless adapter, and `npm run build` all pass their gates (tasks 171/173/174).
+
+CRITICAL DISCOVERY (blocks the naive deploy path): the repo has NO git remote (`git remote -v` is empty) — it is LOCAL-ONLY on branch `main` at e3e6252. Netlify's "Import from GitHub" flow therefore cannot work until the repo is pushed to GitHub under `koztechie`. Also: a manual drag-and-drop deploy of `dist/` would ship the STATIC client but NOT the Netlify Function (functions deploy only via CI or the Netlify CLI), so `/api/*` would 404 — the serverless path REQUIRES either the GitHub-connected build or `netlify deploy`.
+
+RECOMMENDED PATH (local repo, no GitHub needed, deploys static + functions together): Netlify CLI — `npm i -g netlify-cli`, `netlify login` (browser OAuth, the account step), `netlify init` (create/link the site), set env vars, `netlify deploy --prod` (runs `npm run build`, publishes `dist/`, ships `netlify/functions/`). Alternative (CI on push): create the GitHub repo, `git remote add origin … && git push -u origin main`, then Netlify "Add new site -> Import an existing project".
+
+DEPLOY-SIDE FACTS for the guide: env vars to set = QLOO_API_KEY (real key, NEVER committed), MOCK_MODE=false; build settings already pinned in netlify.toml (command `npm run build`, publish `dist`, functions `netlify/functions`, NODE_VERSION=22); same-origin `/api` means CORS does NOT block the Netlify deploy (the client and function share the site domain), but if the client/API are later split across domains, add `https://<site>.netlify.app` to ALLOWED_ORIGINS in server/src/middleware/cors.js; disk caches are per-instance/ephemeral on serverless (by design).
