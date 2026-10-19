@@ -97,3 +97,50 @@ test('function: POST /api/generate/worldbuilder runs the pipeline serverless', a
   assert.ok(response.headers['X-Request-Id'] || response.headers['x-request-id'],
     'the X-Request-Id correlation header survives the bridge');
 });
+
+test('routing: every API route resolves through the bridge (canonical form)', async () => {
+  const cases = [
+    ['GET', '/api/health', null],
+    ['GET', '/api/categories', null],
+    ['POST', '/api/generate/worldbuilder', { seed: 'A24 Psychological Horror' }],
+    ['POST', '/api/generate/experiential', { seed: 'Ambient Festival' }],
+    ['POST', '/api/generate/antithesis', { seed: 'Blade Runner' }],
+  ];
+  for (const [method, route, body] of cases) {
+    const response = await netlifyHandler({
+      httpMethod: method,
+      path: route,
+      headers: body ? { 'content-type': 'application/json' } : {},
+      queryStringParameters: {},
+      body: body ? JSON.stringify(body) : null,
+    });
+    assert.equal(response.statusCode, 200,
+      `${method} ${route} -> 200 (got ${response.statusCode}: ${String(response.body).slice(0, 160)})`);
+    assert.equal(JSON.parse(response.body).status, 'ok', `${route} answers ok`);
+  }
+});
+
+test('routing: the redirect splat and mount path forms normalize to the same route', async () => {
+  // Netlify can deliver the ORIGINAL path, the bare REDIRECT SPLAT, or
+  // the full function mount — the adapter must route all three identically.
+  for (const form of ['/api/health', '/health', '/.netlify/functions/api/health']) {
+    const response = await netlifyHandler({
+      httpMethod: 'GET',
+      path: form,
+      headers: {},
+      queryStringParameters: {},
+      body: null,
+    });
+    assert.equal(response.statusCode, 200, `path form ${form} routes to health`);
+    assert.equal(JSON.parse(response.body).status, 'ok', `${form} is health, not the echo route`);
+  }
+  // The splat form of a generate route normalizes too (POST + body).
+  const generate = await netlifyHandler({
+    httpMethod: 'POST',
+    path: '/generate/worldbuilder',
+    headers: { 'content-type': 'application/json' },
+    queryStringParameters: {},
+    body: JSON.stringify({ seed: 'A24 Psychological Horror' }),
+  });
+  assert.equal(generate.statusCode, 200, 'the splat form of a generate route routes correctly');
+});

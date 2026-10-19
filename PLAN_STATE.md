@@ -1550,3 +1550,18 @@ DELIVERABLES: (1) netlify.toml — [build] command `npm run build`, publish `dis
 VERIFICATION (gate EXECUTES the bridge, not just checks strings): config structure (build/publish/functions/NODE_VERSION pinned); redirect ORDER (`/api/*` before `/*`); the adapter imports the real createHttpHandler and is ESM (no require). Function invocation against the real handler in MOCK_MODE: GET /api/health -> 200 ok with Content-Type surviving the bridge; OPTIONS preflight -> 204 (CORS short-circuit, not run as a request); POST /api/generate/worldbuilder -> 200 ok (the FULL pipeline runs serverless through the bridge) with the X-Request-Id correlation header surviving. One assertion was corrected during writing: the health handler does NOT set X-Request-Id (only generate/categories/errors do), so the correlation-header check moved to the generate response.
 
 npm test 1175/1175 (two consecutive stable runs; baseline 1169 = +6 netlify tests), npm run lint clean, node --check on the adapter clean. netlify.toml + netlify/functions/api.mjs are NOT gitignored (committed). Zero new dependencies (node:stream only). Deploy notes: set QLOO_API_KEY (and optional LLM_API_KEY) as Netlify env vars; MOCK_MODE off in production; the disk caches are per-instance/ephemeral on serverless (the app treats them as best-effort, already designed for that).
+
+## Task 174 — API redirect routes to the serverless function
+
+Status: DONE (routing hardened + all routes + all path forms verified)
+Date: 2026-10-19
+
+SCOPE: task 173 created the `/api/* -> /.netlify/functions/api/:splat` redirect. This task verifies and HARDENS the ROUTING itself — the part a naive setup gets wrong.
+
+THE CORRECTNESS GAP FOUND: the adapter built `req.url` from `event.path` verbatim and the handler routes on the canonical `/api/...` form. But a `:splat` redirect can hand the function ONE OF SEVERAL path forms depending on Netlify's invocation: the ORIGINAL path (`/api/health`), the bare REDIRECT SPLAT (`/health`), or the full function mount (`/.netlify/functions/api/health`). A web search of Netlify's redirect-to-function behavior did NOT settle which form arrives, so the honest anti-fragile fix is to NORMALIZE every variant to the canonical `/api/...` route — correct under ANY Netlify behavior, not one guess.
+
+HARDENING (netlify/functions/api.mjs): a `canonicalPath()` step — ensure a leading slash, strip a full `/.netlify/functions/<name>` mount prefix if present, then ensure the `/api` namespace — so all three path forms (and the bare-splat form of any sub-route, e.g. `/generate/worldbuilder` -> `/api/generate/worldbuilder`) resolve to the same handler route. The query-string reconstruction is unchanged.
+
+VERIFICATION (2 NEW tests, gate now 8): ROUTE COVERAGE — every API route answers 200 ok through the bridge: GET /api/health, GET /api/categories, and POST /api/generate/{worldbuilder,experiential,antithesis} (all three modes run serverless in MOCK_MODE); PATH-FORM NORMALIZATION — the same health route answers 200 ok under ALL THREE forms (`/api/health`, `/health`, `/.netlify/functions/api/health`) proving the normalization, plus the bare-splat form of a generate route (`/generate/worldbuilder`) routes correctly with a POST body. The redirect ORDER (`/api/*` before `/*`) remains pinned from task 173.
+
+npm test 1177/1177 (two consecutive stable runs; baseline 1175 = +2 routing tests), npm run lint clean, node --check on the adapter clean. Zero new dependencies. Note: the `status = 200` redirect is an internal REWRITE (proxy), not a browser redirect, so the client always talks same-origin `/api` and the function serves it serverlessly.

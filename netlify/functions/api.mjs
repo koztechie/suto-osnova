@@ -25,9 +25,31 @@ import { createHttpHandler } from '../../server/src/app.js';
 // Reused across warm invocations (created once per cold start).
 const handle = createHttpHandler();
 
-/** Reconstructs the request URL (path + query) the handler expects. */
+/**
+ * Canonicalizes the request path the handler routes on.
+ *
+ * REDIRECT ROUTING (task 174): the `/api/* -> /.netlify/functions/api/:splat`
+ * redirect can hand the function ONE OF SEVERAL path forms depending on
+ * Netlify's invocation: the ORIGINAL path (`/api/health`), the bare
+ * REDIRECT SPLAT (`/health`), or the full function mount
+ * (`/.netlify/functions/api/health`). The handler routes on the
+ * canonical `/api/...` form, so every variant is normalized here — the
+ * routing is correct under ANY Netlify behavior, not just one guess.
+ */
+function canonicalPath(rawPath) {
+  let p = rawPath || '/';
+  if (!p.startsWith('/')) p = `/${p}`;
+  // Strip a full function-mount prefix if Netlify passed it.
+  p = p.replace(/^\/\.netlify\/functions\/[^/]+/, '');
+  if (!p.startsWith('/')) p = `/${p}`;
+  // Ensure the /api namespace the handler routes on.
+  if (!p.startsWith('/api')) p = `/api${p}`;
+  return p;
+}
+
+/** Reconstructs the request URL (canonical path + query) for the handler. */
 function requestUrl(event) {
-  let url = event.path || '/';
+  let url = canonicalPath(event.path);
   const query = event.queryStringParameters;
   if (query && Object.keys(query).length > 0) {
     url += `?${new URLSearchParams(query)}`;
