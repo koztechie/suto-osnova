@@ -90,8 +90,20 @@ const PATTERNS = [
   },
   {
     type: 'credit_card',
-    // 13-19 digits with space/dash separators; Luhn-verified to kill FPs
-    regex: /\b(?:\d[ -]?){12,18}\d\b/g,
+    // 13-19 digits with space/dash separators; Luhn-verified to kill FPs.
+    // RELIABILITY (task 165): two structural guards stop the pattern
+    // firing on legitimate structured data that is ubiquitous in this
+    // system's OUTPUT (entity UUIDs, floating-point affinities):
+    //   (?<![\d.])  a match cannot START mid-number or right after a
+    //                decimal point — so the fractional run of a float
+    //                like 0.8799999999999999 is never a "card";
+    //   (?![\w-])    a match must END at a token boundary — a UUID
+    //                prefix like 00040004-1111-4222 (which can pass
+    //                Luhn by chance) is always followed by more
+    //                dash-digit groups, so it can never satisfy this.
+    // A real card is a standalone token (bounded by spaces/punctuation),
+    // so both guards leave it matched.
+    regex: /(?<![\d.])(?:\d[ -]?){12,18}\d(?![\w-])/g,
     validate: (m) => {
       const digits = m.replace(/[ -]/g, '');
       if (digits.length < 13 || digits.length > 19) return false;

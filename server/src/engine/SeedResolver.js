@@ -35,6 +35,7 @@
  */
 
 import { resolveDomain, DomainMappingError } from '../services/domainMapper.js';
+import { sanitizeText } from '../services/privacyGuard.js';
 
 /** Typed error for unusable cultural anchors. */
 export class InvalidSeedError extends Error {
@@ -72,14 +73,29 @@ const WHITESPACE_RUN = /\s+/g;
  * The normalization pipeline described in the module header. Pure and
  * exported so callers (MCP tools, tests) can normalize without full
  * validation when they only need the text form.
+ *
+ * OUTPUT PII GUARD (task 165): the last step pattern-redacts unambiguous
+ * personal data (emails, phones, SSNs, cards, IPs, JWTs) that a user may
+ * have pasted into the anchor. This is the SINGLE choke point: the
+ * normalized text is BOTH the search query AND the `seed.normalized` /
+ * `anchor` value echoed into every output bundle, so redacting here
+ * keeps PII out of all three export formats at the source. Redaction is
+ * idempotent and preserves cultural anchors (years, zip-code-like album
+ * titles such as "1989", and "Beverly Hills 90210" never match the
+ * separator-joined phone pattern). `raw` stays untouched by contract —
+ * it is never echoed into an output bundle, only logged under the
+ * logger's own secret scrubber.
  */
 export function normalizeSeedText(value) {
-  return value
+  const cleaned = value
     .normalize('NFC')
     .replace(ZERO_WIDTH, '')
     .replace(CONTROL_CHARS, ' ')
     .replace(WHITESPACE_RUN, ' ')
     .trim();
+  // Redact PII, then re-collapse whitespace: a redacted segment can
+  // leave a double space ("for  [REDACTED]  call" -> "for [REDACTED] call").
+  return sanitizeText(cleaned).value.replace(WHITESPACE_RUN, ' ').trim();
 }
 
 /** Counts code points (an emoji is one character, not two UTF-16 units). */
