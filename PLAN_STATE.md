@@ -1359,3 +1359,29 @@ Deliverable: the aggregated readiness contract — NEW tests/clientReadiness.tes
 READINESS GATES: MODULE GRAPH — a BFS over the import graph proves every shipped module hangs off main.js (no dead code); ID CROSS-CONTRACT — every getElementById target a module touches exists in index.html (30 ids cross-checked; a typo fails here, not in front of a judge); ZERO BLOCKERS — no TODO/FIXME/XXX/HACK markers anywhere in the client sources (unfinished work cannot hide behind a green suite); SHEET+ASSET INVENTORY — main.css imports exactly the four documented sheets, every local markup reference (icons, stylesheet, script, og:image) resolves, the public manifest is complete.
 
 READINESS EVIDENCE (tasks 157-158, recorded there): the full interface booted in REAL Chromium with ZERO console errors, all five featured cards revealed from the live registry, presets/generation/widgets/inspector all exercised, ZERO external network origins, Lighthouse Accessibility/Best-Practices/SEO at 1.0 with zero failing audits; the paint-critical payload is 45.6KB answered in ~39ms intrinsic. Verdict: the client interface is 100% READY — every planned element implemented, wired, gated and live-verified. npm test 1091/1091 (two consecutive stable runs; baseline 1087), npm run lint clean. Zero new dependencies.
+
+## EPIC — the archival iron web workstation (tasks 121-159)
+
+Status: COMPLETE
+Date: 2026-10-19
+Commit: feat: create high-contrast archival iron web workstation for SUTO OSNOVA
+
+The vanilla client workstation is implemented end to end: scaffold, design tokens, semantic markup, the interactive workspace, the cultural-domains showcase, the result widgets, the judges' tools, the quality gates — every task live-verified and pinned.
+
+FOUNDATION (5ef0516 scaffold 121; d1ada47 tokens.css 122; 7f11967 pinned system tokens 123): the four-sheet architecture (tokens/typography/safe-area/cards + main), the STRICT Archival Iron palette as the single source (--bg #101114 / --surface #1F2326 / --muted #96A2A8 / --gold #D4A853 / --rust #E06338 / --text #F4EFE6, three layers, zero foreign literals anywhere).
+
+TYPE + CONTRAST (ea451f7 serif stacks 124; a5fc7cd mono stacks 125 — JetBrains Mono BANNED by directive, US-provenance stack shipped; 100c4e4 17.05:1 main text via --bg-page; 1971514 7.26:1 gold via --gold-hi; 3f6101c 6.15:1 secondary via --muted-hi): every contrast bar measured from WCAG first principles and pinned; palette frozen, all levers derived.
+
+SHELL + WORKSPACE (c53abfd semantic landmarks 129; 15e572e viewport 130; df30681 safe areas 131; 877bb2f status titlebar + Qloo indicator 132; 75c276e monolithic tab bar with the gold focus frame 133; abdc853 overflow-safe two-column layout 137; 6f6b73a full responsiveness for 1080x2400 and 1920x1080/1200 152).
+
+INPUT + FEEDBACK (7ce2af6 anchor combobox with Qloo category hints 134; 2d0815b demo presets 135; ecb9a8f terminal progress readout 136): ARIA combobox over free text, one-tap scenarios, discrete stepping with the WCAG-bounded motion cap.
+
+DOMAINS SHOWCASE (a5fb87e the five-plate grid 138; d83c57c Sonic Architecture 139; d025d64 Literary Substrate 140; 056802b Material Culture & Form 141; 46474a4 Gastronomic Topology 142; 1a1d8a8 Visual Chiaroscuro 143): every featured card data-grounded in the live /api/categories contract (type + genre-family gates), curated canons framed as anchors, never as results.
+
+RESULT WIDGETS + JUDGE TOOLS (e22ed4d affinity meters 144; edd4b13 the oxide Cultural Antipode block 145; 728df5f export/print actions 146; 5e5e4fd clipboard with instant feedback 147; a7ecf67 Raw API Call Inspector modal 148; 6bd5199 keyboard control 149): backend-measured values only, XSS-safe printing, the judges' zero-third-party evidence surface.
+
+POLISH + QUALITY (f08e876 tap highlight 150; af2028e hidden scrollbars 151; d1a0f51 zero unnecessary DOM writes 153; 84d829c prefers-reduced-motion 154; 61f094d monogram favicons vector+ico 155; 2456c10 OpenGraph + social card 156).
+
+VERIFICATION ERA (282019a live Chromium walkthrough + engine matrix 157 — Lighthouse 1.0/1.0/1.0, zero console errors, zero external origins; 23d6b1e FCP measurement + paint-critical budget 158 — 45.6KB intrinsic, ~39ms over the real server; 6d8a88a 100% readiness gate 159 — module graph, id cross-contract, zero blockers).
+
+Suite: 1091/1091 (two consecutive stable runs), lint clean. Zero new dependencies (Node core zlib only, for icon generation).
