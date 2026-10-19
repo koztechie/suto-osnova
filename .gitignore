@@ -32,3 +32,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.sublime-workspace
+
+# Local Netlify folder
+.netlify
