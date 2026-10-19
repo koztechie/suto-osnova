@@ -1,17 +1,16 @@
 /**
- * NETLIFY DEPLOY gate (task 173) — pins the free-tier production config
- * AND executes the serverless adapter against the real handler.
+ * NETLIFY DEPLOY gate (tasks 173-176) — pins the free-tier production
+ * config AND executes the serverless adapter against the real handler.
  *
  * The config (`netlify.toml`) is TOML because that is the ONLY format
- * Netlify reads — a `netlify.json` would be silently ignored and the
- * deploy would ship unconfigured. The `/api/*` gateway is adapted to a
- * Function (netlify/functions/api.mjs) that bridges Netlify's event
- * model to the Node `(req, res)` handler, so the whole app runs
- * serverless with zero new dependencies.
- *
- * This gate validates the config structure AND invokes the function
- * (health 200, CORS preflight 204, a real generate run) so a broken
- * bridge cannot reach a deploy.
+ * Netlify reads. The `/api/*` gateway is adapted to a FUNCTIONS v2
+ * Function (netlify/functions/api.mjs): it receives a WHATWG `Request`
+ * and MUST return a WHATWG `Response` (returning the legacy v1
+ * `{statusCode,...}` object raised the production 502
+ * "Function returned an unsupported value"). This gate validates the
+ * config structure AND invokes the function with real `Request` objects
+ * (health 200, CORS 204, a real generate run, and path-form
+ * normalization) so a broken bridge cannot reach a deploy.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,6 +33,18 @@ const toml = await readFile(path.join(ROOT, 'netlify.toml'), 'utf8');
 const fnSource = await readFile(path.join(ROOT, 'netlify', 'functions', 'api.mjs'), 'utf8');
 const { default: netlifyHandler } = await import('../netlify/functions/api.mjs');
 
+const BASE = 'https://suto-osnova.netlify.app';
+
+/** Invokes the v2 handler with a WHATWG Request (mirrors Netlify). */
+function call(method, requestPath, { body, headers } = {}) {
+  const init = { method, headers: { ...(headers ?? {}) } };
+  if (body) {
+    init.headers['content-type'] = 'application/json';
+    init.body = JSON.stringify(body);
+  }
+  return netlifyHandler(new Request(BASE + requestPath, init));
+}
+
 test('netlify.toml: build, publish, functions dir and pinned Node', () => {
   assert.match(toml, /command\s*=\s*"npm run build"/, 'builds the client');
   assert.match(toml, /publish\s*=\s*"dist"/, 'publishes the static client from dist');
@@ -50,52 +61,41 @@ test('netlify.toml: the /api redirect precedes the SPA fallback (first match win
   assert.match(toml, /\.netlify\/functions\/api/, 'the /api/* redirect targets the function');
 });
 
-test('the function adapter bridges the real Node handler', () => {
+test('the function adapter bridges the real Node handler as FUNCTIONS v2', () => {
   assert.ok(fnSource.includes("from '../../server/src/app.js'"),
     'the adapter imports the actual createHttpHandler');
+  assert.ok(fnSource.includes('new Response('),
+    'the adapter RETURNS a WHATWG Response (v2 contract — the 502 fix)');
   assert.match(fnSource, /export default/, 'the adapter exports a default Netlify handler');
   assert.ok(!/\brequire\(/.test(fnSource), 'the adapter is ESM (no CommonJS require)');
 });
 
-test('function: GET /api/health answers 200 ok through the bridge', async () => {
-  const response = await netlifyHandler({
-    httpMethod: 'GET',
-    path: '/api/health',
-    headers: {},
-    queryStringParameters: {},
-    body: null,
-  });
-  assert.equal(response.statusCode, 200, 'health is 200 in MOCK_MODE');
-  assert.equal(JSON.parse(response.body).status, 'ok');
-  // The headers set via res.writeHead/setHeader survive the bridge.
-  assert.equal(response.headers['Content-Type'], 'application/json');
+test('function: GET /api/health answers a real 200 Response', async () => {
+  const response = await call('GET', '/api/health');
+  assert.ok(response instanceof Response, 'the handler returns a WHATWG Response');
+  assert.equal(response.status, 200, 'health is 200 in MOCK_MODE');
+  assert.equal((await response.json()).status, 'ok');
+  assert.equal(response.headers.get('content-type'), 'application/json',
+    'headers set via writeHead/setHeader survive into the Response');
 });
 
 test('function: OPTIONS preflight answers 204 (CORS short-circuit)', async () => {
-  const response = await netlifyHandler({
-    httpMethod: 'OPTIONS',
-    path: '/api/health',
+  const response = await call('OPTIONS', '/api/health', {
     headers: { origin: 'http://localhost:5173' },
-    queryStringParameters: {},
-    body: null,
   });
-  assert.equal(response.statusCode, 204, 'the CORS preflight is answered, not run as a request');
+  assert.equal(response.status, 204, 'the CORS preflight is answered, not run as a request');
 });
 
 test('function: POST /api/generate/worldbuilder runs the pipeline serverless', async () => {
-  const response = await netlifyHandler({
-    httpMethod: 'POST',
-    path: '/api/generate/worldbuilder',
-    headers: { 'content-type': 'application/json' },
-    queryStringParameters: {},
-    body: JSON.stringify({ seed: 'A24 Psychological Horror', format: 'json' }),
+  const response = await call('POST', '/api/generate/worldbuilder', {
+    body: { seed: 'A24 Psychological Horror', format: 'json' },
   });
-  assert.equal(response.statusCode, 200,
-    `expected 200, got ${response.statusCode}: ${String(response.body).slice(0, 200)}`);
-  assert.equal(JSON.parse(response.body).status, 'ok');
-  // generate sets the X-Request-Id correlation header; it survives the bridge.
-  assert.ok(response.headers['X-Request-Id'] || response.headers['x-request-id'],
-    'the X-Request-Id correlation header survives the bridge');
+  const payload = await response.json(); // read the body ONCE
+  assert.equal(response.status, 200,
+    `expected 200, got ${response.status}: ${JSON.stringify(payload).slice(0, 200)}`);
+  assert.equal(payload.status, 'ok');
+  assert.ok(response.headers.get('x-request-id'),
+    'the X-Request-Id correlation header survives into the Response');
 });
 
 test('routing: every API route resolves through the bridge (canonical form)', async () => {
@@ -107,16 +107,11 @@ test('routing: every API route resolves through the bridge (canonical form)', as
     ['POST', '/api/generate/antithesis', { seed: 'Blade Runner' }],
   ];
   for (const [method, route, body] of cases) {
-    const response = await netlifyHandler({
-      httpMethod: method,
-      path: route,
-      headers: body ? { 'content-type': 'application/json' } : {},
-      queryStringParameters: {},
-      body: body ? JSON.stringify(body) : null,
-    });
-    assert.equal(response.statusCode, 200,
-      `${method} ${route} -> 200 (got ${response.statusCode}: ${String(response.body).slice(0, 160)})`);
-    assert.equal(JSON.parse(response.body).status, 'ok', `${route} answers ok`);
+    const response = await call(method, route, { body });
+    assert.equal(response.status, 200,
+      `${method} ${route} -> 200 (got ${response.status}: ${(await response.text()).slice(0, 160)})`);
+    assert.equal((await call(method, route, { body }).then((r) => r.json())).status, 'ok',
+      `${route} answers ok`);
   }
 });
 
@@ -124,23 +119,13 @@ test('routing: the redirect splat and mount path forms normalize to the same rou
   // Netlify can deliver the ORIGINAL path, the bare REDIRECT SPLAT, or
   // the full function mount — the adapter must route all three identically.
   for (const form of ['/api/health', '/health', '/.netlify/functions/api/health']) {
-    const response = await netlifyHandler({
-      httpMethod: 'GET',
-      path: form,
-      headers: {},
-      queryStringParameters: {},
-      body: null,
-    });
-    assert.equal(response.statusCode, 200, `path form ${form} routes to health`);
-    assert.equal(JSON.parse(response.body).status, 'ok', `${form} is health, not the echo route`);
+    const response = await call('GET', form);
+    assert.equal(response.status, 200, `path form ${form} routes to health`);
+    assert.equal((await response.json()).status, 'ok', `${form} is health, not the echo route`);
   }
   // The splat form of a generate route normalizes too (POST + body).
-  const generate = await netlifyHandler({
-    httpMethod: 'POST',
-    path: '/generate/worldbuilder',
-    headers: { 'content-type': 'application/json' },
-    queryStringParameters: {},
-    body: JSON.stringify({ seed: 'A24 Psychological Horror' }),
+  const generate = await call('POST', '/generate/worldbuilder', {
+    body: { seed: 'A24 Psychological Horror' },
   });
-  assert.equal(generate.statusCode, 200, 'the splat form of a generate route routes correctly');
+  assert.equal(generate.status, 200, 'the splat form of a generate route routes correctly');
 });

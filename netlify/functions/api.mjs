@@ -1,23 +1,27 @@
 /**
- * Netlify Function adapter (task 173) — bridges the existing Node
+ * Netlify Function adapter (tasks 173-176) — bridges the existing Node
  * `(req, res)` HTTP handler (server/src/app.js) to Netlify's serverless
  * model so the whole `/api/*` gateway runs on Netlify's FREE tier.
  *
- * WHY AN ADAPTER: the app is written against Node's native
- * `http.createServer(createHttpHandler())` surface. Netlify Functions
- * receive a parsed EVENT object and return a `{statusCode, headers,
- * body}` response — no sockets. This module translates between the two:
- *   - event -> a Node-like `req` (a Readable carrying the body, plus
- *     method/url/headers/socket.remoteAddress the handler reads);
- *   - the handler's `res` calls (writeHead/setHeader/write/end/destroy)
- *     are captured and returned as the function response.
+ * FUNCTIONS v2 CONTRACT (the 502 fix): Netlify's current runtime is
+ * FUNCTIONS v2 — the default export receives a WHATWG `Request` and MUST
+ * return a WHATWG `Response` (returning the legacy `{statusCode, headers,
+ * body}` object raised `NetlifyUserError: Function returned an
+ * unsupported value. Accepted types are 'Response' or 'undefined'`).
+ * This adapter therefore: buffers the Request body, feeds it into a
+ * Node-like `req` (Readable + method/url/headers/socket), captures the
+ * handler's `res` calls, and returns `new Response(body, {status, headers})`.
  *
- * ONE HANDLER PER COLD START: `createHttpHandler()` is invoked once at
+ * REDIRECT PATH: the `/api/* -> /.netlify/functions/api/:splat` redirect
+ * can hand the function the ORIGINAL path (`/api/health`), the bare
+ * SPLAT (`/health`), or the full mount (`/.netlify/functions/api/health`)
+ * — `canonicalPath()` normalizes all three to the `/api/...` route the
+ * handler dispatches on (pinned by tests/netlifyDeploy.test.js).
+ *
+ * ONE HANDLER PER COLD START: `createHttpHandler()` is created once at
  * module load and reused across warm invocations, so the inbound rate
- * limiter persists within a lambda instance (a documented serverless
- * limitation: it resets across cold starts).
- *
- * Zero new dependencies: the bridge uses only `node:stream`.
+ * limiter persists within a lambda instance (resets on cold start — a
+ * documented serverless limitation). Zero new dependencies.
  */
 import { Readable } from 'node:stream';
 import { createHttpHandler } from '../../server/src/app.js';
@@ -26,70 +30,42 @@ import { createHttpHandler } from '../../server/src/app.js';
 const handle = createHttpHandler();
 
 /**
- * Canonicalizes the request path the handler routes on.
- *
- * REDIRECT ROUTING (task 174): the `/api/* -> /.netlify/functions/api/:splat`
- * redirect can hand the function ONE OF SEVERAL path forms depending on
- * Netlify's invocation: the ORIGINAL path (`/api/health`), the bare
- * REDIRECT SPLAT (`/health`), or the full function mount
- * (`/.netlify/functions/api/health`). The handler routes on the
- * canonical `/api/...` form, so every variant is normalized here — the
- * routing is correct under ANY Netlify behavior, not just one guess.
+ * Canonicalizes the request path the handler routes on: ensure a leading
+ * slash, strip a full function-mount prefix if present, ensure `/api`.
  */
 function canonicalPath(rawPath) {
   let p = rawPath || '/';
   if (!p.startsWith('/')) p = `/${p}`;
-  // Strip a full function-mount prefix if Netlify passed it.
   p = p.replace(/^\/\.netlify\/functions\/[^/]+/, '');
   if (!p.startsWith('/')) p = `/${p}`;
-  // Ensure the /api namespace the handler routes on.
   if (!p.startsWith('/api')) p = `/api${p}`;
   return p;
 }
 
-/** Reconstructs the request URL (canonical path + query) for the handler. */
-function requestUrl(event) {
-  let url = canonicalPath(event.path);
-  const query = event.queryStringParameters;
-  if (query && Object.keys(query).length > 0) {
-    url += `?${new URLSearchParams(query)}`;
-  }
-  return url;
-}
+/** Runs the Node (req, res) handler against one WHATWG Request. */
+async function runNodeHandler(request) {
+  const url = new URL(request.url);
+  const headers = Object.fromEntries(request.headers);
+  // Buffer the body (the API is JSON/text; no streaming needed).
+  const rawBody = Buffer.from(await request.arrayBuffer());
 
-/** Runs the Node (req, res) handler against one Netlify event. */
-function invoke(event) {
-  return new Promise((resolve, reject) => {
-    const method = event.httpMethod || 'GET';
-    const headers = { ...(event.headers || {}) };
-    // Netlify may base64-encode a binary body; the API is JSON/text.
-    const bodyText = event.isBase64Encoded && event.body
-      ? Buffer.from(event.body, 'base64')
-      : (event.body ?? '');
+  const req = Readable.from(rawBody.length > 0 ? [rawBody] : []);
+  req.method = request.method || 'GET';
+  req.url = canonicalPath(url.pathname) + url.search;
+  req.headers = headers;
+  // The rate limiter keys on the first X-Forwarded-For hop.
+  req.socket = {
+    remoteAddress: headers['x-forwarded-for']?.split(',')[0].trim() ?? '0.0.0.0',
+  };
 
-    // req: a Readable that emits the body then 'end' (empty for GET).
-    const req = Readable.from(bodyText ? [Buffer.from(bodyText)] : []);
-    req.method = method;
-    req.url = requestUrl(event);
-    req.headers = headers;
-    // The rate limiter keys on the first X-Forwarded-For hop (Netlify
-    // sets it); fall back to a placeholder so it never throws.
-    req.socket = {
-      remoteAddress: headers['x-forwarded-for']?.split(',')[0].trim() ?? '0.0.0.0',
-    };
+  const outHeaders = {};
+  let statusCode = 200;
+  let body = '';
+  let settled = false;
 
-    const outHeaders = {};
-    let statusCode = 200;
-    let body = '';
-    let settled = false;
-
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      resolve({ statusCode, headers: outHeaders, body, isBase64Encoded: false });
-    };
-
-    // res: writeHead is CHAINABLE (cors does `res.writeHead(204).end()`).
+  await new Promise((resolve) => {
+    const finish = () => { if (!settled) { settled = true; resolve(); } };
+    // writeHead is CHAINABLE (cors does `res.writeHead(204).end()`).
     const res = {
       writeHead(status, extra) {
         statusCode = status;
@@ -105,11 +81,24 @@ function invoke(event) {
       once() { return res; },
       emit() { return false; },
     };
-
-    handle(req, res).catch(reject);
+    // The handler has its own global error boundary; a rejection here is
+    // unexpected, so surface it as a 500 rather than an empty 200.
+    handle(req, res).catch((error) => {
+      statusCode = 500;
+      body = JSON.stringify({ status: 'error', error: { code: 'INTERNAL', message: String(error?.message ?? error) } });
+      finish();
+    });
   });
+
+  return { statusCode, headers: outHeaders, body };
 }
 
-export default async function netlifyHandler(event) {
-  return invoke(event);
+/** Netlify Functions v2 default export: (Request) -> Response. */
+export default async function netlifyHandler(request) {
+  const { statusCode, headers, body } = await runNodeHandler(request);
+  // 204/205/304 MUST carry a null body — the Response constructor
+  // REJECTS even an empty string there (this broke the CORS preflight).
+  const responseBody =
+    statusCode === 204 || statusCode === 205 || statusCode === 304 ? null : body;
+  return new Response(responseBody, { status: statusCode, headers });
 }
