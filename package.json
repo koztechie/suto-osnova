@@ -34,5 +34,8 @@
   },
   "devDependencies": {
     "@qloo/qloo-harness": "^0.1.26"
+  },
+  "overrides": {
+    "@earendil-works/pi-coding-agent": "0.86.0"
   }
 }
