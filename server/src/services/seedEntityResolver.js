@@ -151,6 +151,14 @@ export function extractProbes(classification, seed) {
       }
       push(fragment, 'fragment');
     }
+    // FALLBACK: an UNQUOTED description with no comma/quote fragments
+    // ("rain-soaked neon noir with melancholic jazz") would otherwise
+    // yield ZERO probes and a spurious no_results. Use the whole
+    // description as ONE bounded probe — searching it is better than
+    // guaranteeing failure.
+    if (probes.length === 0) {
+      push(seed.normalized, 'description');
+    }
   }
   return probes;
 }

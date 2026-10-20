@@ -436,3 +436,18 @@ test('aesthetic seed: a weak place match is EXEMPT (resolves by taste, not name)
   });
   assert.equal(result.entity.name, "Lucali's", 'the aesthetic path is exempt from the place floor');
 });
+
+test('aesthetic seed without quotes/commas: the description itself becomes the probe', async () => {
+  // An unquoted description with no comma/quote fragments previously
+  // yielded ZERO probes and a spurious no_results.
+  const seed = resolveSeed('rain-soaked neon noir with melancholic jazz');
+  const probes = extractProbes(classifySeedFormat(seed), seed);
+  assert.equal(probes.length, 1, 'the unquoted description yields one probe (not zero)');
+  assert.equal(probes[0].source, 'description');
+
+  // End-to-end: the aesthetic seed RESOLVES instead of failing no_results.
+  const result = await resolveTextQuery('rain-soaked neon noir with melancholic jazz', {
+    search: stubSearch([[restaurant("Lucali's")]]),
+  });
+  assert.equal(result.entity.name, "Lucali's", 'the description probe resolves');
+});

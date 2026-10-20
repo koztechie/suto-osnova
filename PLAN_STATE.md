@@ -1738,3 +1738,14 @@ APPROACH (the non-regressive variant): instead of a GLOBAL similarity floor (whi
 IMPLEMENTATION: selectBestCandidate gains `floorPlaces` (default false); in the fuzzy fallback, PLACE candidates below MIN_FUZZY_SIMILARITY (0.5) are rejected; exact matches always pass. resolveTextQuery passes floorPlaces = (format !== AESTHETIC_DESCRIPTION).
 
 VERIFIED: 70 resolver/mode/antithesis/kyiv tests pass (zero fixture rework — the targeted rule breaks nothing); 2 NEW tests (a weak same-prefix place is rejected for a name-based seed; the aesthetic path is exempt). Full suite 1182/1182 (two stable runs), lint clean. LIVE: "Bong Joon-ho" now returns honest no_results instead of a WRONG restaurant dossier. NOTE: a shell path typo (hachathons) short-circuited the PLAN_STATE append in the d16d7f5 commit — this entry is the corrected journal record.
+
+## Fix B shipped: aesthetic descriptions without quotes/commas get a probe
+
+Status: DONE (deployed; live-verified)
+Date: 2026-10-20
+
+DIAGNOSIS: an unquoted aesthetic description ("rain-soaked neon noir with melancholic jazz") returned no_results "across 0 probe(s)". Root cause: the aesthetic probe ladder takes QUOTED segments + comma/semicolon/pipe/ampersand-separated FRAGMENTS; an unquoted, connector-joined description ("... noir with ... jazz") yields ONE fragment equal to the WHOLE description, which extractProbes deliberately SKIPS ("the raw description is never a probe") -> ZERO probes -> guaranteed no_results. A comma-separated description worked (3 fragments).
+
+FIX (seedEntityResolver.extractProbes): when the aesthetic path would yield ZERO probes (no quotes, whole-description-only fragment), use the WHOLE description as ONE bounded probe (source 'description') — searching it is strictly better than guaranteeing failure. DELIBERATELY did NOT change the classifier's fragment splitter (adding "with"/"and" separators raised the fragment count and inflated the aesthetic SCORE, flipping a pinned MEDIUM->HIGH confidence test); fixing extractProbes keeps the scoring contract intact.
+
+VERIFIED: the unquoted description now yields 1 probe (source 'description') and RESOLVES end-to-end; the comma/quoted paths unchanged; 22 resolver tests + full suite 1183/1183 (two stable runs), lint clean. LIVE: the aesthetic anchor now produces a dossier instead of a 0-probe no_results.
