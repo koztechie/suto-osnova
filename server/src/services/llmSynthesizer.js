@@ -121,16 +121,29 @@ export function buildSynthesisPrompt(dossier, options = {}) {
  * self-hosted endpoints; the credential is never echoed anywhere.
  */
 function llmConfig(overrides) {
+  const intFromEnv = (value, fallback) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
+  };
   return {
     apiKey: overrides.apiKey ?? (typeof env.LLM_API_KEY === 'string' ? env.LLM_API_KEY : ''),
     baseUrl: overrides.baseUrl ?? env.LLM_BASE_URL ?? 'https://api.openai.com/v1',
     model: overrides.model ?? env.LLM_MODEL ?? 'gpt-4o-mini',
+    // Tunable without a code change: reasoning-capable models spend
+    // max_tokens on their thinking and can leave `content` EMPTY if the
+    // budget is too small — raise LLM_MAX_TOKENS for those.
+    maxTokens: intFromEnv(env.LLM_MAX_TOKENS, LLM_DEFAULTS.maxTokens),
+    timeoutMs: intFromEnv(env.LLM_TIMEOUT_MS, LLM_DEFAULTS.timeoutMs),
   };
 }
 
-/** Tolerant content extraction: string or content-parts array. */
+/** Tolerant content extraction: string, content-parts array, or an
+ *  object with a text field. Reasoning models sometimes return the
+ *  answer under a different key; we deliberately do NOT fall back to
+ *  the reasoning/thinking field (that is not the final answer). */
 function extractContent(payload) {
-  const content = payload?.choices?.[0]?.message?.content;
+  const message = payload?.choices?.[0]?.message;
+  const content = message?.content;
   if (typeof content === 'string' && content.length > 0) return content;
   if (Array.isArray(content)) {
     const joined = content
@@ -138,6 +151,12 @@ function extractContent(payload) {
       .join('');
     if (joined.length > 0) return joined;
   }
+  if (content && typeof content === 'object' && typeof content.text === 'string' && content.text.length > 0) {
+    return content.text;
+  }
+  // Legacy completions shape (some OpenAI-compatible endpoints).
+  const legacy = payload?.choices?.[0]?.text;
+  if (typeof legacy === 'string' && legacy.length > 0) return legacy;
   return null;
 }
 
@@ -158,8 +177,6 @@ const defaultFetch = (url, init) => fetch(url, init);
 export async function synthesizeDossier(dossier, options = {}) {
   const {
     temperature = LLM_DEFAULTS.temperature,
-    maxTokens = LLM_DEFAULTS.maxTokens,
-    timeoutMs = LLM_DEFAULTS.timeoutMs,
     fetchFn = defaultFetch,
     ...promptOptions
   } = options;
@@ -172,6 +189,9 @@ export async function synthesizeDossier(dossier, options = {}) {
       { code: LLM_CODES.NOT_CONFIGURED }
     );
   }
+  // Explicit option > env (LLM_MAX_TOKENS/LLM_TIMEOUT_MS) > default.
+  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const timeoutMs = options.timeoutMs ?? config.timeoutMs;
 
   const prompt = buildSynthesisPrompt(dossier, promptOptions);
   const body = {
@@ -235,11 +255,26 @@ export async function synthesizeDossier(dossier, options = {}) {
     });
   }
 
+  // OpenAI-compatible endpoints (incl. OpenRouter) can return HTTP 200
+  // with an embedded `error` object when the upstream fails or the free
+  // tier rate-limits — surface THAT message instead of a vague failure.
+  if (payload?.error) {
+    const detail =
+      typeof payload.error === 'string' ? payload.error : (payload.error.message ?? JSON.stringify(payload.error));
+    throw new LlmSynthesisError(`LLM upstream error: ${detail}`, {
+      code: LLM_CODES.UPSTREAM_ERROR,
+      details: { provider: payload.error.type ?? null, status: payload.error.code ?? null },
+    });
+  }
+
   const text = extractContent(payload);
   if (text === null) {
+    // Include a diagnostic shape so the NEXT failure reveals whether the
+    // model returned reasoning-only, an empty message, or another shape.
+    const shape = JSON.stringify(payload?.choices?.[0]?.message ?? payload?.choices?.[0] ?? payload).slice(0, 300);
     throw new LlmSynthesisError(
-      'LLM response carried no usable message content',
-      { code: LLM_CODES.MALFORMED_RESPONSE }
+      `LLM response carried no usable message content (shape: ${shape})`,
+      { code: LLM_CODES.MALFORMED_RESPONSE, details: { shape } }
     );
   }
 

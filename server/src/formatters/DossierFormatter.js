@@ -37,7 +37,6 @@
 
 import { MODES } from '../engine/ModeDispatcher.js';
 import { renderSceneDossier, buildSceneDossier } from '../modes/SceneDossierTemplate.js';
-import { renderMaterialsSpec, buildMaterialsSpec } from '../modes/MaterialsSpec.js';
 import { renderDialogueContext, buildDialogueContext } from '../modes/DialogueContext.js';
 import { renderResonance } from '../modes/ResonanceIndex.js';
 import { renderFoodCuration } from '../modes/FoodCuration.js';
@@ -124,11 +123,6 @@ export const SECTION_REGISTRY = Object.freeze([
     render: (b) => renderSceneDossier(buildSceneDossier(b)),
   }),
   Object.freeze({
-    id: 'materials', title: 'MATERIALS SPEC',
-    present: (b) => Boolean(b.layers?.material),
-    render: (b) => renderMaterialsSpec(buildMaterialsSpec(b)),
-  }),
-  Object.freeze({
     id: 'dialogue', title: 'DIALOGUE CONTEXT',
     present: (b) => Boolean(b.layers?.sound) && Boolean(b.entity),
     render: (b) => renderDialogueContext(buildDialogueContext(b)),
@@ -203,7 +197,7 @@ export const SECTION_REGISTRY = Object.freeze([
 /** The documented layout order per mode (exported tuning contract). */
 export const LAYOUTS = Object.freeze({
   worldbuilder: Object.freeze([
-    'top', 'scene', 'materials', 'dialogue', 'narrative', 'sources', 'privacy',
+    'top', 'scene', 'dialogue', 'narrative', 'sources', 'privacy',
   ]),
   activation: Object.freeze([
     'resonance', 'audience', 'opening_acts', 'sponsors', 'vendors',

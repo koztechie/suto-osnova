@@ -151,6 +151,18 @@ export const envSchema = {
     if (typeof data.LLM_MODEL !== 'string' || data.LLM_MODEL.length < 1) {
       issues.push({ path: ['LLM_MODEL'], message: 'Must be a non-empty string' });
     }
+    // Optional synthesis tuning (reasoning models can need a larger
+    // token budget so `content` isn't left empty). Absent -> synthesizer
+    // defaults; present but invalid -> typed issue (never silently zero).
+    for (const [field, opts] of [
+      ['LLM_MAX_TOKENS', { min: 1, int: true }],
+      ['LLM_TIMEOUT_MS', { min: 1, int: true }],
+    ]) {
+      if (source[field] !== undefined && source[field] !== '') {
+        const value = parseNumber(source[field], { ...opts, field, issues });
+        if (value !== undefined) data[field] = value;
+      }
+    }
 
     // Analysis session cache (task 70): local, temporary, optional.
     data.SESSION_CACHE_DIR = source.SESSION_CACHE_DIR ?? DEFAULTS.SESSION_CACHE_DIR;
