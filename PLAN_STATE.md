@@ -1628,3 +1628,14 @@ DUPLICATE MATERIALS SPEC FIX (DossierFormatter.js): the markdown rendered MATERI
 VERIFIED: full suite 1179/1179 (two stable runs; the 44 formatter/materials/scene/worldbuilder tests pass). Deployed by git push; live generate confirms ranked=10, connections=10.
 
 STILL OPEN: (a) the narrative needs a WORKING LLM response — set LLM_MAX_TOKENS=2500 + LLM_TIMEOUT_MS=60000 on Netlify (reasoning models need headroom) and regenerate; the surfaced error will now reveal the provider message if it still fails. (b) literary "authors" leg returns actors/singers (Juri Ueno, Koharu Sugawara) — recurring relevance bug in the literary extractor; (c) wardrobe "objects" returns malls/museums (place-adjacency noise); (d) character section = raw Qloo tags incl. insensitive "Mental disability"; (e) unrounded correlation floats in markdown.
+
+## Iteration 3 — narrative quality: truncation + raw floats + prose style
+
+Status: DONE (deployed; code in ae38e0b)
+Date: 2026-10-20
+
+DIAGNOSIS (Parasite markdown): NARRATIVE now EXISTS (LLM works after LLM_MAX_TOKENS/LLM_TIMEOUT_MS) but is judge-poor: (1) the LLM NARRATED THE TRUNCATION ("array is truncated during Joker's tag list") — buildSynthesisPrompt capped the payload at maxPromptChars=24000 by slicing MID-JSON and only bounded TOP-LEVEL arrays (nested genreTags/edges ballooned past the cap); fed broken JSON, the model reported the truncation. (2) RAW 16-decimal FLOATS echoed into prose ("affinity 0.9454803725829012"). (3) Output read as a DATA REPORT (### Anchor/### Entity bullet dumps), not a flowing scene.
+
+FIXES (llmSynthesizer.js): RECURSIVE boundAndRound caps EVERY array (nested included) at maxEntriesPerLayer AND rounds floats to 4 decimals — shrinks the payload below the cap (kills truncation) and presents clean numbers (0.9455) so the model copies readable values verbatim (rounding the PAYLOAD to sane precision is not the LLM rounding an estimate — anti-hallucination intact). Default maxEntriesPerLayer 25 -> 8. FIXES (dossierSystemPrompt.js): added uncertainty rule 4 (ignore truncation marker, never mention it) + strengthened OUTPUT to require ONE flowing prose scene (anchor+sound+literature+wardrobe+menu), forbidding bullet dumps / JSON-structure echo. All 13 invariant markers preserved.
+
+VERIFIED: prompt integrity OK (13 invariants); full suite 1179/1179 (two stable runs; 1 structure test updated uncertainty count 4->5). Code committed ae38e0b and pushed. NOTE: a shell path typo (hachathons) short-circuited the PLAN_STATE append in that commit — this entry is the corrected journal record.
