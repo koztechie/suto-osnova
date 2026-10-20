@@ -437,17 +437,25 @@ test('aesthetic seed: a weak place match is EXEMPT (resolves by taste, not name)
   assert.equal(result.entity.name, "Lucali's", 'the aesthetic path is exempt from the place floor');
 });
 
-test('aesthetic seed without quotes/commas: the description itself becomes the probe', async () => {
-  // An unquoted description with no comma/quote fragments previously
-  // yielded ZERO probes and a spurious no_results.
+test('aesthetic seed without quotes/commas: the description splits into probe chunks', async () => {
+  // An unquoted, connector-joined description previously yielded ZERO
+  // probes (one whole-description fragment, skipped) and a spurious
+  // no_results. Now it splits on "with"/"and" into MEANINGFUL chunks.
   const seed = resolveSeed('rain-soaked neon noir with melancholic jazz');
   const probes = extractProbes(classifySeedFormat(seed), seed);
-  assert.equal(probes.length, 1, 'the unquoted description yields one probe (not zero)');
-  assert.equal(probes[0].source, 'description');
+  assert.deepEqual(
+    probes.map((p) => p.text),
+    ['rain-soaked neon noir', 'melancholic jazz'],
+    'the description splits into meaningful probe chunks (never zero)'
+  );
+
+  // A connector-less description still yields ONE probe (itself), not zero.
+  const plain = resolveSeed('neon noir jazz');
+  assert.equal(extractProbes(classifySeedFormat(plain), plain).length, 1);
 
   // End-to-end: the aesthetic seed RESOLVES instead of failing no_results.
   const result = await resolveTextQuery('rain-soaked neon noir with melancholic jazz', {
     search: stubSearch([[restaurant("Lucali's")]]),
   });
-  assert.equal(result.entity.name, "Lucali's", 'the description probe resolves');
+  assert.equal(result.entity.name, "Lucali's", 'a description chunk probe resolves');
 });

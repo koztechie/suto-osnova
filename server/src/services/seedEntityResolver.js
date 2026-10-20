@@ -146,18 +146,25 @@ export function extractProbes(classification, seed) {
       // the unsplit description itself is never worth a probe.
       const isWholeDescription =
         normalizeNameKey(fragment) === normalizeNameKey(seed.normalized);
-      if (isWholeDescription || /["\u201C\u201D\u00AB\u00BB]/.test(fragment)) {
+      if (isWholeDescription) {
+        // An UNQUOTED description is a single fragment; splitting it on
+        // the spaced connectors "with"/"and" (and dash/list separators)
+        // yields MEANINGFUL probe chunks ("neon noir", "melancholic
+        // jazz") instead of ZERO probes (a spurious no_results). The
+        // classifier's SCORING is deliberately untouched — this split
+        // is for the probe ladder only. A connector-less description
+        // still yields ONE probe (itself), never zero.
+        const chunks = fragment
+          .split(/\s+(?:with|and)\s+|[,;/|&\u2014\u2013]+/i)
+          .map((t) => t.trim())
+          .filter((t) => t.length >= 2);
+        for (const chunk of chunks) push(chunk, 'fragment');
+        continue;
+      }
+      if (/["\u201C\u201D\u00AB\u00BB]/.test(fragment)) {
         continue;
       }
       push(fragment, 'fragment');
-    }
-    // FALLBACK: an UNQUOTED description with no comma/quote fragments
-    // ("rain-soaked neon noir with melancholic jazz") would otherwise
-    // yield ZERO probes and a spurious no_results. Use the whole
-    // description as ONE bounded probe — searching it is better than
-    // guaranteeing failure.
-    if (probes.length === 0) {
-      push(seed.normalized, 'description');
     }
   }
   return probes;

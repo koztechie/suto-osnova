@@ -1749,3 +1749,14 @@ DIAGNOSIS: an unquoted aesthetic description ("rain-soaked neon noir with melanc
 FIX (seedEntityResolver.extractProbes): when the aesthetic path would yield ZERO probes (no quotes, whole-description-only fragment), use the WHOLE description as ONE bounded probe (source 'description') — searching it is strictly better than guaranteeing failure. DELIBERATELY did NOT change the classifier's fragment splitter (adding "with"/"and" separators raised the fragment count and inflated the aesthetic SCORE, flipping a pinned MEDIUM->HIGH confidence test); fixing extractProbes keeps the scoring contract intact.
 
 VERIFIED: the unquoted description now yields 1 probe (source 'description') and RESOLVES end-to-end; the comma/quoted paths unchanged; 22 resolver tests + full suite 1183/1183 (two stable runs), lint clean. LIVE: the aesthetic anchor now produces a dossier instead of a 0-probe no_results.
+
+## Fix B v2: split the unquoted aesthetic description into probe CHUNKS
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+WHY REVISION: fix B v1 used the WHOLE description as ONE probe. Live test showed that resolves to an OBSCURE entity (a weak fuzzy match on the full description) whose cross-domain affinity then fails for all 5 domains -> the mode threw -> HTTP 500 INTERNAL (an upstream failure surfaced as a server bug). The whole-description probe was too broad.
+
+FIX (seedEntityResolver.extractProbes): for the whole-description fragment of an UNQUOTED aesthetic seed, split on the spaced connectors "with"/"and" (and dash/list separators) to derive MEANINGFUL probe chunks ("neon noir" -> relevant noir films; "melancholic jazz" -> relevant jazz) instead of the whole phrase or zero probes. The classifier's SCORING split (splitFragments) is deliberately UNTOUCHED — this split is for the probe ladder only, so the pinned MEDIUM aesthetic confidence stays intact (the earlier attempt to split in the classifier flipped a MEDIUM->HIGH test). A connector-less description still yields ONE probe (itself), never zero.
+
+VERIFIED: "rain-soaked neon noir with melancholic jazz" -> ["rain-soaked neon noir","melancholic jazz"]; "neon noir jazz" -> 1 probe; comma/quoted paths unchanged; 38 classifier+resolver tests + full suite 1183/1183 (two stable runs), lint clean.
