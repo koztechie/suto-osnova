@@ -11,7 +11,9 @@
  *   2. sound      — the SOUND BACKGROUND: artists, albums and genre
  *                   markers (sound layer + music-domain ranked picks);
  *   3. literature — LITERATURE ON THE SHELF: verified texts and their
- *                   authors (literary layer, correlation gate intact);
+ *                   taste-adjacent figures (NOT verified authors — Qloo
+ *                   person insights carry taste tags, not profession);
+ *                   essayists keep the literary label when marked);
  *   4. wardrobe   — the WARDROBE: clothing styles, objects and fabric
  *                   textures (material layer; architecture is scene,
  *                   not wardrobe — deliberately excluded);
@@ -195,7 +197,7 @@ export function buildSceneDossier(bundle, options = {}) {
     ], layers.sound, rawLimit),
     buildSection('literature', [
       { kind: 'text', list: layers.literary?.texts },
-      { kind: 'author', list: layers.literary?.authors },
+      { kind: 'figure', list: layers.literary?.authors },
       { kind: 'essayist', list: layers.literary?.essayists },
       { kind: 'books_pick', list: rankedBy('books') },
     ], layers.literary, rawLimit),

@@ -127,7 +127,7 @@ test('kind mapping: full synthetic bundle maps every group, architecture exclude
   // Dedup by name is the shelf rule: 'Neon Band' arrives as both the
   // sound artist and the music-domain pick — the first claim wins.
   assert.deepEqual(sound.items.map((i) => i.kind), ['artist', 'album', 'genre']);
-  assert.deepEqual(literature.items.map((i) => i.kind), ['text', 'author']);
+  assert.deepEqual(literature.items.map((i) => i.kind), ['text', 'figure']);
   assert.deepEqual(wardrobe.items.map((i) => i.kind), ['style', 'object', 'texture', 'fashion_pick']);
   assert.ok(!wardrobe.items.some((i) => i.name === 'modernist'),
     'architecture is scene, not wardrobe — deliberately excluded');

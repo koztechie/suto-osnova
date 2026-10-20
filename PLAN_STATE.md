@@ -1688,3 +1688,14 @@ FINDING: the LLM_REASONING=off fix WORKED — the Oldboy dossier now has a flowi
 FIX (dossierSystemPrompt.js OUTPUT clause): added a grounding requirement — GROUND every concrete detail in the payload, name the verified artists/films/texts/material tags EXPLICITLY so the scene is verifiable, and never invent props/locations/objects not traceable to a payload element (the anti-hallucination contract now applies to the scene's DETAILS too). Preserved all 13 invariant markers; prompt integrity gate passes. Full suite 1180/1180 (two stable runs).
 
 ALSO OPEN (relevance, Qloo data quality — queued): literary "authors" = K-pop idols (Son Chaeyoung, Nayeon of TWICE; recurring across 4 dossiers — urn:entity:person does not distinguish authors from musicians/actors); wardrobe "objects" = Korean places (museums, beaches). These are the largest remaining relevance gaps; the literary-authors filter is the next candidate fix (requires care to avoid emptying the leg).
+
+## Iteration 5 — honest labels: taste-adjacent figures, not "authors"
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+FINDING (dossier-5): the grounding fix WORKED — the narrative now explicitly cites verified entities with scores (Björk 0.9028, Smashing Pumpkins 0.9019, Radiohead, the films, Mother Night/Galápagos correlations, the 93.3% Oldboy-Léon connection). It is a verifiable mise-en-scène brief. Remaining: the narrative is TRUNCATED mid-word ("...Son Chaey|") — the LLM hit LLM_MAX_TOKENS=800; the rich grounded narrative needs ~1200 tokens. Fix is env: LLM_MAX_TOKENS=1200 + LLM_TIMEOUT_MS=15000 (pipeline ~8s + LLM ~10s = ~18s < the 26s function budget).
+
+THE DEEPER RELEVANCE BUG FIXED: literary "authors" were K-pop idols (Son Chaeyoung/Nayeon of TWICE). Root cause: Qloo `urn:entity:person` insights carry the person's TASTE tags, not their PROFESSION — there is NO reliable "is an author" signal, so a marker-based filter would be unreliable (an idol who reads has literary taste-tags too). Presenting taste-correlated persons as verified "[author]" is an OVER-CLAIM (contrary to the no-hallucination value). FIXED by honest relabeling: the scene template now renders the literary persons as "[figure]" (taste-adjacent cultural figures — exactly what the data proves), not "[author]"; the literary-marked subset keeps "[essayist]". The TEXTS remain the literature. Updated the sceneDossierTemplate test (kind ['text','figure']) and the doc contract. Full suite 1180/1180 (two stable runs).
+
+ALSO OPEN (lower priority): wardrobe "objects" = Korean places (place-adjacency noise in the material extractor's objects leg).
