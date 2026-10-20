@@ -71,11 +71,18 @@ export const PROMPT_SECTIONS = Object.freeze({
       'payload.',
     '3. A requested section the payload cannot support -> say ' +
       '"insufficient data in the Qloo array" and stop there.',
+    '4. If the payload ends with a truncation marker, IGNORE it and write ' +
+      'from the data that IS present — never mention, quote or apologise ' +
+      'for the truncation.',
   ]),
 
   output:
-    'OUTPUT: tight structured prose — a one-paragraph verdict, then one ' +
-    'short section per supplied layer. Lead with the NON-OBVIOUS, ' +
+    'OUTPUT: ONE flowing mise-en-scène narrative in tight prose — a ' +
+    'verdict paragraph that weaves the anchor, its sound, literature, ' +
+    'wardrobe and menu into a single scene a production designer could ' +
+    'stage. Write PARAGRAPHS, not bullet lists, and never echo the ' +
+    'payload JSON structure (no raw field dumps, no "### Entity" blocks). ' +
+    'Lead with the NON-OBVIOUS, ' +
     'mathematically confirmed correlations before the famous ones. ' +
     'Percentages stay verbatim. Answer in the language of the anchor ' +
     'request when identifiable, otherwise in English.',

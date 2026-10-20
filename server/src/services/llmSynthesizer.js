@@ -72,12 +72,42 @@ export const LLM_DEFAULTS = Object.freeze({
   temperature: 0.2,
   maxTokens: 1200,
   timeoutMs: 30_000,
-  maxEntriesPerLayer: 25,
+  maxEntriesPerLayer: 8,
   maxPromptChars: 24_000,
 });
 
-const boundedArray = (value, maxEntries) =>
-  Array.isArray(value) ? value.slice(0, maxEntries) : value;
+const MAX_PROMPT_DECIMALS = 4;
+
+/**
+ * Rounds a float to a sane precision for the PROMPT. This is NOT the
+ * LLM rounding an estimate (the contract forbids that) — it PRESENTS
+ * the measured value at a readable precision, so the model copies a
+ * clean number (0.9455) verbatim instead of 16 noise decimals
+ * (0.9454803725829012). It also shrinks the payload, which is what
+ * caused prompt truncation on data-heavy dossiers.
+ */
+const roundNum = (value) =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? Math.round(value * 10 ** MAX_PROMPT_DECIMALS) / 10 ** MAX_PROMPT_DECIMALS
+    : value;
+
+/**
+ * Recursively bounds EVERY array (nested ones included — the old
+ * top-level-only bound let genreTags/edges balloon the payload past
+ * maxPromptChars, truncating it mid-JSON and making the model narrate
+ * the truncation) and rounds floats.
+ */
+const boundAndRound = (value, maxEntries) => {
+  if (Array.isArray(value)) {
+    return value.slice(0, maxEntries).map((entry) => boundAndRound(entry, maxEntries));
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const [key, entry] of Object.entries(value)) out[key] = boundAndRound(entry, maxEntries);
+    return out;
+  }
+  return roundNum(value);
+};
 
 /**
  * Builds the bounded synthesis prompt (pure, exported, tested).
@@ -95,9 +125,7 @@ export function buildSynthesisPrompt(dossier, options = {}) {
 
   const bounded = {};
   for (const [key, value] of Object.entries(dossier ?? {})) {
-    bounded[key] = Array.isArray(value)
-      ? boundedArray(value, maxEntriesPerLayer)
-      : value;
+    bounded[key] = boundAndRound(value, maxEntriesPerLayer);
   }
 
   let payload = JSON.stringify(bounded);

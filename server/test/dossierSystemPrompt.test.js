@@ -84,7 +84,7 @@ test('structure: assembled from exported sections, deterministic, bounded', () =
   assert.ok(SYSTEM_PROMPT.length < 4000, 'token budget sane');
   assert.equal(PROMPT_SECTIONS.dataContract.length, 5, 'four numbered rules + header');
   assert.equal(PROMPT_SECTIONS.forbidden.length, 5);
-  assert.equal(PROMPT_SECTIONS.uncertainty.length, 4);
+  assert.equal(PROMPT_SECTIONS.uncertainty.length, 5);
 });
 
 test('single source of truth: llmSynthesizer re-exports the same prompt', () => {
