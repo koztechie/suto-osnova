@@ -71,12 +71,15 @@ export const SCENE_DEFAULTS = Object.freeze({
 const NO_DATA = 'No verified data — the source layer reported no usable signal.';
 
 const roundPct = (value) => Math.round(value * 100);
+// Round coefficients to a sane display precision — a raw 16-decimal
+// float (0.908579412583495) is noise in judge-facing prose.
+const round3 = (value) => Math.round(value * 1000) / 1000;
 
 /** Deterministic evidence line for one item (never invented prose). */
 const evidenceNote = (item) => {
   if (typeof item?.affinity === 'number') return `affinity ${roundPct(item.affinity)}%`;
-  if (typeof item?.correlation === 'number') return `correlation ${item.correlation}`;
-  if (typeof item?.weight === 'number') return `weight ${item.weight}`;
+  if (typeof item?.correlation === 'number') return `correlation ${round3(item.correlation)}`;
+  if (typeof item?.weight === 'number') return `weight ${round3(item.weight)}`;
   return 'signal present';
 };
 

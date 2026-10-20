@@ -1639,3 +1639,10 @@ DIAGNOSIS (Parasite markdown): NARRATIVE now EXISTS (LLM works after LLM_MAX_TOK
 FIXES (llmSynthesizer.js): RECURSIVE boundAndRound caps EVERY array (nested included) at maxEntriesPerLayer AND rounds floats to 4 decimals — shrinks the payload below the cap (kills truncation) and presents clean numbers (0.9455) so the model copies readable values verbatim (rounding the PAYLOAD to sane precision is not the LLM rounding an estimate — anti-hallucination intact). Default maxEntriesPerLayer 25 -> 8. FIXES (dossierSystemPrompt.js): added uncertainty rule 4 (ignore truncation marker, never mention it) + strengthened OUTPUT to require ONE flowing prose scene (anchor+sound+literature+wardrobe+menu), forbidding bullet dumps / JSON-structure echo. All 13 invariant markers preserved.
 
 VERIFIED: prompt integrity OK (13 invariants); full suite 1179/1179 (two stable runs; 1 structure test updated uncertainty count 4->5). Code committed ae38e0b and pushed. NOTE: a shell path typo (hachathons) short-circuited the PLAN_STATE append in that commit — this entry is the corrected journal record.
+
+## Iteration 3b — round correlation/weight in the scene evidence lines
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+FOLLOW-UP to iteration 3: the raw 16-decimal floats the payload-rounding did NOT cover were in the SCENE DOSSIER's LITERATURE section (`correlation 0.908579412583495`) — rendered by SceneDossierTemplate.evidenceNote from the layer data, not the LLM prompt. Fixed by adding round3() (3 decimals) for correlation and weight in the evidence note (affinity was already a percentage). Full suite 1179/1179 (two stable runs). Also noted: the free OpenRouter tier is INTERMITTENT — a regenerate can return "not available" (rate-limited / empty content) or an empty body; the narrative-quality fixes are verified on a successful generation, but a paid or less-contended model would be more reliable for demos.
