@@ -80,7 +80,12 @@ export const PROMPT_SECTIONS = Object.freeze({
     'OUTPUT: ONE flowing mise-en-scène narrative in tight prose — a ' +
     'verdict paragraph that weaves the anchor, its sound, literature, ' +
     'wardrobe and menu into a single scene a production designer could ' +
-    'stage. Write PARAGRAPHS, not bullet lists, and never echo the ' +
+    'stage. GROUND every concrete detail in the payload: name the verified ' +
+    'artists, films, texts and material tags EXPLICITLY (e.g. Björk, Noir, ' +
+    'leather) so the scene is verifiable, and never invent props, locations ' +
+    'or objects that are not traceable to a payload element — the ' +
+    "anti-hallucination contract applies to the scene's details too. Write " +
+    'PARAGRAPHS, not bullet lists, and never echo the ' +
     'payload JSON structure (no raw field dumps, no "### Entity" blocks). ' +
     'Lead with the NON-OBVIOUS, ' +
     'mathematically confirmed correlations before the famous ones. ' +

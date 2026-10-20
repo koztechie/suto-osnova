@@ -1677,3 +1677,14 @@ DIAGNOSIS (the improved error shape surfaced it): meta.synthesis.failure showed 
 FIX: added an opt-in LLM_REASONING env toggle (envSchema + llmSynthesizer). LLM_REASONING=off sends `reasoning: {enabled:false}` in the request body (the OpenRouter control for disabling reasoning) so the model answers DIRECTLY in `content` — no reasoning budget consumed, fast + reliable. Unset (default) omits the field, leaving the OpenAI-compatible body untouched. New test pins the toggle (off adds reasoning:{enabled:false}; unset omits it). Full suite 1180/1180 (two stable runs).
 
 RECOMMENDED ENV (combined with the earlier budget fix): LLM_REASONING=off, LLM_MAX_TOKENS=800, LLM_TIMEOUT_MS=12000, LLM_MODEL=nvidia/nemotron-3.5-lightning:free. With reasoning off, all ~800 tokens go to the narrative at ~119 t/s (~7s), well inside the 12s LLM budget and the 26s function budget.
+
+## Iteration 4 — narrative grounded in verified data
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+FINDING: the LLM_REASONING=off fix WORKED — the Oldboy dossier now has a flowing prose NARRATIVE (the reasoning model answered directly in `content`). BUT critical analysis: the scene INVENTED details absent from the payload (vintage jukebox, half-empty cigarette pack, peeling wallpaper, fluorescent lights) and named NONE of the verified entities (Björk, Radiohead, the films Léon/Usual Suspects/Memento). It read as generic noir atmosphere, not a VERIFIABLE mise-en-scène brief — violating the anti-hallucination contract (the whole value prop: mathematically-grounded culture, no hallucinations).
+
+FIX (dossierSystemPrompt.js OUTPUT clause): added a grounding requirement — GROUND every concrete detail in the payload, name the verified artists/films/texts/material tags EXPLICITLY so the scene is verifiable, and never invent props/locations/objects not traceable to a payload element (the anti-hallucination contract now applies to the scene's DETAILS too). Preserved all 13 invariant markers; prompt integrity gate passes. Full suite 1180/1180 (two stable runs).
+
+ALSO OPEN (relevance, Qloo data quality — queued): literary "authors" = K-pop idols (Son Chaeyoung, Nayeon of TWICE; recurring across 4 dossiers — urn:entity:person does not distinguish authors from musicians/actors); wardrobe "objects" = Korean places (museums, beaches). These are the largest remaining relevance gaps; the literary-authors filter is the next candidate fix (requires care to avoid emptying the leg).
