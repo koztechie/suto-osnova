@@ -1716,3 +1716,14 @@ C. ANTITHESIS BLINDSPOT INVERTED: the mode reuses the cross-domain AFFINITY expa
 D. EXPERIENTIAL MARKDOWN GLITCH: "*Memento—three titans" — an unclosed italic + em-dash without spaces in the LLM narrative (minor typography).
 
 NEXT (focused iterations): A (fuzzy similarity floor — highest impact, prevents wrong dossiers), then B (aesthetic probe), then C (antithesis candidate source — architectural, needs a decision on the data source).
+
+## Fix A (fuzzy similarity floor) — designed + probed, NOT shipped (needs focused iteration)
+
+Status: DIAGNOSED + PROTOTYPED + REVERTED (code left green)
+Date: 2026-10-20
+
+MEASURED: nameSimilarity("Bong Joon-ho", "Bong Sung Vegetarian Restaurant") = 0.333 (only "Bong" of 3 tokens); legitimate matches score 0.857-1.0 (near-miss director "Bong Joon Ho" = 1.0, "Oldboy"/"Old Boy" = 0.857, exact = 1.0). So a SIMILARITY FLOOR cleanly separates the wrong-restaurant match (0.333) from legitimate ones — implemented a minFuzzySimilarity option (default 0.5) filtering the fuzzy pool in selectBestCandidate, verified it rejects the restaurant and accepts legitimate near-misses.
+
+WHY REVERTED: the floor broke 10 tests because the MODE/RESOLVER test fixtures use SHARED stubs (server/test-support/fullCycleRunner.searchStub) that return a FIXED entity regardless of the query — e.g. anchor "Static Ash Live" but the stub returns an unrelated-name entity; anchor probe "rainy afternoons" but the stub returns "Lucali's". These encode ZERO-similarity matches (test artifacts, not real Qloo behavior — real Qloo returns query-relevant entities). ANY positive floor rejects them. Applying the floor therefore requires REWORKING the shared stubs to return QUERY-RELEVANT entity names — a focused refactor across many tests, not safe to rush at the end of a marathon session.
+
+THE FIX (for the focused iteration): (1) add minFuzzySimilarity (default 0.5) to selectBestCandidate, filtering the non-exact fuzzy pool by nameSimilarity(queryKey, name) >= floor; (2) rework server/test-support/fullCycleRunner.searchStub + the experiential/antithesis/worldbuilder fixture anchors so the stub's returned entity name is SIMILAR to the query (realistic Qloo behavior) — the ladder/dedup/scene tests keep testing their mechanics with name-matched candidates; (3) keep the existing no_mapped_entity person-domain contract intact (the floor is orthogonal). Expected result: "Bong Joon-ho" -> honest no_results (no wrong restaurant dossier); all mode tests green with realistic stubs.
