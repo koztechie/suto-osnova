@@ -102,3 +102,12 @@ export default async function netlifyHandler(request) {
     statusCode === 204 || statusCode === 205 || statusCode === 304 ? null : body;
   return new Response(responseBody, { status: statusCode, headers });
 }
+
+/**
+ * Netlify Function config: give the API the MAX sync-function budget
+ * (26s — Netlify caps sync functions there; the default is 10s). The
+ * synthesizer's LLM_TIMEOUT_MS (default 12s) stays BELOW this so a slow
+ * model aborts GRACEFULLY — the dossier returns without a narrative
+ * instead of the whole generate dying as a 502.
+ */
+export const config = { timeout: 26 };

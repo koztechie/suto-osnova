@@ -1659,3 +1659,10 @@ FIX: (1) netlify.toml now sets [functions] timeout = 26 (the sync-function MAX) 
 REMAINING TENSION (honest): a synchronous serverless function doing an LLM call inside a 10-26s budget is tight — the non-LLM pipeline (seed + cross-domain expansion + 5 layers) already eats ~5-8s, leaving the LLM ~15-20s. A SLOW free model (35 t/s) cannot finish 600+ tokens in that window. The reliable path is a FAST model + low token budget; the fully robust architecture would be an ASYNC/background function (return immediately, generate in background up to 60s+, client polls) — noted as future work, not implemented.
 
 RECOMMENDED ENV: LLM_TIMEOUT_MS=12000, LLM_MAX_TOKENS=600, LLM_MODEL=nvidia/nemotron-3.5-lightning:free (119 t/s -> 600 tokens in ~5s, well inside the window). npm test 1179/1179 (two stable runs). Deployed.
+
+## Fix — correct the netlify.toml function-timeout syntax
+
+Status: DONE (deployed; CLI-validated)
+Date: 2026-10-20
+
+The previous commit set `[functions] timeout = 26` in netlify.toml, but the Netlify CLI (27.13.0) REJECTS that scalar — it expects `functions.timeout` to be an object/table, and `netlify env:set` failed to parse the config. The per-function timeout is set via `export const config = { timeout: 26 }` in the function file, NOT the netlify.toml scalar. FIXED: removed the invalid `[functions]` block from netlify.toml (replaced with a NOTE pointing at the real mechanism) and added `export const config = { timeout: 26 }` to netlify/functions/api.mjs. Verified: `netlify env:list` parses the config again; netlifyDeploy gate 8/8; full suite 1179/1179 (two stable runs); node --check clean. The user can now re-run the `netlify env:set` commands.
