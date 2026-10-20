@@ -162,6 +162,13 @@ export const envSchema = {
         const value = parseNumber(source[field], { ...opts, field, issues });
         if (value !== undefined) data[field] = value;
       }
+    // Reasoning toggle: reasoning models (Nemotron, etc.) split their
+    // output into a `reasoning` field + `content`; with a small token
+    // budget the reasoning consumes it and `content` comes back EMPTY.
+    // LLM_REASONING=off sends `reasoning: {enabled:false}` (OpenRouter)
+    // so the model answers directly in `content`.
+    data.LLM_REASONING =
+      typeof source.LLM_REASONING === 'string' ? source.LLM_REASONING : '';
     }
 
     // Analysis session cache (task 70): local, temporary, optional.

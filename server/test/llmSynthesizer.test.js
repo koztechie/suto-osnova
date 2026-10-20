@@ -26,6 +26,7 @@ const {
   LLM_DEFAULTS,
   SYSTEM_PROMPT,
 } = await import('../src/services/llmSynthesizer.js');
+const { env } = await import('../src/config/env.js');
 
 const okResponse = (over = {}) => ({
   ok: true,
@@ -219,4 +220,25 @@ test('full dossier composition: deterministic layers reach the prompt intact', a
 
   const second = await synthesizeDossier(dossier, { fetchFn: capture(() => okResponse({ content: 'Досьє готове.' })) });
   assert.deepEqual(second, result, 'stubbed runs identical');
+});
+
+test('LLM_REASONING toggle: off adds reasoning:{enabled:false} to the body', async () => {
+  // Reasoning models split output into `reasoning` + `content`; with a
+  // bounded token budget `content` can come back empty. LLM_REASONING=off
+  // asks the endpoint to answer directly in `content`.
+  env.LLM_REASONING = 'off';
+  try {
+    const fetchFn = capture(() => okResponse());
+    await synthesizeDossier({ anchor: { name: 'Oldboy' } }, { fetchFn });
+    const body = JSON.parse(fetchFn.calls[0].init.body);
+    assert.deepEqual(body.reasoning, { enabled: false }, 'reasoning disabled when off');
+  } finally {
+    delete env.LLM_REASONING;
+  }
+
+  // Unset -> no reasoning field (OpenAI-compatible default untouched).
+  const fetchFn2 = capture(() => okResponse());
+  await synthesizeDossier({ anchor: { name: 'Oldboy' } }, { fetchFn: fetchFn2 });
+  const body2 = JSON.parse(fetchFn2.calls[0].init.body);
+  assert.equal(body2.reasoning, undefined, 'no reasoning field by default');
 });

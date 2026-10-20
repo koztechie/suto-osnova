@@ -1666,3 +1666,14 @@ Status: DONE (deployed; CLI-validated)
 Date: 2026-10-20
 
 The previous commit set `[functions] timeout = 26` in netlify.toml, but the Netlify CLI (27.13.0) REJECTS that scalar — it expects `functions.timeout` to be an object/table, and `netlify env:set` failed to parse the config. The per-function timeout is set via `export const config = { timeout: 26 }` in the function file, NOT the netlify.toml scalar. FIXED: removed the invalid `[functions]` block from netlify.toml (replaced with a NOTE pointing at the real mechanism) and added `export const config = { timeout: 26 }` to netlify/functions/api.mjs. Verified: `netlify env:list` parses the config again; netlifyDeploy gate 8/8; full suite 1179/1179 (two stable runs); node --check clean. The user can now re-run the `netlify env:set` commands.
+
+## Fix — reasoning models returning empty content (LLM_REASONING toggle)
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+DIAGNOSIS (the improved error shape surfaced it): meta.synthesis.failure showed `content: null, reasoning: "Here's a thinking process..."` — nemotron-3.5-lightning:free is a REASONING model that splits output into a `reasoning` field + `content`. With LLM_MAX_TOKENS=600 the reasoning consumed the whole budget and `content` came back EMPTY -> malformed_response -> narrative "not available" (3rd consecutive dossier). The old opaque error hid this; the shape snippet revealed it exactly.
+
+FIX: added an opt-in LLM_REASONING env toggle (envSchema + llmSynthesizer). LLM_REASONING=off sends `reasoning: {enabled:false}` in the request body (the OpenRouter control for disabling reasoning) so the model answers DIRECTLY in `content` — no reasoning budget consumed, fast + reliable. Unset (default) omits the field, leaving the OpenAI-compatible body untouched. New test pins the toggle (off adds reasoning:{enabled:false}; unset omits it). Full suite 1180/1180 (two stable runs).
+
+RECOMMENDED ENV (combined with the earlier budget fix): LLM_REASONING=off, LLM_MAX_TOKENS=800, LLM_TIMEOUT_MS=12000, LLM_MODEL=nvidia/nemotron-3.5-lightning:free. With reasoning off, all ~800 tokens go to the narrative at ~119 t/s (~7s), well inside the 12s LLM budget and the 26s function budget.

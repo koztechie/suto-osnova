@@ -233,6 +233,11 @@ export async function synthesizeDossier(dossier, options = {}) {
     ],
     temperature,
     max_tokens: maxTokens,
+    // Reasoning models (Nemotron etc.) split output into a `reasoning`
+    // field + `content`; with a bounded token budget the reasoning can
+    // consume it all and `content` comes back EMPTY. LLM_REASONING=off
+    // asks the endpoint (OpenRouter) to answer directly in `content`.
+    ...(env.LLM_REASONING === 'off' ? { reasoning: { enabled: false } } : {}),
   };
 
   const controller = new AbortController();
