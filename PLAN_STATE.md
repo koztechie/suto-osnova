@@ -1646,3 +1646,16 @@ Status: DONE (deployed)
 Date: 2026-10-20
 
 FOLLOW-UP to iteration 3: the raw 16-decimal floats the payload-rounding did NOT cover were in the SCENE DOSSIER's LITERATURE section (`correlation 0.908579412583495`) — rendered by SceneDossierTemplate.evidenceNote from the layer data, not the LLM prompt. Fixed by adding round3() (3 decimals) for correlation and weight in the evidence note (affinity was already a percentage). Full suite 1179/1179 (two stable runs). Also noted: the free OpenRouter tier is INTERMITTENT — a regenerate can return "not available" (rate-limited / empty content) or an empty body; the narrative-quality fixes are verified on a successful generation, but a paid or less-contended model would be more reliable for demos.
+
+## Fix — eliminate the 502 (LLM timeout vs Netlify function budget)
+
+Status: DONE (deployed)
+Date: 2026-10-20
+
+PRODUCTION SYMPTOM (logs): POST /api/generate/worldbuilder -> 502 after ~30s, twice; health/transport healthy. ROOT CAUSE: my earlier advice set LLM_TIMEOUT_MS=60000, which is ABOVE Netlify's sync-function timeout (10s default, 26s max). A slow free-tier LLM kept waiting, Netlify killed the function at ~26-30s -> hard 502 (the WHOLE generate died, not just the narrative). This was a RESILIENCE REGRESSION: with the old 30s default the LLM would time out first and the dossier returned gracefully without a narrative; with 60s the function died first.
+
+FIX: (1) netlify.toml now sets [functions] timeout = 26 (the sync-function MAX) so the API gets the largest budget. (2) LLM_DEFAULTS.timeoutMs lowered 30s -> 12s, deliberately BELOW the function timeout so a slow model aborts GRACEFULLY (typed timeout -> dossier WITHOUT narrative) instead of the whole generate 502ing. The budget relationship is documented in both files.
+
+REMAINING TENSION (honest): a synchronous serverless function doing an LLM call inside a 10-26s budget is tight — the non-LLM pipeline (seed + cross-domain expansion + 5 layers) already eats ~5-8s, leaving the LLM ~15-20s. A SLOW free model (35 t/s) cannot finish 600+ tokens in that window. The reliable path is a FAST model + low token budget; the fully robust architecture would be an ASYNC/background function (return immediately, generate in background up to 60s+, client polls) — noted as future work, not implemented.
+
+RECOMMENDED ENV: LLM_TIMEOUT_MS=12000, LLM_MAX_TOKENS=600, LLM_MODEL=nvidia/nemotron-3.5-lightning:free (119 t/s -> 600 tokens in ~5s, well inside the window). npm test 1179/1179 (two stable runs). Deployed.

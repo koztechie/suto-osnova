@@ -71,7 +71,10 @@ export const LLM_CODES = Object.freeze({
 export const LLM_DEFAULTS = Object.freeze({
   temperature: 0.2,
   maxTokens: 1200,
-  timeoutMs: 30_000,
+  // Kept BELOW the Netlify sync-function timeout (26s) so a slow model
+  // aborts GRACEFULLY (dossier without a narrative) instead of the whole
+  // generate dying as a 502. Override with LLM_TIMEOUT_MS.
+  timeoutMs: 12_000,
   maxEntriesPerLayer: 8,
   maxPromptChars: 24_000,
 });

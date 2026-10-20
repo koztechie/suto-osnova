@@ -20,6 +20,15 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Function budget: Netlify sync functions default to 10s and cap at 26s.
+# Give the API the MAX budget so the LLM synthesis (which runs INSIDE the
+# function) has room. The synthesizer's own timeout (LLM_TIMEOUT_MS,
+# default 12s) stays BELOW this so a slow model aborts GRACEFULLY — the
+# dossier returns without a narrative instead of the whole generate dying
+# as a 502.
+[functions]
+  timeout = 26
+
 # Route the API to the serverless function (first match wins, so this
 # MUST precede the SPA fallback below).
 [[redirects]]
