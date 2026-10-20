@@ -412,3 +412,27 @@ test('probe extraction unit: dedup, ladder order, description rules', () => {
     assert.ok(probe.text.length <= 200);
   }
 });
+
+test('name-based seed: a weak same-prefix PLACE is rejected (never a wrong venue)', async () => {
+  // The real bug: "Bong Joon-ho" (a director) was fuzzy-matched to
+  // "Bong Sung ... Restaurant" (only "Bong" shared) -> a WRONG dossier.
+  const place = restaurant('Bong Sung Vegetarian Restaurant');
+  await assert.rejects(
+    () => resolveTextQuery('Bong Joon-ho', { search: stubSearch([[place]]) }),
+    (err) =>
+      err instanceof SeedResolutionError &&
+      err.code === RESOLUTION_CODES.NO_RESULTS,
+    'a weak same-prefix place never wins a name-based seed'
+  );
+});
+
+test('aesthetic seed: a weak place match is EXEMPT (resolves by taste, not name)', async () => {
+  // The aesthetic path matches by TASTE, so a venue whose name shares
+  // nothing with the description is still a legitimate resolution — the
+  // place floor is deliberately not applied to aesthetic seeds.
+  const place = restaurant("Lucali's");
+  const result = await resolveTextQuery('coffee shops, ambient jazz, rainy afternoons', {
+    search: stubSearch([[], [], [place]]),
+  });
+  assert.equal(result.entity.name, "Lucali's", 'the aesthetic path is exempt from the place floor');
+});

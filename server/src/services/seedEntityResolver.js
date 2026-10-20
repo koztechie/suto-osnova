@@ -72,7 +72,7 @@ import {
   extractTasteWords,
   SEED_FORMATS,
 } from '../engine/SeedClassifier.js';
-import { rankCandidates } from './candidateRanker.js';
+import { rankCandidates, nameSimilarity } from './candidateRanker.js';
 
 /** Typed error for resolution failures. */
 export class SeedResolutionError extends Error {
@@ -98,6 +98,10 @@ export const ENTITY_ID_PATTERN =
 
 /** Quota guard: how many probes one resolution may try. */
 export const MAX_PROBE_ATTEMPTS = 3;
+
+/** A fuzzy PLACE match against a name-based seed must clear this floor. */
+export const MIN_FUZZY_SIMILARITY = 0.5;
+const PLACE_URN = 'urn:entity:place';
 
 /**
  * Canonical name comparison key (same rule as the MCP resolve tool).
@@ -183,6 +187,7 @@ export function selectBestCandidate(results, options = {}) {
     queryWords = [],
     targetDomain = null,
     weights = undefined,
+    floorPlaces = false,
   } = safeOptions;
 
   // RELIABILITY: upstream pages can carry null/primitive entries — a
@@ -203,8 +208,20 @@ export function selectBestCandidate(results, options = {}) {
   // fuzzy pool under allowFuzzy, or out of selection entirely).
   const namedPool = popPool.filter((e) => typeof e.name === 'string');
   const exactPool = namedPool.filter((e) => normalizeNameKey(e.name) === queryKey);
+  // VIA NEGATIVA on fuzzy PLACE matches (name-based seeds only): a PLACE
+  // whose name only weakly shares a prefix with the query is the classic
+  // false-positive — the anchor "Bong Joon-ho" (a director) was fuzzy-
+  // matched to "Bong Sung ... Restaurant" (0.33 similarity: only "Bong"
+  // of 3 tokens), producing a WRONG dossier. Exact matches (1.0) always
+  // pass; a taste-based (aesthetic) seed is EXEMPT (floorPlaces=false)
+  // because it resolves by taste, not name similarity.
+  const fuzzyPool = namedPool.filter((e) => {
+    if (!floorPlaces) return true;
+    if (e.subtype !== PLACE_URN) return true;
+    return nameSimilarity(queryKey, e.name) >= MIN_FUZZY_SIMILARITY;
+  });
   const namePool =
-    exactPool.length > 0 ? exactPool : allowFuzzy ? namedPool : [];
+    exactPool.length > 0 ? exactPool : allowFuzzy ? fuzzyPool : [];
   const mappedPool = requireMapped
     ? namePool.filter((e) => classifyEntity(e) !== null)
     : namePool;
@@ -399,6 +416,9 @@ export async function resolveTextQuery(rawText, options = {}) {
       requireValidId,
       queryWords: tasteWords,
       targetDomain: seed.domain,
+      // A name-based seed floors weak PLACE matches; an aesthetic (taste)
+      // seed is exempt (it resolves by taste, not name similarity).
+      floorPlaces: classification.format !== SEED_FORMATS.AESTHETIC_DESCRIPTION,
       weights,
     });
     attempts.push({ probe: probe.text, source: probe.source, count: results.length });
