@@ -83,6 +83,7 @@ test('default 15%: exactly floor(n * 0.15) most-banal entries cut', () => {
     thresholdBanality: round6(18 / 21),
     unmeasured: 0,
     zeroBanality: 0,
+    protectedFallback: 0,
   });
 });
 
@@ -198,7 +199,7 @@ test('validation, degenerate inputs, determinism', () => {
   const empty = cutMassCliches([]);
   assert.deepEqual({ ...empty.stats }, {
     input: 0, kept: 0, removed: 0, cutRate: 0.15, cutCount: 0,
-    thresholdBanality: null, unmeasured: 0, zeroBanality: 0,
+    thresholdBanality: null, unmeasured: 0, zeroBanality: 0, protectedFallback: 0,
   });
   assert.deepEqual(cutMassCliches(undefined).kept, []);
   assert.deepEqual(cutMassCliches([null, 'x', 42]).kept, []);
@@ -211,4 +212,19 @@ test('validation, degenerate inputs, determinism', () => {
     1,
     'serializable'
   );
+});
+
+test('composition: a longTail FALLBACK survivor is protected from the 15% cut', () => {
+  // Everything was mainstream -> longTail kept top-K as fallbacks; the
+  // relative cut must NOT undo that and empty the section (the two
+  // filters otherwise compound to zero on live, mainstream-biased data).
+  const fallbacks = [
+    { id: 'f1', name: 'F1', affinity: 0.91, popularity: 0.99, longTail: { excessAffinity: -0.08, fallback: true } },
+    { id: 'f2', name: 'F2', affinity: 0.92, popularity: 0.98, longTail: { excessAffinity: -0.06, fallback: true } },
+  ];
+  const result = cutMassCliches(fallbacks);
+  assert.equal(result.stats.protectedFallback, 2, 'both counted as protected');
+  assert.equal(result.stats.cutCount, 0, 'nothing is cuttable');
+  assert.equal(result.kept.length, 2, 'the section is NOT emptied');
+  assert.deepEqual(result.removed, [], 'empty removal ledger');
 });

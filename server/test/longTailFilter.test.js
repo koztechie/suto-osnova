@@ -237,3 +237,19 @@ test('realistic extractor mix: tags with weight + entities with affinity', () =>
     CUT_REASONS.MAINSTREAM_NO_EXCESS,
   ]);
 });
+
+test('keepFallbackCount: when everything is cut, the top-K by relevance survive as fallbacks', () => {
+  const allNoise = [
+    c({ id: 'a', affinity: 0.5, popularity: 0.9 }),
+    c({ id: 'b', affinity: 0.6, popularity: 0.95 }),
+    c({ id: 'c', affinity: 0.7, popularity: 0.99 }),
+    c({ id: 'd', affinity: 0.4, popularity: 0.9 }),
+  ];
+  const result = filterLongTail(allNoise, { keepFallbackCount: 2 });
+  // Best-2 by relevance (affinity desc): c (0.7), then b (0.6).
+  assert.deepEqual(result.kept.map((e) => e.id), ['c', 'b'], 'top-2 by relevance');
+  assert.ok(result.kept.every((e) => e.longTail.fallback === true), 'all honestly flagged');
+  assert.equal(result.stats.kept, 2);
+  assert.equal(result.stats.fellBack, true);
+  assert.deepEqual([...result.removed.map((e) => e.id)].sort(), ['a', 'd'], 'the rest stay removed');
+});

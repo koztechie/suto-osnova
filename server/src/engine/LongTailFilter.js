@@ -32,10 +32,12 @@
  * affinity or popularity makes excessAffinity undefined, so the excess
  * rules stay silent (absence of evidence is not evidence of noise) —
  * only the weight rule, which needs no affinity, may still remove.
- * `keepFallback` (default true) retains the single best-by-affinity
- * candidate when everything else was cut, flagged `fallback: true` —
- * an empty dossier section is worse than one honestly flagged
- * survivor; set false for the purist empty answer.
+ * `keepFallback` (default true) retains the top-`keepFallbackCount`
+ * candidates by relevance when everything else was cut, each flagged
+ * `fallback: true` — an empty dossier section is worse than a few
+ * honestly flagged survivors (count defaults to 1 for the classic
+ * single-best contract; callers pass `topN` for a full dossier); set
+ * keepFallback false for the purist empty answer.
  *
  * The filter is ORDER-PRESERVING (ranking stays the caller's job),
  * pure (no I/O, clocks, RNG), deterministic, and every removal lands
@@ -51,6 +53,12 @@ export const LONG_TAIL_DEFAULTS = Object.freeze({
   genericWeightFloor: 0.8,
   minPoolForWeightRule: 3,
   keepFallback: true,
+  // When EVERYTHING is cut (Qloo is mainstream-biased, so this happens
+  // on live data), the fallback keeps the top-N by relevance instead of
+  // a single survivor — an empty dossier is worse than a few honestly
+  // flagged mainstream entries. Default 1 preserves the classic contract;
+  // callers that want a full dossier pass `topN`.
+  keepFallbackCount: 1,
 });
 
 /** Machine-readable removal reasons (precedence order). */
@@ -109,6 +117,9 @@ const validateOptions = (options) => {
   }
   if (typeof options.keepFallback !== 'boolean') {
     throw new TypeError('filterLongTail: keepFallback must be a boolean');
+  }
+  if (!Number.isInteger(options.keepFallbackCount) || options.keepFallbackCount < 1) {
+    throw new TypeError('filterLongTail: keepFallbackCount must be an integer >= 1');
   }
 };
 
@@ -219,26 +230,30 @@ export function filterLongTail(candidates, options = {}) {
   });
 
   // Via Negativa with one safety valve: when EVERYTHING was cut, keep
-  // the single best-by-affinity candidate, honestly flagged.
+  // the top-N by relevance (honestly flagged), not a single survivor —
+  // an empty dossier is worse than a few flagged mainstream entries.
   if (kept.length === 0 && removedPairs.length > 0 && resolved.keepFallback) {
-    let bestIndex = 0;
-    let bestExcess = excessAffinity(list[0]) ?? -Infinity;
-    list.forEach((candidate, index) => {
-      const comparable = excessAffinity(candidate) ?? -Infinity;
-      if (comparable > bestExcess) {
-        bestIndex = index;
-        bestExcess = comparable;
-      }
-    });
-    const best = list[bestIndex];
-    kept.push(
-      Object.freeze({
-        ...best,
-        longTail: Object.freeze({ excessAffinity: excessAffinity(best), fallback: true }),
-      })
-    );
+    const count = Math.min(resolved.keepFallbackCount, list.length);
+    // Best-N by relevance (affinity/correlation desc), ties by input order.
+    const best = list
+      .map((candidate, index) => ({ candidate, index }))
+      .sort(
+        (a, b) =>
+          (relevanceOf(b.candidate) ?? -1) - (relevanceOf(a.candidate) ?? -1) ||
+          a.index - b.index
+      )
+      .slice(0, count);
+    for (const { candidate, index } of best) {
+      kept.push(
+        Object.freeze({
+          ...candidate,
+          longTail: Object.freeze({ excessAffinity: excessAffinity(candidate), fallback: true }),
+        })
+      );
+    }
+    const keptIndices = new Set(best.map((entry) => entry.index));
     for (let i = removedPairs.length - 1; i >= 0; i -= 1) {
-      if (removedPairs[i].index === bestIndex) removedPairs.splice(i, 1);
+      if (keptIndices.has(removedPairs[i].index)) removedPairs.splice(i, 1);
     }
     fellBack = true;
   }

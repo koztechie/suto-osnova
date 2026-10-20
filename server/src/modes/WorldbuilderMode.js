@@ -231,7 +231,7 @@ export async function runWorldbuilder(input, options = {}) {
     });
   const thresholdOptions = { ...(plan.thresholds ?? {}), ...(options.thresholds ?? {}) };
   const gated = filterByAdaptiveThreshold(candidates, thresholdOptions);
-  const longTail = filterLongTail(gated.kept);
+  const longTail = filterLongTail(gated.kept, { keepFallbackCount: topN });
   const cliches = cutMassCliches(longTail.kept, {
     alwaysCutAtLeastOne:
       options.alwaysCutAtLeastOne ?? WORLDBUILDER_DEFAULTS.alwaysCutAtLeastOne,

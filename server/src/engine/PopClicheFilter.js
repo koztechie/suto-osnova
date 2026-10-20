@@ -31,7 +31,11 @@
  * ABOVE 0 — an index of exactly 0 means the relevance is at least
  * twice the fame, which PROVES the entry is not a pop-stamp; such
  * entries are protected from the cut at any cutRate (counted in
- * stats.zeroBanality). cutCount = floor(cutable * cutRate) — at least
+ * stats.zeroBanality). Entries the long-tail filter kept as FALLBACKS
+ * (`longTail.fallback === true`) are also PROTECTED (counted in
+ * stats.protectedFallback): they already survived via-negativa as
+ * "keep it or have nothing," and the relative cut must not undo that
+ * and empty the section. cutCount = floor(cutable * cutRate) — at least
  * 1 when cutRate > 0 and anything is cutable (alwaysCutAtLeastOne,
  * default true: a 15% cut must be FELT; a 4-item list still loses its
  * single most banal entry). Ties in banality break by INPUT ORDER
@@ -118,11 +122,21 @@ export function cutMassCliches(candidates, options = {}) {
     banality: banalityIndex(candidate),
   }));
 
+  // COHERENCE WITH LongTailFilter (task 56): a candidate the long-tail
+  // filter kept as a FALLBACK (`longTail.fallback === true`) already
+  // survived via-negativa as "the best of a mainstream lot — keep it or
+  // have nothing." The relative banality cut must NOT undo that and
+  // empty the section (the two filters otherwise compound to zero on
+  // live, mainstream-biased Qloo data). Fallback survivors are
+  // PROTECTED from the cut.
+  const isFallback = (candidate) => candidate?.longTail?.fallback === true;
+
   const cutable = scored.filter(
-    (entry) => entry.banality !== null && entry.banality > 0
+    (entry) => entry.banality !== null && entry.banality > 0 && !isFallback(entry.candidate)
   );
   const unmeasured = scored.length - scored.filter((e) => e.banality !== null).length;
   const zeroBanality = scored.filter((e) => e.banality === 0).length;
+  const protectedFallback = scored.filter((e) => isFallback(e.candidate)).length;
 
   // Banality desc; ties break by input order (earlier = cut first).
   const ordered = [...cutable].sort(
@@ -176,6 +190,7 @@ export function cutMassCliches(candidates, options = {}) {
       thresholdBanality: cutCount > 0 ? ordered[cutCount - 1].banality : null,
       unmeasured,
       zeroBanality,
+      protectedFallback,
     }),
   });
 }
