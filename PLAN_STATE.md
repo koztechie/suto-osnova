@@ -1999,3 +1999,14 @@ Date: 2026-10-21
 PREFLIGHT (git fetch origin --tags): single branch main @ 7aba407 tracking origin/main with no divergence; local tag v1.0.0-hackathon (object 0c6715e) identical to the remote ref. Unpushed repo content: none (the only working-tree items are the user's local docs/PLAN_STATE.md journal and the intentionally-untracked .agents/ + tests/results/ — never committed by project convention, so they are not "changes" of the repository).
 
 EXECUTION: journal committed, then the task's exact command `git push origin main --tags` sent the bookkeeping commit (tags re-pushed as already up-to-date). VERIFIED after the push: git status -sb shows main...origin/main with no ahead/behind; full tag parity — local refs/tags/v1.0.0-hackathon object SHA matches refs/tags/v1.0.0-hackathon AND its peeled ^{} commit on the remote (annotated tag intact); no other local branches exist to sync.
+
+## Task 197 — public access status for the repository
+
+Status: DONE — koztechie/suto-osnova switched PRIVATE -> PUBLIC and verified with ANONYMOUS access (no credentials).
+Date: 2026-10-21
+
+PRE-FLIGHT SECURITY (mandatory before a visibility flip — public = world-readable): tracked content AND full history scanned for the real QLOO_API_KEY value plus generic token patterns (sk-qloo, sk-or-v1, ghp_*, github_pat_*, AKIA*, Bearer <token>) — ZERO matches; .env untracked (0 tracked .env files); opencode.jsonc carries only worktree/docs-reference config, no credentials. The user's personal docs/PLAN_STATE.md was never committed, so it is not part of the public surface.
+
+ACTION: `gh repo edit koztechie/suto-osnova --visibility public --accept-visibility-change-consequences`.
+
+VERIFICATION (all without credentials): `gh repo view --json visibility` -> {"isPrivate":false,"visibility":"PUBLIC"}; ANONYMOUS `GET https://api.github.com/repos/koztechie/suto-osnova` -> HTTP 200 with private:false, visibility:public, license MIT; anonymous `GET https://github.com/koztechie/suto-osnova` -> HTTP 200; anonymous `GET https://raw.githubusercontent.com/koztechie/suto-osnova/main/PLAN_STATE.md` -> HTTP 200 (raw content world-readable); `git fetch origin` still healthy with main in full sync. Public surface = the MIT-licensed source, tests, docs and the root PLAN_STATE journal — no secrets (proven above).
