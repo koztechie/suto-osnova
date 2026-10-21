@@ -197,3 +197,39 @@ test('render contract, determinism, zero emojis', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
   assert.equal(renderAntithesisReport(a), renderAntithesisReport(b));
 });
+
+test('summary honesty: a high-affinity-only pool is NOT claimed as measured opposition', () => {
+  // Qloo insights returns ONLY high-affinity entities (sorted desc; no
+  // ascending option), so the weakest-correlation entries are often
+  // still strongly affine — claiming "measured opposition" then would
+  // overclaim. A pool with genuinely low-affinity candidates keeps it.
+  const affineOnly = [
+    row('a1', 'Affine A', 'music', { affinity: 0.95, popularity: 0.9 }),
+    row('a2', 'Affine B', 'music', { affinity: 0.92, popularity: 0.95 }),
+    row('a3', 'Affine C', 'film', { affinity: 0.89, popularity: 0.99 }),
+  ];
+  const weak = buildAntithesisBlock({
+    anchor: { name: 'Static Ash Live', domain: 'music' },
+    candidates: affineOnly,
+    domains: ['music', 'film'],
+    perDomain: 2,
+    conflictLimit: 4,
+  });
+  assert.ok(weak.summary.includes('WEAKEST-correlation'),
+    'a weakly-divergent pool is framed honestly, not as opposition');
+  assert.ok(weak.summary.includes('NOT measured cultural opposition'),
+    'no overclaim when the pool is all strongly affine');
+
+  const opposition = buildAntithesisBlock({
+    anchor: { name: 'Static Ash Live', domain: 'music' },
+    candidates: [
+      row('o1', 'Opposed A', 'music', { affinity: 0.02, popularity: 0.9 }),
+      row('o2', 'Opposed B', 'film', { affinity: 0, popularity: 0.5 }),
+    ],
+    domains: ['music', 'film'],
+    perDomain: 2,
+    conflictLimit: 4,
+  });
+  assert.ok(opposition.summary.includes('measured opposition'),
+    'genuinely low-affinity candidates keep the measured-opposition claim');
+});

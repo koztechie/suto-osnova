@@ -116,6 +116,16 @@ export const ANTITHESIS_TIERS = Object.freeze({
   LOWEST_CORRELATION: 'lowest_correlation',
 });
 
+/**
+ * A divergence at/above this percent counts as MEASURED OPPOSITION.
+ * Below it, the entries are merely the LEAST-AFFINE of strongly-affine
+ * matches (Qloo insights returns only high-affinity entities, sorted
+ * descending — there is no ascending/low-affinity option), so claiming
+ * 'the graph's measured opposition' would OVERCLAIM. The summary
+ * stays honest either way.
+ */
+const MEANINGFUL_OPPOSITION_DIV = 30;
+
 const validateOptions = (options) => {
   if (typeof options.affinityFn !== 'function') {
     throw new TypeError(
@@ -310,11 +320,26 @@ export function buildAntithesisBlock(pieces) {
     matrix,
     conflictDrivers,
     sponsorshipRisks,
-    summary: selected > 0
-      ? `${selected} blindspot entr(ies) across ` +
-        `${matrix.filter((zone) => zone.count > 0).length} domain(s) — ` +
-        `the graph's measured opposition to ${pieces.anchor.name}.`
-      : `No measurable blindspot evidence — nothing the graph can prove as opposition to ${pieces.anchor.name}.`,
+    summary: (() => {
+      const domains = matrix.filter((zone) => zone.count > 0).length;
+      if (selected === 0) {
+        return `No measurable blindspot evidence — nothing the graph can prove as opposition to ${pieces.anchor.name}.`;
+      }
+      const maxDivergence = records.reduce(
+        (max, record) => Math.max(max, record.divergencePercent ?? 0), 0);
+      // Qloo insights returns ONLY high-affinity entities (0..1, sorted
+      // descending; no ascending option), so the weakest-correlation
+      // entries are often still strongly affine. Claim "measured
+      // opposition" only when the divergence actually PROVES it.
+      return maxDivergence >= MEANINGFUL_OPPOSITION_DIV
+        ? `${selected} blindspot entr(ies) across ${domains} domain(s) — ` +
+          `the graph's measured opposition to ${pieces.anchor.name}.`
+        : `${selected} entr(ies) across ${domains} domain(s) — the WEAKEST-` +
+          `correlation verified matches to ${pieces.anchor.name} ` +
+          `(max divergence ${maxDivergence}%): these are the least-affine of ` +
+          `the strongly-affine pool, NOT measured cultural opposition — ` +
+          `no strong blindspot is provable in this verified data.`;
+    })(),
     stats: Object.freeze({
       candidates: candidates.length,
       measurable: inverted.stats.measurable,

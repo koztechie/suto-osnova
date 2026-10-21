@@ -1760,3 +1760,14 @@ WHY REVISION: fix B v1 used the WHOLE description as ONE probe. Live test showed
 FIX (seedEntityResolver.extractProbes): for the whole-description fragment of an UNQUOTED aesthetic seed, split on the spaced connectors "with"/"and" (and dash/list separators) to derive MEANINGFUL probe chunks ("neon noir" -> relevant noir films; "melancholic jazz" -> relevant jazz) instead of the whole phrase or zero probes. The classifier's SCORING split (splitFragments) is deliberately UNTOUCHED — this split is for the probe ladder only, so the pinned MEDIUM aesthetic confidence stays intact (the earlier attempt to split in the classifier flipped a MEDIUM->HIGH test). A connector-less description still yields ONE probe (itself), never zero.
 
 VERIFIED: "rain-soaked neon noir with melancholic jazz" -> ["rain-soaked neon noir","melancholic jazz"]; "neon noir jazz" -> 1 probe; comma/quoted paths unchanged; 38 classifier+resolver tests + full suite 1183/1183 (two stable runs), lint clean.
+
+## Fix C: honest antithesis summary (no overclaim on a high-affinity pool)
+
+Status: DONE (deployed; live-verified)
+Date: 2026-10-21
+
+ROOT CAUSE (architectural): the antithesis reuses the cross-domain AFFINITY expansion as its candidate pool. Qloo's /v2/insights returns ONLY high-affinity entities (0..1, sorted DESCENDING; docs confirm sort_by=affinity|distance with NO ascending option), so "the weakest correlation within the pool" is still strongly affine (89-95%; 8-11% divergence). Presenting those as "the graph's measured opposition / blindspot" OVERCLAIMS — a true blindspot (strong opposition) is unobtainable from this endpoint.
+
+FIX (AntithesisMode): the summary now computes the MAX divergence among the selected entries and claims "the graph's measured opposition" ONLY when maxDivergence >= MEANINGFUL_OPPOSITION_DIV (30%). Below it, the summary is honest: "the WEAKEST-correlation verified matches (max divergence X%): the least-affine of the strongly-affine pool, NOT measured cultural opposition — no strong blindspot is provable in this verified data." A pool with genuinely low-affinity candidates (affinity 0-0.02 -> 98-100% divergence) keeps the opposition claim. This makes the report honest REGARDLESS of the data source, and becomes automatically correct if a low-affinity candidate source is ever wired in.
+
+VERIFIED: 26 antithesis/mcp/antagonist/dissonance tests pass + 1 NEW test (high-affinity-only pool -> honest "WEAKEST-correlation...NOT opposition"; genuine low-affinity pool -> "measured opposition"); full suite 1184/1184 (two stable runs), lint clean. NOTE: a shell path typo (hachathons) repeatedly broke chained cd commands during this iteration — os.getcwd() in wrapper scripts was used to avoid it.
