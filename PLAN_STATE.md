@@ -2050,3 +2050,12 @@ Status: DONE
 Date: 2026-10-21
 
 Update: the journal had grown to 2030 lines / 167 chronological entries with no opening status view. A CURRENT STATE summary block was inserted directly under the `# PLAN_STATE` heading — production URL + fresh stability result, suite count at the release gate, the release tag and its commit, repository visibility/license, rules-section-4 compliance pointer, backup topology, repo hygiene and the known non-blocking quality follow-ups. Every cell is sourced from measurements made in tasks 193-199 of this session (probe 13/13, suite 1201/1201, tag v1.0.0-hackathon -> 7aba407, PUBLIC + MIT, docs/HACKATHON_COMPLIANCE.md). The chronological log below is untouched; entries stay append-only.
+
+## Task 201 — main repository documentation file (README.md)
+
+Status: DONE — README.md created (none existed) and machine-verified.
+Date: 2026-10-21
+
+CONTENT (English — the rules' language requirement; zero emojis; codebase terminology rules respected): project pitch and the public demo link; the three agent modes with their exact endpoints and input->output contracts; the five-step pipeline (seed resolution with the signal-validation swap, affinity vector, candidate math, dossier layers, optional grounded narrative); the stack (zero-dependency ES-module client, Node 22 serverless-first gateway, Qloo transport stack, Netlify hosting); a two-terminal quickstart verified against reality (PORT=8787 npm start + scripts/serveClient.mjs, which is a pure static+/api proxy and requires the gateway — the PREVIEW_PROXY_DOWN contract; MOCK_MODE offline variant; npm run mcp); the configuration table cross-checked against server/src/config/envSchema.js defaults; the tests-and-gates table (npm test 1201, lint, test:stress, hosting-stability probe, verifyRepoHygiene, verify:env/memory/trackers, mcp:verify); deployment via netlify deploy --prod with pointers to docs/HOSTING_STABILITY.md and docs/HACKATHON_COMPLIANCE.md; the repository-layout table; the documentation index; MIT license note (About-column visibility, task 198 chain).
+
+VERIFICATION (scripted, exit 0): all 9 relative markdown links resolve to existing files; every npm command named in the README exists in package.json (build/ci/lint/mcp/start/test/test:stress/verify:env); zero emoji codepoints; zero banned-terminology hits in prose (URLs excluded); key facts pinned (suite count 1201, release tag v1.0.0-hackathon, canonical URL, suto-osnova.dossier/v1, no_usable_signal, the two-terminal quickstart); repo hygiene gate still CLEAN.
