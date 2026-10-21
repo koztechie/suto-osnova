@@ -1887,3 +1887,14 @@ CANONICAL DEPLOY URL: https://suto-osnova.netlify.app — verified fully working
 WHY THE CUSTOM DOMAIN WAS NOT PURSUED: it needed TWO manual steps the agent cannot do — (1) registering the domain in Netlify, whose CLI does NOT expose domain management (updateSite silently ignores domain_aliases/custom_domain; the proper POST /sites/:id/domains operation is not in the CLI's operation list; only the dashboard manages domains), and (2) the DNS CNAME at NS1 (koztechie.pp.ua is hosted on nsone.net — the developer's account). The custom domain was confirmed ABSENT on both sides (NS1 returned no record; Netlify getSite custom_domain=None / domain_aliases=[]) before the user cancelled.
 
 NO CHANGES MADE: the aborted createSiteDomain call registered nothing (getSite confirmed empty domains before and after). Nothing to revert. The Netlify subdomain requires no further setup — it is live and canonical.
+
+## Task 186 — physical Redmi Note 9 Pro + mobile network: MANUAL (mobile-readiness proxy verified)
+
+Status: MANUAL (needs the physical device + mobile data; a detailed protocol was delivered) + mobile-readiness proxy verified
+Date: 2026-10-21
+
+WHY MANUAL: testing on a PHYSICAL Redmi Note 9 Pro over a MOBILE network requires the user's handset and carrier data — the agent has neither. What CAN be verified was verified: the DEPLOYED build is mobile-ready (checked on the live site via the harness browser) — viewport meta = "width=device-width, initial-scale=1.0, viewport-fit=cover"; the safe-area tokens (--sa-top/--sa-bottom) resolve (env() fallback 0px on desktop; real insets on a notched device); -webkit-tap-highlight-color = rgba(0,0,0,0) (the task-150 tap fix); the font stack is the Lora/Georgia system fallback (no webfont fetch = no external request). The responsive CSS itself is already gated by tests/responsiveLayout.test.js + workspaceLayout.test.js + the safe-area token gate (1080x2400 / 880px / 420px breakpoints), so the layout contract is CI-proven even without the handset.
+
+NOTE: hasManifest=false (no web app manifest) — not required for device verification, but an optional enhancement if "Add to Home Screen" installability is ever wanted.
+
+DELIVERED: an anti-fragible step-by-step manual protocol for the Redmi Note 9 Pro (Chrome, mobile data) covering render, layout, safe-area, touch targets, generation over mobile latency, and remote-debugging console capture.
