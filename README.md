@@ -230,15 +230,19 @@ the whole cycle runs offline under `MOCK_MODE`.
 ## Quickstart
 
 Prerequisites: Node.js 22+, npm, and a Qloo API key
-([request one](https://docs.qloo.com/)).
+([request one](https://docs.qloo.com/)) — offline mode works without one.
 
 ```bash
 git clone https://github.com/koztechie/suto-osnova.git
 cd suto-osnova
 npm ci
-cp .env.example .env          # then put your QLOO_API_KEY into .env
-npm run build                 # build the client into dist/
+cp .env.example .env          # set MOCK_MODE=true (offline) or your QLOO_API_KEY (live)
 ```
+
+The preview serves the client source directly, so **no build step is needed locally**
+(`npm run build` is for deployment — Netlify executes it via `netlify.toml`). The full
+step-by-step guide — installation, environment variables, run variants, verification and
+troubleshooting — lives in [docs/LOCAL_RUN.md](docs/LOCAL_RUN.md).
 
 Run the full app locally — the production topology (static client + `/api` proxy), two terminals:
 
