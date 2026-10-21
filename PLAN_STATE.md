@@ -2017,3 +2017,14 @@ Status: DONE — verified at every level of the chain; no repository change was 
 Date: 2026-10-21
 
 CHAIN OF EVIDENCE: (1) File form — LICENSE sits at the repo root, tracked, and is the canonical MIT text: "MIT License" header, "Copyright (c) 2026 Eugene Kozlovsky (koztechie)", and the "Permission is hereby granted" clause (the exact structure licensee matches). (2) Detection — ANONYMOUS REST api.github.com/repos/koztechie/suto-osnova returns license.spdx_id="MIT" and license.name="MIT License" (url https://api.github.com/licenses/mit). (3) UI source — GraphQL repository.licenseInfo (the very object the About column renders) returns {name: "MIT License", key: "mit", url: choosealicense mit}. (4) Rendered page — the anonymous github.com HTML contains the About license anchor href=/koztechie/suto-osnova/blob/main/LICENSE and the embedded UI state "license":{"spdxId":"MIT","name":"MIT License"} — the sidebar therefore displays the line "MIT License" linking to the LICENSE blob. VERDICT: About shows "MIT License" — CONFIRMED.
+
+## Task 199 — record compliance with the mandatory public hosting requirement (rules section 4)
+
+Status: DONE — COMPLIANT; the compliance record docs/HACKATHON_COMPLIANCE.md pins the verbatim section-4 clauses against freshly measured, anonymous-access evidence.
+Date: 2026-10-21
+
+RULE SOURCE: Qloo Agentic Hackathon Official Rules, section "4. How To Enter" (qloo.devpost.com/rules, retrieved 2026-10-21 — fetched with a browser UA since the plain fetcher gets 403). Public-access clauses: [124] "Provide a link to a functional demo application"; [125] public repository with all source/assets/instructions, open-source license "detectable and visible at the top of the repository page (in the About section)"; [132] access "free of charge and without any restriction" for judges until the judging period ends.
+
+FRESH EVIDENCE (all ANONYMOUS, no credentials): the hosting stability probe against the production site -> STABLE 13/13 exit 0 (static 12/12 p95 157 ms, API health 6/6 p95 297 ms qloo=ok, security headers, immutable assets, the three public demo presets: 2 live dossiers, 1 typed handled outcome, 0 crashes); GET / -> HTTP 200 with EMPTY redirect_url (no auth wall) serving the app HTML; HEAD / -> 200; GET /api/health -> 200; anonymous api.github.com -> private=false, visibility=public, license "MIT License" (SPDX MIT), i.e. the About column shows the license (task 198 chain).
+
+RECORD: docs/HACKATHON_COMPLIANCE.md (English, per the rules' language requirement) — clause-to-evidence table + reproduce-the-verification commands.
