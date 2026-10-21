@@ -1874,3 +1874,16 @@ GAP FOUND: Netlify does NOT add the rest of the security headers — no CSP, X-C
 FIX (netlify.toml [[headers]]): added for /* — X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy: camera=(), microphone=(), geolocation=(), and a CSP tuned for the vanilla client (default-src/script-src/style-src/img-src data:/font-src data:/connect-src 'self'; style 'unsafe-inline' for inline style attributes; object-src none; base-uri self; frame-ancestors none). Plus immutable caching for the content-addressed /assets/* build output.
 
 VERIFIED (live): all six headers present on https://suto-osnova.netlify.app; the app STILL WORKS UNDER THE CSP — real-browser check showed the built /assets CSS+JS load, 3 mode radios + seed input render, the client reaches /api/health (connectivity=online, proving connect-src 'self' allows it), and ZERO console errors (no CSP violations). netlifyDeploy gate 8/8; full suite 1184/1184 (two stable runs); lint clean.
+
+## Task 183 — custom subdomain OR a working Netlify subdomain
+
+Status: DONE (user chose the Netlify subdomain; custom-domain work cancelled)
+Date: 2026-10-21
+
+DECISION (user): cancel the custom domain suto-osnova.koztechie.pp.ua and use the Netlify subdomain instead.
+
+CANONICAL DEPLOY URL: https://suto-osnova.netlify.app — verified fully working: GET /api/health -> 200 (qloo live, reachable); SSL = DigiCert-issued *.netlify.app cert valid to Mar 19 2027 (trusted chain); HSTS max-age=31536000 includeSubDomains preload present; the app renders + generates in a real browser with the security headers (tasks 179-182). This is the "or a working Netlify subdomain" option the task allowed.
+
+WHY THE CUSTOM DOMAIN WAS NOT PURSUED: it needed TWO manual steps the agent cannot do — (1) registering the domain in Netlify, whose CLI does NOT expose domain management (updateSite silently ignores domain_aliases/custom_domain; the proper POST /sites/:id/domains operation is not in the CLI's operation list; only the dashboard manages domains), and (2) the DNS CNAME at NS1 (koztechie.pp.ua is hosted on nsone.net — the developer's account). The custom domain was confirmed ABSENT on both sides (NS1 returned no record; Netlify getSite custom_domain=None / domain_aliases=[]) before the user cancelled.
+
+NO CHANGES MADE: the aborted createSiteDomain call registered nothing (getSite confirmed empty domains before and after). Nothing to revert. The Netlify subdomain requires no further setup — it is live and canonical.
