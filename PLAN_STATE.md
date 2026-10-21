@@ -2010,3 +2010,10 @@ PRE-FLIGHT SECURITY (mandatory before a visibility flip — public = world-reada
 ACTION: `gh repo edit koztechie/suto-osnova --visibility public --accept-visibility-change-consequences`.
 
 VERIFICATION (all without credentials): `gh repo view --json visibility` -> {"isPrivate":false,"visibility":"PUBLIC"}; ANONYMOUS `GET https://api.github.com/repos/koztechie/suto-osnova` -> HTTP 200 with private:false, visibility:public, license MIT; anonymous `GET https://github.com/koztechie/suto-osnova` -> HTTP 200; anonymous `GET https://raw.githubusercontent.com/koztechie/suto-osnova/main/PLAN_STATE.md` -> HTTP 200 (raw content world-readable); `git fetch origin` still healthy with main in full sync. Public surface = the MIT-licensed source, tests, docs and the root PLAN_STATE journal — no secrets (proven above).
+
+## Task 198 — LICENSE recognized by GitHub as "MIT License" in the About column
+
+Status: DONE — verified at every level of the chain; no repository change was needed (the LICENSE was already canonical and detected).
+Date: 2026-10-21
+
+CHAIN OF EVIDENCE: (1) File form — LICENSE sits at the repo root, tracked, and is the canonical MIT text: "MIT License" header, "Copyright (c) 2026 Eugene Kozlovsky (koztechie)", and the "Permission is hereby granted" clause (the exact structure licensee matches). (2) Detection — ANONYMOUS REST api.github.com/repos/koztechie/suto-osnova returns license.spdx_id="MIT" and license.name="MIT License" (url https://api.github.com/licenses/mit). (3) UI source — GraphQL repository.licenseInfo (the very object the About column renders) returns {name: "MIT License", key: "mit", url: choosealicense mit}. (4) Rendered page — the anonymous github.com HTML contains the About license anchor href=/koztechie/suto-osnova/blob/main/LICENSE and the embedded UI state "license":{"spdxId":"MIT","name":"MIT License"} — the sidebar therefore displays the line "MIT License" linking to the LICENSE blob. VERDICT: About shows "MIT License" — CONFIRMED.
