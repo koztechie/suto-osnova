@@ -1771,3 +1771,16 @@ ROOT CAUSE (architectural): the antithesis reuses the cross-domain AFFINITY expa
 FIX (AntithesisMode): the summary now computes the MAX divergence among the selected entries and claims "the graph's measured opposition" ONLY when maxDivergence >= MEANINGFUL_OPPOSITION_DIV (30%). Below it, the summary is honest: "the WEAKEST-correlation verified matches (max divergence X%): the least-affine of the strongly-affine pool, NOT measured cultural opposition — no strong blindspot is provable in this verified data." A pool with genuinely low-affinity candidates (affinity 0-0.02 -> 98-100% divergence) keeps the opposition claim. This makes the report honest REGARDLESS of the data source, and becomes automatically correct if a low-affinity candidate source is ever wired in.
 
 VERIFIED: 26 antithesis/mcp/antagonist/dissonance tests pass + 1 NEW test (high-affinity-only pool -> honest "WEAKEST-correlation...NOT opposition"; genuine low-affinity pool -> "measured opposition"); full suite 1184/1184 (two stable runs), lint clean. NOTE: a shell path typo (hachathons) repeatedly broke chained cd commands during this iteration — os.getcwd() in wrapper scripts was used to avoid it.
+
+## Fix D: balance markdown emphasis in the narrative prompt
+
+Status: DONE (deployed)
+Date: 2026-10-21
+
+DIAGNOSIS: the experiential narrative contained "*Memento—three titans" — an UNCLOSED markdown italic (the LLM opened `*Memento` but dropped the closing `*` before the em-dash). A stochastic LLM-output typography glitch in the judge-facing prose.
+
+FIX (dossierSystemPrompt OUTPUT clause): added a balance instruction — "close every `*` (italic) and `**` (bold) you open; never leave emphasis unclosed." DELIBERATELY chose a PROMPT instruction over post-processing the LLM text: mutating the narrative risks corrupting validateSynthesis (which compares the text to the payload for the anti-hallucination check), whereas a prompt nudge reduces the glitch rate with zero output-mutation risk. It is not 100% (LLMs are stochastic) but is the safest lever.
+
+VERIFIED: prompt integrity gate passes (13 invariants intact); 17 dossierSystemPrompt+llmSynthesizer tests; full suite 1184/1184 (two stable runs), lint clean.
+
+SWEEP STATUS: A (person->restaurant), B (aesthetic 0 probes), C (antithesis overclaim), D (markdown glitch) — ALL FIXED. The scenario sweep is complete.

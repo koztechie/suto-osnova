@@ -89,7 +89,9 @@ export const PROMPT_SECTIONS = Object.freeze({
     'payload JSON structure (no raw field dumps, no "### Entity" blocks). ' +
     'Lead with the NON-OBVIOUS, ' +
     'mathematically confirmed correlations before the famous ones. ' +
-    'Percentages stay verbatim. Answer in the language of the anchor ' +
+    'Percentages stay verbatim. Balance all markdown emphasis — close every ' +
+    '`*` (italic) and `**` (bold) you open; never leave emphasis unclosed. ' +
+    'Answer in the language of the anchor ' +
     'request when identifiable, otherwise in English.',
 });
 
