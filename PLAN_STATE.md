@@ -1834,3 +1834,14 @@ METHOD: opened https://suto-osnova.netlify.app in the harness browser (real Chro
 VERIFIED: document.title = "SUTO OSNOVA - Cultural Intelligence Agent"; landmarks header/main/footer all present; the workspace renders (3 mode radios, #seed input, generate button, #open-inspector button); the connectivity indicator reads state=online / label="Qloo link: online" (the browser's own fetch to /api/health succeeded against the deployed serverless function); the BUILT hashed assets are served (/assets/index-B3qhjQ4L.js 156ms, /assets/style-Ci6y6RKH.css 167ms); the client polls /api/health and /api/categories (the anchor-hint endpoint) — all same-origin; ZERO console errors; resourceOrigins = [suto-osnova.netlify.app] only (no external origins). A viewport screenshot was attempted but the harness desktop window is not visible (headless limitation) — the DOM/console/network inspection is the substantive proof.
 
 CONCLUSION: the public deploy URL opens and fully renders in a real web browser, the client talks to the deployed API, and there are no console errors or cross-origin leaks.
+
+## Task 180 — real test request via the live UI (API response success)
+
+Status: DONE (real Chromium via the harness browser; live-verified)
+Date: 2026-10-21
+
+METHOD: drove the ACTUAL interface in real Chromium on https://suto-osnova.netlify.app — not curl. Flow: opened the page, clicked the "David Lynch Noir" demo preset (fills #seed + selects the worldbuilder mode radio), clicked "GENERATE DOSSIER", and observed the live run.
+
+OBSERVED: the client kicked off the request (status "Running worldbuilder mode...", terminal progress bar "[#---------] /"); after ~12s the live API answered and the UI settled to status "worldbuilder dossier ready." with a 200,236-char JSON envelope whose head is {"status":"ok","service":"suto-osnova","dossier":{...}}; the workspace rendered 5 domain cards (#domain-grid children) and 2 affinity meters ([role=meter]); ZERO console errors across the whole run. The API response was a success end-to-end through the deployed serverless function + live Qloo + the UI.
+
+CONCLUSION: a real browser-driven generate request against the live server succeeds and renders — the public deploy is fully functional via its interface, not just the API surface.
