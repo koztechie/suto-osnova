@@ -222,7 +222,8 @@ the whole cycle runs offline under `MOCK_MODE`.
 
 - **Client** — hand-rolled ES modules, zero frameworks, zero runtime dependencies (`client/`).
 - **Gateway** — Node.js 22, serverless-first HTTP service (`server/src/`: engine, services,
-  modes, formatters, plus an optional [MCP](https://modelcontextprotocol.io/) tool server).
+  modes, formatters, plus an optional [MCP](https://modelcontextprotocol.io/) tool server —
+  connect it to any MCP client with [docs/MCP.md](docs/MCP.md)).
 - **API** — Qloo Taste AI (`hackathon.api.qloo.com`).
 - **Hosting** — Netlify (`netlify.toml`): static client and the v2 function gateway on one
   origin, publicly reachable (rules section 4).
