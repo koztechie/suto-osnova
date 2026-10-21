@@ -1944,3 +1944,14 @@ WHY THIS SCOPE: the physical handset's download UX (Downloads folder vs save pro
 VERIFIED (real Chromium, live https://suto-osnova.netlify.app): clicked the "David Lynch Noir" preset (fills #seed + worldbuilder mode), clicked "Export Markdown" -> the client generated a markdown dossier and the browser reported status "markdown export ready."; files.list showed ONE completed download: suto-osnova-worldbuilder-dossier.md, mime text/markdown, 9596 bytes, state=completed; files.get retrieved it and the CONTENT is valid Markdown — 9596 bytes / 133 lines, H2 sections TOP AFFINITIES / SCENE DOSSIER / DIALOGUE CONTEXT / NARRATIVE / DATA SOURCES / PRIVACY NOTICE, opens with "# DOSSIER — Worldbuilder", ZERO raw JSON envelope. The filename matches the dossierFilename contract (task 146).
 
 CONCLUSION: the Markdown export/download works end-to-end through the deployed UI. On Android Chrome the same Blob/anchor mechanism runs; only the landing spot (Downloads vs prompt) is device-specific — delivered as the manual check.
+
+## Task 191 (REVISED) — project backup in the cloud
+
+Status: Render/VPS mirror REVERTED per user decision ("нахуй той Render" -> the need is simply to save the project in the cloud). The actual cloud backup VERIFIED below.
+Date: 2026-10-21
+
+WHAT WAS REVERTED: the previous task-191 deliverable (Dockerfile + render.yaml + .dockerignore + server/src/middleware/staticMirror.js + server/test/staticMirror.test.js + the opt-in static branch in app.js; commit 3550052) was fully reverted in e61639e. Post-revert verification: suite back to 1184/1184, app.js has 0 staticMirror references, no Render/Docker artifacts remain.
+
+THE ACTUAL NEED (cloud backup) — VERIFIED: (1) Canonical source backup = GitHub private repo github.com/koztechie/suto-osnova (remote `origin`) — 305 tracked files (server 209 / tests 41 / client 30 / scripts 8 / docs 6 / root config), origin in sync (HEAD pushed with this commit). (2) Secrets EXCLUDED: .env is gitignored and untracked (0 tracked .env files); a history scan of the real QLOO_API_KEY against HEAD and every commit (`git log --all -S`) found NO match — the committed backup is secret-free. (3) Secondary copy: Netlify holds the deployed build (dist + netlify/functions) tied to the same repo.
+
+NET: the project IS saved in the cloud (GitHub source of truth + Netlify deploy). No Render/VPS mirror required.
