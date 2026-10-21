@@ -1907,3 +1907,16 @@ Date: 2026-10-21
 VERIFIED (harness Lighthouse, live https://suto-osnova.netlify.app): Accessibility score=1 (100), Best Practices score=1 (100), SEO score=1 (100), failures=[]. All within the 95-100 requirement.
 
 PERFORMANCE: the harness lighthouse tool deliberately EXCLUDES it ("does not run a performance benchmark"). A formal CLI Lighthouse run was attempted but this sandbox blocks chrome-launcher / a self-launched Chrome CDP port ("waiting for dynamic debugging port" / "Unable to connect to Chrome"), so the harness-managed Chrome (which has no exposed CDP) is the only browser available. STRONG EVIDENCE it will score 95+: the paint-critical payload is 45.6KB (fcpBudget gate, ~39ms intrinsic server time); the whole HTML+CSS+JS bundle is 51KB (under the 180KB budget, task 172); CSS minified -53% / JS -68% (task 171); live resource timing ~156ms (JS) / ~167ms (CSS) / ~556ms (/api/health); HSTS + immutable asset caching + HTTP2. A manual DevTools-Lighthouse protocol was delivered for the user to capture the formal Performance number on a network where Chrome can run.
+
+## Task 188 — no horizontal scroll on mobile devices
+
+Status: DONE (deployed-CSS verified + real-render check; narrow-viewport render = manual)
+Date: 2026-10-21
+
+REAL RENDID CHECK (harness browser, live site): document.scrollWidth == clientWidth (1000 == 1000, horizontalOverflow=false), ZERO elements past the viewport, ZERO inline fixed-pixel widths — the rendered page does not overflow even at the current width.
+
+DEPLOYED-CSS SCAN (fetched /assets/style-*.css from the live server — deploy integrity, not just source): mobile breakpoints present as `@media (max-width:880px)` and `(max-width:420px)` (plus prefers-reduced-motion); ZERO element widths >=413px (no fixed column can overflow a 412px phone); 6 auto-fill/auto-fit minmax tracks + 10 grid-template-columns rules — the layout uses RESPONSIVE tracks, not fixed pixel columns. NOTE: overflow-x rules = 0 DELIBERATELY — overflow is PREVENTED by responsive grids (the better approach), not masked by overflow-x:hidden.
+
+CI GATES (already pinning the mobile contract): tests/responsiveLayout.test.js — the breakpoint map is CLOSED (exactly 880px and 420px, no ad-hoc sprawl), the 420px small-viewport refinement exists for 1080x2400 phones, and every grid uses auto-fit/auto-fill minmax or fr tracks ("never a fixed pixel column that could overflow at 320"); tests/workspaceLayout.test.js — the two-column -> stack composition.
+
+LIMIT: a REAL narrow-viewport (360-412 CSS px) render needs device emulation the harness lacks (fixed desktop viewport) — delivered as a manual check (DevTools device toolbar) alongside the above proof.
