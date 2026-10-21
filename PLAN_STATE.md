@@ -1784,3 +1784,16 @@ FIX (dossierSystemPrompt OUTPUT clause): added a balance instruction — "close 
 VERIFIED: prompt integrity gate passes (13 invariants intact); 17 dossierSystemPrompt+llmSynthesizer tests; full suite 1184/1184 (two stable runs), lint clean.
 
 SWEEP STATUS: A (person->restaurant), B (aesthetic 0 probes), C (antithesis overclaim), D (markdown glitch) — ALL FIXED. The scenario sweep is complete.
+
+## Task 177 — protected Netlify env vars: QLOO_API_KEY + QLOO_BASE_URL
+
+Status: DONE (set as SECRET; live-verified)
+Date: 2026-10-21
+
+FOUND: QLOO_API_KEY was already set (scope "All", NON-secret); QLOO_BASE_URL was NOT set at all. The task wanted BOTH as PROTECTED (secret) project env vars.
+
+DONE (via netlify env:set --secret --context <ctx>): set BOTH QLOO_API_KEY and QLOO_BASE_URL as SECRET for the production context (where the function runs) plus deploy-preview and branch-deploy (so PR previews also resolve). The `--secret` flag REQUIRES a non-development context (the CLI rejects it for dev), so dev keeps the local .env — which is correct (local `netlify dev` reads .env). Values taken from .env without echoing them; the secret value is write-only (not readable back via env:list — that is the protection working).
+
+VERIFIED: the REDEPLOYED production function reads the secret vars and reaches Qloo — GET /api/health returns 200 with qloo.status=ok, reachable=true, mode=live. The runtime reads process.env regardless of the CLI write-only flag, so the secret marking does not affect the function.
+
+NOTE: env:list (default dev context) correctly does NOT show the production-scoped secret vars; they exist in the production/deploy-preview/branch-deploy contexts. QLOO_BASE_URL=https://hackathon.api.qloo.com (the schema default, now explicit + protected).
