@@ -35,3 +35,21 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# Task 194: test screenshots & profiling/trace artifacts — the app's own
+# media (client/public favicon + social card) stays tracked; these
+# patterns keep test-tool output out of the repository forever.
+screenshots/
+test-results/
+playwright-report/
+coverage/
+logs/
+*.har
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+*.trace
+*.lcov
+*.out
+*.tmp
+*.screen.png
