@@ -68,7 +68,7 @@ test('index.html is HTML5 and wires only existing local assets', async () => {
   // safe-area coverage for notched devices.
   const viewport = html.match(/<meta name="viewport" content="([^"]+)">/);
   assert.ok(viewport, 'the viewport meta exists');
-  assert.equal(viewport[1], 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+  assert.equal(viewport[1], 'width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content',
     'the viewport meta carries the exact required content');
 
   const moduleScript = html.match(/<script type="module" src="([^"]+)"><\/script>/);
