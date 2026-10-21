@@ -1823,3 +1823,14 @@ WHAT: `netlify deploy` (WITHOUT --prod) creates a deploy-preview — a per-draft
 VERIFIED (full stack on the staging URL): GET / -> 200 (static client); GET /api/health -> 200 qloo.ok/reachable (the serverless function runs with the DEPLOY-PREVIEW env vars set in task 177); POST /api/generate/worldbuilder -> 200, entity Oldboy, ranked 10 (the FULL pipeline — seed resolution, cross-domain expansion, math chain, layers, connections, tonality — works serverless on staging). The staging env (deploy-preview context) carries the protected QLOO_API_KEY/QLOO_BASE_URL, so the API is fully live off-production.
 
 NOTE: this is a per-draft deploy-preview URL (immutable, tied to deploy 6ad8807e). For a PERSISTENT staging URL (e.g. staging--suto-osnova.netlify.app), create and push a `staging` git branch — Netlify (git-connected) auto-deploys it as a branch deploy; the branch-deploy env context is already configured (task 177). Production remains https://suto-osnova.netlify.app (deployed separately via --prod).
+
+## Task 179 — verify the public deploy URL opens in a web browser
+
+Status: DONE (real Chromium via the harness browser; live-verified)
+Date: 2026-10-21
+
+METHOD: opened https://suto-osnova.netlify.app in the harness browser (real Chromium), navigated, and inspected the live DOM + console + network — not just curl.
+
+VERIFIED: document.title = "SUTO OSNOVA - Cultural Intelligence Agent"; landmarks header/main/footer all present; the workspace renders (3 mode radios, #seed input, generate button, #open-inspector button); the connectivity indicator reads state=online / label="Qloo link: online" (the browser's own fetch to /api/health succeeded against the deployed serverless function); the BUILT hashed assets are served (/assets/index-B3qhjQ4L.js 156ms, /assets/style-Ci6y6RKH.css 167ms); the client polls /api/health and /api/categories (the anchor-hint endpoint) — all same-origin; ZERO console errors; resourceOrigins = [suto-osnova.netlify.app] only (no external origins). A viewport screenshot was attempted but the harness desktop window is not visible (headless limitation) — the DOM/console/network inspection is the substantive proof.
+
+CONCLUSION: the public deploy URL opens and fully renders in a real web browser, the client talks to the deployed API, and there are no console errors or cross-origin leaks.
