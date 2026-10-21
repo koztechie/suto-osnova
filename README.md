@@ -17,6 +17,31 @@ Built for the **Qloo Agentic Hackathon** ([Devpost](https://qloo.devpost.com/)).
 - **Source:** this repository (public, MIT)
 - **Release:** `v1.0.0-hackathon`
 
+## What is SUTO OSNOVA
+
+**The problem — language models are culturally blind.**
+A language model can write a paragraph about a film, but it cannot *taste* anything: it has no
+measured opinion about what actually connects one cultural artifact to another. Asked for
+recommendations it does what statistics do — it averages the training corpus toward the middle,
+reproduces generic cultural stereotypes and invents affinities that were never measured
+anywhere. For creative work that is fatal: a mise-en-scène needs the only answer averaging
+cannot give — **what belongs together, by how much, and what is the evidence.** A plausible
+sentence is not a data point.
+
+**The solution — ground every claim in the Qloo taste graph.**
+SUTO OSNOVA does not guess cultural relationships, it queries them. [Qloo Taste AI](https://www.qloo.com/)
+maintains a cross-domain taste graph of 250M+ entities — film, music, literature, dining,
+fashion and beyond — wired together by measured affinities based on real human taste. The engine
+resolves your anchor to a graph entity, pulls its cross-domain affinity vector and turns those
+scores into a dossier: ranked entities with their affinity numbers, five-domain coverage, and an
+explicit failure ledger wherever the graph had nothing to say. The optional narrative prose is
+strictly bound to those computed numbers (cited entities and scores, nothing invented), and the
+Raw API Call Inspector in the UI exposes the underlying Qloo payload — every claim is one click
+from its source.
+
+**In one line:** a language model tells you what *sounds* right; SUTO OSNOVA shows what
+*measures* right — and shows its work.
+
 ## The three agent modes
 
 | Mode | Endpoint | Input -> Output |
