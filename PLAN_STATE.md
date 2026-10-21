@@ -1981,3 +1981,12 @@ ARTIFACTS CLASSIFIED AND DELIBERATELY KEPT (not screenshots/logs, all gitignored
 HARDENING: .gitignore gained a task-194 block (screenshots/, test-results/, playwright-report/, coverage/, *.har, *.cpuprofile, *.heapprofile, *.heapsnapshot, *.trace, *.lcov, *.out, *.tmp, *.screen.png) — targeted patterns that cannot touch client/public media. NEW gate scripts/verifyRepoHygiene.mjs (standalone, CI-safe like hosting-stability.js: `node scripts/verifyRepoHygiene.mjs`, exit 0 clean / 1 polluted) scans git ls-files against an explicit allow-list and rejects media outside client/public, any *.log, profiling artifacts, files under test-output dirs, and screenshot/debug names. NEW server/test/repoHygiene.test.js pins the RULES offline (7 tests over the exported pure predicate).
 
 VERIFIED: gate red-checked live — planted stress-run.log + screenshots/verify.screen.png via git add -f -> POLLUTED (exit 1, both reasons reported) -> git rm --cached + delete -> CLEAN (exit 0). Suite 1201/1201 (two green runs), lint clean.
+
+## Task 195 — release tag v1.0.0-hackathon
+
+Status: DONE — annotated release tag created at the verified production state and pushed to origin.
+Date: 2026-10-21
+
+RELEASE GATE (run before tagging): full suite 1201/1201 (0 failures), repo hygiene gate CLEAN (exit 0). The tagged tree is the task-194 head a4ca3ac — the exact state probed STABLE 13/13 on production in task 193 (this tag adds no runtime change: a4ca3ac touched only .gitignore/docs/gate script/tests).
+
+TAG: `git tag -a v1.0.0-hackathon -m "Production release for Qloo Agentic Hackathon"` at HEAD; pushed with `git push origin main v1.0.0-hackathon`. Verified locally: object type `tag` (annotated), message exact, target commit = release head; verified on the remote: both refs present (refs/tags/v1.0.0-hackathon + peeled ^{} commit).
