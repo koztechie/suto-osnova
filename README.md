@@ -1,5 +1,10 @@
 # SUTO OSNOVA
 
+[![License: MIT](https://img.shields.io/github/license/koztechie/suto-osnova?color=D4A853&style=flat-square)](LICENSE)
+[![tests](https://img.shields.io/github/actions/workflow/status/koztechie/suto-osnova/test.yml?branch=main&label=tests&color=E06338&style=flat-square)](https://github.com/koztechie/suto-osnova/actions/workflows/test.yml)
+[![node](https://img.shields.io/badge/node-22%2B-1F2326?style=flat-square)](https://nodejs.org)
+[![Qloo API](https://img.shields.io/badge/Qloo%20API-integrated-96A2A8?style=flat-square)](https://www.qloo.com/)
+
 **Cultural taste engine for the agentic era.** Give it a cultural anchor — an artist, a film, a
 mood, a place — and it returns a statistically grounded *mise-en-scène dossier*: ranked entities
 across five cultural domains, the connections between them, material and sound specs, and an

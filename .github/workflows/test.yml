@@ -1,0 +1,28 @@
+# CI for the public repository (task 202) — backs the live "tests" badge in
+# the README and gates every push/PR. The suite is fully offline (each test
+# file sets its own deterministic env before import), so NO secrets are
+# configured here on purpose: a red run always means the CODE, never a
+# missing credential.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
