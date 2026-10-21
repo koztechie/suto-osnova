@@ -56,14 +56,73 @@ from its source.
 
 ## The three agent modes
 
-| Mode | Endpoint | Input -> Output |
-|---|---|---|
-| 1. Character & Scene Worldbuilder | `POST /api/generate/worldbuilder` | a cultural anchor -> a full scene dossier: ranked entities, connections, tonality, material spec, cited narrative |
-| 2. Live Event & Festival Activation | `POST /api/generate/experiential` | a headliner or festival concept -> a curation list: opening acts, sponsors, local food & beverage vendors |
-| 3. Taste Antithesis Report | `POST /api/generate/antithesis` | an anchor -> its measured opposite: the weakest affinity correlations framed as a cultural blindspot |
+| Mode | Output id | Endpoint | Input -> Output |
+|---|---|---|---|
+| 1. Worldbuilder Mode | `mise_en_scene_dossier` | `POST /api/generate/worldbuilder` | a cultural anchor -> a print-ready mise-en-scene dossier |
+| 2. Experiential Activation Mode | `activation_curation` | `POST /api/generate/experiential` | a headliner or festival concept -> a live-event curation list |
+| 3. Taste Antithesis Mode | `cultural_blindspot_report` | `POST /api/generate/antithesis` | an anchor -> its measured opposite: a cultural blindspot report |
 
-Every mode answers JSON (the standardized `suto-osnova.dossier/v1` envelope), Markdown or HTML —
-all three exportable from the UI.
+All three run the **same six-phase ladder** — a mode *configures* the run (which layers, which
+domains, which selection direction), it never forks the state machine. `worldbuilder` is the
+default mode; every mode accepts aliases (`dossier`, `live_events`, `blindspot`, … — the full
+table lives in `server/src/engine/ModeDispatcher.js`). Every mode answers JSON (the standardized
+`suto-osnova.dossier/v1` envelope), Markdown or HTML — all three exportable from the UI.
+
+### Worldbuilder Mode (Mode 1 — Character & Scene Dossier)
+
+- **For:** building a scene or a character board from one cultural anchor — or from a pure
+  aesthetic description — with the evidence attached to every pick.
+- **In:** a title, a person or a taste description; an optional scene context (era + geography)
+  that applies a deterministic bias *before* the gate (typed `SceneContextError` for bad values,
+  `TypeError` for bad types).
+- **Out:** the five-section frozen `SceneDossierTemplate` — ranked entities across ALL FIVE
+  domains, the five extraction layers in one bounded wave (sound, literary, material,
+  gastronomy, visual), connections with evidence records, tonal coherence, a context graph with
+  numeric edge weights, materials spec, dialogue context, and the optional narrative cited to
+  the computed numbers.
+- **Math direction:** `non_obvious_affinity` — adaptive threshold -> long-tail via-negativa ->
+  mass-cliche cut -> uniqueness annotation -> score normalization -> non-obvious sort.
+- **Try:** the *David Lynch Noir* preset, or the control scenario anchor *Kyiv Underground
+  Archivist*.
+
+### Experiential Activation Mode (Mode 2 — Live Events)
+
+- **For:** live-event curation — a booking or promotion team turning a headliner into a full
+  bill: who opens, who sponsors, who feeds the crowd.
+- **In:** a headliner artist or a festival concept; a scene location enters as the venue
+  locality.
+- **Out (`activation_curation`):** `curation` (opening acts, brand sponsors, food & beverage
+  vendors), `audience` fingerprints, `afterparty` venues, `foodZones` and the `resonance` index
+  (0-100% coherence) — with the honest ledger riding along (`audience.available=false` when the
+  audience leg fails; curation continues on graph evidence alone).
+- **What makes it *activation*:** audience insights run as a **first-class leg** blended with
+  the venue locality; only the three activation domains expand (music -> opening acts, fashion
+  -> sponsors, dining -> vendors; layers sound, material, gastronomy — no literary/visual
+  quota spend); and every pick is marked `dual` (taste graph and audience leg agree) or
+  `confirmed_affinity` (graph only) — dual-evidence attribution.
+- **Try:** the *Ambient Festival* preset, or the control scenario anchor *Dark Ambient Live*.
+
+### Taste Antithesis Mode (Mode 3 — Cultural Divergence)
+
+- **For:** dramatic conflict and antagonist design — and the sponsorship-risk screen: what does
+  this anchor deliberately NOT connect to?
+- **In:** a target entity.
+- **Out (`cultural_blindspot_report`):** the `antithesis` block — a per-domain matrix of the
+  weakest correlations (empty domains stay visible with `count: 0`), `conflictDrivers` (the
+  strongest cross-domain divergences), `sponsorshipRisks` (mainstream-tier picks) and the
+  protagonist fingerprint (the hero's own strongest affinity per domain — the contrast the
+  antagonist profile is built on).
+- **The inversion:** the acceptance machinery is honestly *not* run — `thresholds: null` (no
+  gate, no long-tail cut, no cliche cut: those CUT the weak rows that are this mode's evidence).
+  `TasteInverter` computes `divergence = 1 - affinity` and sorts divergence descending,
+  `DissonanceFilter` narrows the set; uniqueness annotation still runs because its `mainstream`
+  tier IS the risk marker. No extraction layers spend quota — the report is built from the
+  inverted vector alone.
+- **Try:** run any anchor (for example *Post-Punk Berlin*) with the Antithesis mode radio
+  selected — the dossier arrives as a blindspot report instead of a scene.
+
+Every mode answers JSON (the standardized `suto-osnova.dossier/v1` envelope), Markdown or HTML
+— all three exportable from the UI.
 
 ## How it works
 
