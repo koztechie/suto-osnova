@@ -1933,3 +1933,14 @@ ANALYSIS: the actual keyboard interaction needs a physical Android device (the h
 FIX (client/index.html): viewport -> added `interactive-widget=resizes-content` (the LAYOUT viewport resizes when the keyboard opens, so the anchor input + presets + mode tabs + Generate button REFLOW above the keyboard and stay usable — the recommended setting for forms); #seed -> added `enterkeyhint="go"` (the keyboard's action key submits the form). Updated the exact-viewport gate (tests/clientStructure.test.js) to the new value.
 
 VERIFIED LIVE: the deployed HTML carries both (viewport includes interactive-widget=resizes-content; #seed enterkeyhint="go"); the page renders with #seed and the Generate button visible and ZERO console errors; full suite 1184/1184 (two stable runs); client gates 21/21; lint clean. Delivered a manual Android verification protocol (DevTools device emulation of a 412px viewport + keyboard open, plus the physical-device check) since the harness cannot emulate the on-screen keyboard.
+
+## Task 190 — Markdown dossier download on a smartphone
+
+Status: DONE (download MECHANISM verified end-to-end in a real browser; physical-phone landing spot = manual)
+Date: 2026-10-21
+
+WHY THIS SCOPE: the physical handset's download UX (Downloads folder vs save prompt) needs the phone — but the DOWNLOAD MECHANISM is device-independent (the client builds a Blob and triggers an anchor download) and the harness browser supports REAL downloads (files.list/files.get), so the whole code path was exercised for real.
+
+VERIFIED (real Chromium, live https://suto-osnova.netlify.app): clicked the "David Lynch Noir" preset (fills #seed + worldbuilder mode), clicked "Export Markdown" -> the client generated a markdown dossier and the browser reported status "markdown export ready."; files.list showed ONE completed download: suto-osnova-worldbuilder-dossier.md, mime text/markdown, 9596 bytes, state=completed; files.get retrieved it and the CONTENT is valid Markdown — 9596 bytes / 133 lines, H2 sections TOP AFFINITIES / SCENE DOSSIER / DIALOGUE CONTEXT / NARRATIVE / DATA SOURCES / PRIVACY NOTICE, opens with "# DOSSIER — Worldbuilder", ZERO raw JSON envelope. The filename matches the dossierFilename contract (task 146).
+
+CONCLUSION: the Markdown export/download works end-to-end through the deployed UI. On Android Chrome the same Blob/anchor mechanism runs; only the landing spot (Downloads vs prompt) is device-specific — delivered as the manual check.
