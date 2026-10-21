@@ -13,9 +13,21 @@ taste affinity delivered by the [Qloo Taste AI](https://www.qloo.com/) API.
 
 Built for the **Qloo Agentic Hackathon** ([Devpost](https://qloo.devpost.com/)).
 
-- **Live demo:** https://suto-osnova.netlify.app — no account, no setup: tap a preset or type your own anchor
-- **Source:** this repository (public, MIT)
-- **Release:** `v1.0.0-hackathon`
+## Live Demo
+
+[![live demo open app](https://img.shields.io/badge/live%20demo-open%20app-E06338?style=for-the-badge)](https://suto-osnova.netlify.app)
+
+**https://suto-osnova.netlify.app** — the working web application, public and anonymous: no
+account, no setup, no paywall.
+
+- **Try it:** tap a preset — *David Lynch Noir*, *Post-Punk Berlin* or *Ambient Festival* — or
+  type your own cultural anchor, choose one of the three modes and press **Generate**. The
+  dossier arrives with ranked entities across five cultural domains, connections, tonality and
+  the live Raw API Call Inspector — exportable as JSON, Markdown or HTML.
+- **Availability:** hosted on Netlify, reachable without credentials (the rules section-4
+  testing requirement), and guarded by a stability probe that is re-run against production —
+  see [docs/HOSTING_STABILITY.md](docs/HOSTING_STABILITY.md).
+- **Source:** this repository (public, MIT) — **Release:** `v1.0.0-hackathon`.
 
 ## What is SUTO OSNOVA
 
