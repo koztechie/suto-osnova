@@ -1920,3 +1920,16 @@ DEPLOYED-CSS SCAN (fetched /assets/style-*.css from the live server — deploy i
 CI GATES (already pinning the mobile contract): tests/responsiveLayout.test.js — the breakpoint map is CLOSED (exactly 880px and 420px, no ad-hoc sprawl), the 420px small-viewport refinement exists for 1080x2400 phones, and every grid uses auto-fit/auto-fill minmax or fr tracks ("never a fixed pixel column that could overflow at 320"); tests/workspaceLayout.test.js — the two-column -> stack composition.
 
 LIMIT: a REAL narrow-viewport (360-412 CSS px) render needs device emulation the harness lacks (fixed desktop viewport) — delivered as a manual check (DevTools device toolbar) alongside the above proof.
+
+## Task 189 — input-form adaptiveness when the Android on-screen keyboard opens
+
+Status: DONE (code determinants fixed + live-verified; physical keyboard behavior = manual)
+Date: 2026-10-21
+
+ANALYSIS: the actual keyboard interaction needs a physical Android device (the harness has a fixed desktop viewport and no on-screen keyboard), so the BEHAVIOUR is manual — but its DETERMINANTS live in the code, and two were missing:
+1. viewport-meta had NO `interactive-widget` — Android Chrome 108+ defaults to `resizes-visual` (only the VISUAL viewport shrinks; the layout does not reflow), so when the keyboard opens the form below the focused input can be pushed under the keyboard unpredictably.
+2. the #seed input had NO `enterkeyhint` — the mobile keyboard showed a generic return key instead of an actionable "Go" that submits the form.
+
+FIX (client/index.html): viewport -> added `interactive-widget=resizes-content` (the LAYOUT viewport resizes when the keyboard opens, so the anchor input + presets + mode tabs + Generate button REFLOW above the keyboard and stay usable — the recommended setting for forms); #seed -> added `enterkeyhint="go"` (the keyboard's action key submits the form). Updated the exact-viewport gate (tests/clientStructure.test.js) to the new value.
+
+VERIFIED LIVE: the deployed HTML carries both (viewport includes interactive-widget=resizes-content; #seed enterkeyhint="go"); the page renders with #seed and the Generate button visible and ZERO console errors; full suite 1184/1184 (two stable runs); client gates 21/21; lint clean. Delivered a manual Android verification protocol (DevTools device emulation of a 412px viewport + keyboard open, plus the physical-device check) since the harness cannot emulate the on-screen keyboard.
