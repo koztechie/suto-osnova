@@ -86,6 +86,79 @@ The transport to Qloo sits behind auth, sliding-window rate limiting, bounded re
 jitter, a disk cache, single-flight de-duplication and a privacy guard. `MOCK_MODE=true` serves
 recorded fixtures so the whole pipeline runs offline.
 
+## Architecture — data flow
+
+One generation cycle, from the incoming request to the final dossier:
+
+```
+ POST /api/generate/<mode>    { seed, format: json|markdown|html, options }
+                 |
+                 ▼
+ +-----------------------------------------------------------------+
+ | GATEWAY    netlify/functions/api.mjs -> server/src/app.js        |
+ | path normalize - inbound rate limit (30 req/60 s) - validateBody |
+ +---------------------------+-------------------------------------+
+                             ▼
+ #=================================================================#
+ # AGENT STATE MACHINE  server/src/engine/{AgentStateMachine,       #
+ #   AgentSession,AgentPhases}.js                                   #
+ # events: REQUEST_RECEIVED -> INPUT_VALID -> INTENT_CLASSIFIED ->  #
+ #         DOMAIN_RESOLVED -> EXECUTION_SUCCEEDED   (frozen table)  #
+ # phases: IDLE -> SEED_RESOLUTION -> AFFINITY_EXPANSION ->         #
+ #         ANTITHESIS_GENERATION (explicit skip) ->                 #
+ #         DOSSIER_SYNTHESIS -> COMPLETED       (audit snapshot)    #
+ #=================================================================#
+   | seed: SeedResolver -> SeedClassifier         | anchor entity +
+   | -> seedEntityResolver (GET /search)          | 5 target domains
+   ▼                                              ▼
+ +-----------------------------+   +------------------------------------+
+ | SEED RESOLVER               |   | QLOO API  taste-graph transport     |
+ | server/src/services/        |-->| rate limit -> retry -> disk cache ->|
+ |   seedEntityResolver.js     |<--| single-flight -> privacy guard      |
+ | probes -> search -> entity; |   | /search - /v2/insights - tags -     |
+ | signal probe: swap a usable |   | audience -> hackathon.api.qloo.com  |
+ | alt or typed no_usable_     |   +------------------+-----------------+
+ | signal                      |                      |
+ +-----------------------------+                      | measured affinity
+        candidates + scores (seed domain + 5 domains) <┘
+                 |
+                 ▼
+ +-----------------------------------------------------------------+
+ | CANDIDATE MATH   server/src/engine/{AdaptiveThreshold,           |
+ |   LongTailFilter,PopClicheFilter}.js - pure & deterministic      |
+ +---------------------------+-------------------------------------+
+                             ▼
+ +-----------------------------------------------------------------+
+ | UNIQUENESS FILTER   server/src/engine/UniquenessCoefficient.js   |
+ | annotateUniqueness: U(p)=log2(1/p)/log2(1e6) -> microtail ...    |
+ | mainstream tiers -> ScoreNormalizer -> NonObviousSorter          |
+ | (expansion dedup already ran: first plan domain wins)            |
+ +---------------------------+-------------------------------------+
+                             ▼
+ +-----------------------------------------------------------------+
+ | DOSSIER ASSEMBLY   server/src/services/dossierLayers.js          |
+ | 5 extraction layers in one bounded wave (sound - literary -      |
+ | food - material - visual) + connections + tonality + graph ->    |
+ | optional LLM narrative bound to the numbers -> OutputValidator   |
+ | (hallucination backstop) -> deep-frozen bundle                   |
+ +---------------------------+-------------------------------------+
+                             ▼
+ +-----------------------------------------------------------------+
+ | FINAL DOSSIER   server/src/formatters/{JsonExporter,             |
+ |   MarkdownExporter,HtmlPrintFormatter}.js                        |
+ | { schema: suto-osnova.dossier/v1,                                |
+ |   data: { ranked, layers, connections, ... },                    |
+ |   meta: { expansion, coverage, failures, stats } }               |
+ +---------------------------+-------------------------------------+
+                             ▼
+           200 response -> client render (5-domain cards) ->
+           export JSON / Markdown / HTML
+```
+
+Stage contracts live in [docs/architecture/AGENT_PIPELINE.md](docs/architecture/AGENT_PIPELINE.md).
+The `engine/` layer never performs I/O — every network client is injectable, which is exactly how
+the whole cycle runs offline under `MOCK_MODE`.
+
 ## Stack
 
 - **Client** — hand-rolled ES modules, zero frameworks, zero runtime dependencies (`client/`).
