@@ -1845,3 +1845,19 @@ METHOD: drove the ACTUAL interface in real Chromium on https://suto-osnova.netli
 OBSERVED: the client kicked off the request (status "Running worldbuilder mode...", terminal progress bar "[#---------] /"); after ~12s the live API answered and the UI settled to status "worldbuilder dossier ready." with a 200,236-char JSON envelope whose head is {"status":"ok","service":"suto-osnova","dossier":{...}}; the workspace rendered 5 domain cards (#domain-grid children) and 2 affinity meters ([role=meter]); ZERO console errors across the whole run. The API response was a success end-to-end through the deployed serverless function + live Qloo + the UI.
 
 CONCLUSION: a real browser-driven generate request against the live server succeeds and renders — the public deploy is fully functional via its interface, not just the API surface.
+
+## Task 181 — dossier generation on the live public server (all modes)
+
+Status: DONE (live-verified; complements task 180's browser-UI test)
+Date: 2026-10-21
+
+METHOD: generated a dossier for ALL THREE modes against the live public server (https://suto-osnova.netlify.app) via the API, with distinct OOTB anchors, and checked the output integrity + narrative grounding.
+
+RESULTS (all HTTP 200, envelope.status=ok):
+- worldbuilder (The Handmaiden): entity resolved (film), ranked=10, connections=10, narrative YES (1827 chars), tonality coherent=false (mixed — honest).
+- experiential (Oldboy): entity Oldboy, narrative YES (1687 chars) — the curation structure (resonance/acts/venues) is its own shape, so ranked/connections are not the worldbuilder fields.
+- antithesis (Parasite): entity Parasite, narrative YES (1404 chars) — the blindspot structure, not ranked.
+
+NARRATIVE GROUNDING verified live (the earlier iteration fixes hold on production): the experiential narrative is 1774 chars, CITES verified entities with scores (Oldboy, Léon, Björk, Taxi Driver, Reservoir Dogs; e.g. "98% audience affinity with the dining venue 마카오"), and contains ZERO raw 16-decimal floats (the rounding fix). So generation works across all modes on the live server AND the output is grounded + clean.
+
+NOTE: meta.provenance is empty because provenance is spread across meta.resolution/expansion/chain/coverage/synthesis (not a single "provenance" key) — not a defect.
