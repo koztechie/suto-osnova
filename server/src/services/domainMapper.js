@@ -319,6 +319,33 @@ export function insightTypesFor(domain) {
   return [...DOMAIN_REGISTRY[id].insightTypes];
 }
 
+/**
+ * Normalize ANY affinity domain to the form `getCrossDomainAffinities`
+ * accepts (task 193). `fetchAffinityVector`'s fetchFn contract hands the
+ * RAW agent vocabulary (`books`, `dining`, `fashion`, `film`…), but the
+ * client's alias table only knows `TARGET_DOMAINS` keys or raw
+ * `urn:entity:*` URNs — so the injected production affinityFn must map
+ * BEFORE the call, or those domains are rejected locally
+ * (INVALID_TARGET_DOMAIN) and, on a book/videogame seed, ALL five domains
+ * fail -> 500 `all_domains_failed`. Rules: raw URNs pass through
+ * untouched (primaryInsightType throws on them), agent vocabulary maps to
+ * the insights URN, and unknown vocabulary falls through unchanged so the
+ * client's own INVALID_TARGET_DOMAIN guidance still applies.
+ *
+ * @param {string} domain raw agent domain, canonical key or raw URN
+ * @returns {string} a value resolveTargetDomain accepts
+ */
+export function toInsightsDomain(domain) {
+  if (typeof domain === 'string' && domain.trim().toLowerCase().startsWith('urn:')) {
+    return domain;
+  }
+  try {
+    return primaryInsightType(domain);
+  } catch {
+    return domain;
+  }
+}
+
 /** Collects well-formed tag URNs from raw or normalized entity shapes. */
 function collectTagIds(entity) {
   if (!Array.isArray(entity.tags)) return [];
@@ -437,6 +464,7 @@ const domainMapper = {
   searchTypesFor,
   primaryInsightType,
   insightTypesFor,
+  toInsightsDomain,
   classifyEntity,
   groupByDomain,
 };

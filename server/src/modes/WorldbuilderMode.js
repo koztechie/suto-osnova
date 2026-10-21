@@ -190,6 +190,9 @@ export async function runWorldbuilder(input, options = {}) {
   const resolved = await resolveTextQuery(seed.normalized, {
     search: options.search,
     domain: options.domain,
+    // Task 193: verify the anchor is a signal Qloo accepts (swap to a
+    // usable alternative when it is not — never 500 on a stub record).
+    signalProbe: options.affinityFn,
   });
   const entity = resolved.entity;
 

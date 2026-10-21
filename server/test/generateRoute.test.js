@@ -202,6 +202,90 @@ test('happy path (json): the standardized dossier envelope', async () => {
   assert.ok(payload.dossier.meta.stats, 'the ledger rides `meta`');
 });
 
+// --- task 193: the PRODUCTION client wiring (no injected clients) -----------
+// realClients() must map the agent vocabulary (books/dining/fashion) to
+// insights URNs before getCrossDomainAffinities: its alias table lacks that
+// vocabulary and rejects those domains locally (INVALID_TARGET_DOMAIN). A
+// book/videogame seed then failed ALL five domains -> 500 all_domains_failed
+// (found by the hosting stability probe). MOCK_MODE serves fixtures at the
+// same seam the live transport uses, so this pins the wiring offline.
+test('real-client wiring maps agent domains — 0 domain failures (task 193)', async () => {
+  const res = mockRes();
+  // No `clients` argument -> realClients(): the production affinityFn path.
+  await handleGenerateWorldbuilder({}, res, { seed: 'A24 Psychological Horror' }, 'req-real');
+  assert.equal(res.statusCode, 200, `body: ${String(res.body).slice(0, 240)}`);
+  const payload = JSON.parse(res.body);
+  assert.equal(payload.status, 'ok');
+  const { expansion, failures } = payload.dossier.meta;
+  assert.equal(
+    expansion.failed,
+    0,
+    `every target domain must resolve to an insights URN; expansion: ${JSON.stringify(expansion)}`,
+  );
+  const domainFailures = (failures ?? [])
+    .filter((f) => f.code === 'domain_failed')
+    .map((f) => f.domain);
+  assert.deepEqual(domainFailures, [],
+    'books/dining/fashion must reach getCrossDomainAffinities as insights URNs');
+});
+
+// A record the graph REJECTS as a signal must never 500 the generate: the
+// resolver swaps to the next viable anchor (task 193 — the 'Ambient
+// Festival' preset resolved to a record Qloo refuses even its own domain ->
+// all five domains 400 -> 500 all_domains_failed).
+test('a signal-rejected anchor swaps to the viable alternative (task 193)', async () => {
+  const BEST = {
+    id: '11111111-2222-3333-4444-555555555555',
+    name: 'Ghost Signal Atlas',
+    subtype: 'urn:entity:artist',
+    popularity: 0.9,
+    tags: [T('urn:tag:genre:music:darkambient', 'Dark Ambient', 'urn:tag:genre:music')],
+  };
+  const ALT = {
+    id: '99999999-8888-7777-6666-555555555555',
+    name: 'Ghost Signal Atlas Sessions',
+    subtype: 'urn:entity:artist',
+    popularity: 0.7,
+    tags: [T('urn:tag:genre:music:darkambient', 'Dark Ambient', 'urn:tag:genre:music')],
+  };
+  const swapClients = {
+    searchEntities: async () => ({ results: [BEST, ALT] }),
+    getCrossDomainAffinities: async (ids, domain, opts) => {
+      // The signal-usability probe runs with take:1 during resolution —
+      // the graph refuses BEST, accepts everything else.
+      if (opts?.take === 1 && ids[0] === BEST.id) {
+        const err = new Error('Qloo API request failed: 400 Bad Request');
+        err.status = 400;
+        throw err;
+      }
+      return {
+        results: [{
+          id: '21000000-0000-4222-8333-444455556666',
+          name: 'Null Drone',
+          subtype: 'urn:entity:artist',
+          affinity: 0.9,
+          popularity: 0.3,
+          tags: TAGS.music,
+        }],
+      };
+    },
+    findTags: async () => ({ results: TAGS.music }),
+    getAudienceInsights: async () => ({
+      count: 1,
+      results: [{ name: 'Monochrome Atelier', affinity: 0.8 }],
+    }),
+  };
+  const res = mockRes();
+  await handleGenerateWorldbuilder({}, res, { seed: 'Ghost Signal Atlas' }, 'req-swap', swapClients);
+  assert.equal(res.statusCode, 200, `body: ${String(res.body).slice(0, 240)}`);
+  const payload = JSON.parse(res.body);
+  assert.equal(payload.status, 'ok');
+  assert.equal(payload.dossier.entity.id, ALT.id, 'anchor swapped to the record the graph accepts');
+  assert.equal(payload.dossier.entity.name, 'Ghost Signal Atlas Sessions');
+  assert.equal(payload.dossier.meta.expansion.failed, 0, 'the vector runs on the usable anchor');
+  assert.ok(payload.dossier.data.ranked.length > 0, 'a real dossier ships');
+});
+
 test('format dispatch: markdown and html', async () => {
   const md = mockRes();
   await handleGenerateWorldbuilder({}, md, { seed: 'Dark Thread', format: 'markdown' }, 'req-2', clients);

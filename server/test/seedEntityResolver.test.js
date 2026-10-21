@@ -459,3 +459,93 @@ test('aesthetic seed without quotes/commas: the description splits into probe ch
   });
   assert.equal(result.entity.name, "Lucali's", 'a description chunk probe resolves');
 });
+
+// --- task 193: signal usability (the anchor must be a usable Qloo signal) ---
+
+/** Probe stub: rejects listed ids with the upstream 400 signature. */
+function stubSignalProbe(rejectIds) {
+  const calls = [];
+  const fn = async (ids, domain, opts) => {
+    calls.push({ ids, domain, opts });
+    if (rejectIds.includes(ids[0])) {
+      const err = new Error('Qloo API request failed: 400 Bad Request');
+      err.status = 400;
+      throw err;
+    }
+    return { results: [] };
+  };
+  fn.calls = calls;
+  return fn;
+}
+
+const TWO_MATCHES = () =>
+  stubSearch([[
+    movie('Ghost Signal', UUID('EEEEEEEE')),
+    movie('Ghost Signal Requiem', UUID('FFFFFFFF')),
+  ]]);
+
+test('signalProbe: a rejected best record swaps the anchor to the ranked alternative', async () => {
+  const search = TWO_MATCHES();
+  const signalProbe = stubSignalProbe([UUID('EEEEEEEE')]);
+
+  const result = await resolveTextQuery('Ghost Signal', { search, signalProbe });
+
+  assert.equal(result.entity.id, UUID('FFFFFFFF'), 'swapped to the usable record');
+  assert.equal(result.entity.name, 'Ghost Signal Requiem');
+  assert.equal(result.entity.category, 'film', 'the swap keeps a classified entity');
+  assert.deepEqual(
+    result.alternatives,
+    [],
+    'nothing usable remains: the used alternative left the list, the rejected best was never a viable alternate',
+  );
+  assert.equal(signalProbe.calls.length, 2, 'best rejected -> exactly one alternative probed');
+  assert.deepEqual(signalProbe.calls[0], { ids: [UUID('EEEEEEEE')], domain: 'film', opts: { take: 1 } });
+  assert.equal(signalProbe.calls[1].ids[0], UUID('FFFFFFFF'));
+});
+
+test('signalProbe: every candidate rejected -> typed no_usable_signal (never a 500)', async () => {
+  const search = TWO_MATCHES();
+  const signalProbe = stubSignalProbe([UUID('EEEEEEEE'), UUID('FFFFFFFF')]);
+
+  await assert.rejects(
+    () => resolveTextQuery('Ghost Signal', { search, signalProbe }),
+    (err) => {
+      assert.ok(err instanceof SeedResolutionError, 'a typed resolution error, not INTERNAL');
+      assert.equal(err.code, RESOLUTION_CODES.NO_USABLE_SIGNAL);
+      return true;
+    },
+  );
+  assert.equal(signalProbe.calls.length, 2, 'best + the bounded alternative both probed');
+});
+
+test('signalProbe: a transport failure is not a property of the record — best stays', async () => {
+  const search = TWO_MATCHES();
+  let calls = 0;
+  const signalProbe = async () => {
+    calls += 1;
+    throw new Error('ECONNRESET'); // no .status: transient upstream fact
+  };
+
+  const result = await resolveTextQuery('Ghost Signal', { search, signalProbe });
+
+  assert.equal(result.entity.id, UUID('EEEEEEEE'), 'no demotion on a transient failure');
+  assert.equal(calls, 1, 'chain stops at the first usable (unrejected) record');
+});
+
+test('signalProbe: a usable best record is probed exactly once and kept', async () => {
+  const search = TWO_MATCHES();
+  const signalProbe = stubSignalProbe([]);
+
+  const result = await resolveTextQuery('Ghost Signal', { search, signalProbe });
+
+  assert.equal(result.entity.id, UUID('EEEEEEEE'), 'best kept when the graph accepts it');
+  assert.equal(signalProbe.calls.length, 1, 'happy path costs ONE probe');
+  assert.equal(result.alternatives.length, 1, 'alternatives unchanged when nothing swaps');
+});
+
+test('signalProbe: absent probe = zero signal traffic (today\u2019s behavior)', async () => {
+  const search = TWO_MATCHES();
+  const result = await resolveTextQuery('Ghost Signal', { search });
+  assert.equal(result.entity.id, UUID('EEEEEEEE'));
+  assert.deepEqual(result.alternatives.map((a) => a.id), [UUID('FFFFFFFF')]);
+});

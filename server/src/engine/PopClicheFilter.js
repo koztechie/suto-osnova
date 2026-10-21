@@ -148,6 +148,18 @@ export function cutMassCliches(candidates, options = {}) {
     cutCount = Math.max(cutCount, 1);
   }
 
+  // NEVER EMPTY A NON-EMPTY SECTION (task 193): when EVERY entry is
+  // cutable (the classic case: a lone survivor of the long-tail stage),
+  // the felt-minimum valve would remove it too and leave NOTHING — while
+  // both filters promise "an empty dossier section is worse than a few
+  // honestly flagged survivors". One entry must survive the relative cut;
+  // the least-banal of the cut is the one kept. Fires ONLY when the cut
+  // would empty the section (kept.length = input - cutCount), so every
+  // other input keeps byte-identical results.
+  if (scored.length > 0 && cutCount >= scored.length) {
+    cutCount = scored.length - 1;
+  }
+
   const cutIndices = new Set(ordered.slice(0, cutCount).map((entry) => entry.index));
 
   const kept = Object.freeze(

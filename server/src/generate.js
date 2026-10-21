@@ -80,9 +80,19 @@ const validateBody = (body) => {
 /** The production Qloo clients (lazy, loaded only when a request runs). */
 async function realClients() {
   const { searchEntities } = await import('./services/entitySearchClient.js');
-  const { getCrossDomainAffinities } = await import('./services/crossDomainClient.js');
+  const { getCrossDomainAffinities: rawCrossDomain } = await import('./services/crossDomainClient.js');
+  const { toInsightsDomain } = await import('./services/domainMapper.js');
   const { findTags } = await import('./services/tasteTagsClient.js');
   const { getAudienceInsights } = await import('./services/audienceInsightsClient.js');
+  // fetchAffinityVector passes the RAW agent domain (books/dining/fashion)
+  // per its fetchFn contract; getCrossDomainAffinities' alias table lacks
+  // that vocabulary and rejects it locally (INVALID_TARGET_DOMAIN). On a
+  // book/videogame seed that failed ALL five domains -> 500
+  // all_domains_failed (caught by the task-193 hosting stability probe).
+  // Map ONCE here so every downstream real caller (the vector AND the
+  // URN-passing extractors) is covered; injected test clients bypass this.
+  const getCrossDomainAffinities = (entityIds, targetDomain, options) =>
+    rawCrossDomain(entityIds, toInsightsDomain(targetDomain), options);
   return { searchEntities, getCrossDomainAffinities, findTags, getAudienceInsights };
 }
 

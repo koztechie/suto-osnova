@@ -228,3 +228,42 @@ test('composition: a longTail FALLBACK survivor is protected from the 15% cut', 
   assert.equal(result.kept.length, 2, 'the section is NOT emptied');
   assert.deepEqual(result.removed, [], 'empty removal ledger');
 });
+
+test('task 193: the relative cut NEVER empties a non-empty section', () => {
+  // The A24 anchor shape: the long-tail stage left ONE unflagged survivor
+  // and it is fully cutable — the felt valve must not remove the last one
+  // (an empty dossier section is worse than one honestly flagged entry).
+  const lone = cutMassCliches([c({ popularity: 0.9, affinity: 0.9 })]);
+  assert.equal(lone.stats.cutCount, 0, 'the lone survivor stays');
+  assert.equal(lone.kept.length, 1);
+  assert.deepEqual(lone.removed, [], 'nothing to audit when nothing is cut');
+
+  // Two cutable entries: the cut is still FELT (exactly one survives).
+  const pair = cutMassCliches(proportional(2));
+  assert.equal(pair.stats.cutCount, 1);
+  assert.equal(pair.kept.length, 1);
+
+  // An explicit cut-all config can still not empty the section.
+  const all = cutMassCliches(proportional(3), { cutRate: 1 });
+  assert.equal(all.stats.cutCount, 2, 'one entry survives the cut-all rate');
+  assert.equal(all.kept.length, 1);
+});
+
+test('composition: a lone LONG-TAIL survivor (no fallback flag) survives the 15% cut', () => {
+  // The live chain observed on the 'A24 Psychological Horror' seed: the
+  // long-tail stage kept ONE entry as a NORMAL pass (no fallback flag)
+  // -> the cliché valve would cut it -> ranked 0. End-to-end through both
+  // filters, the section must not empty.
+  // R1 cuts pop>=0.9 without over-performance; R3 cuts excess<=-0.2; R2
+  // needs weight>=0.8 in a pool of 3. pop 0.6 / affinity 0.9 / weight 0.3
+  // clears all three -> a NORMAL pass (no fallback flag).
+  const lone = { id: 'L1', name: 'Rare Signal', popularity: 0.6, affinity: 0.9, weight: 0.3 };
+  const survivors = filterLongTail([lone], { keepFallbackCount: 10 });
+  assert.equal(survivors.kept.length, 1, 'the lone entry passes the long tail');
+  assert.notEqual(survivors.kept[0].longTail.fallback, true, 'a NORMAL pass — unflagged');
+
+  const afterCliche = cutMassCliches(survivors.kept);
+  assert.equal(afterCliche.kept.length, 1, 'the last survivor is not cut away');
+  assert.ok(afterCliche.kept[0].cliche, 'the survivor carries its honest diagnostic');
+  assert.deepEqual(afterCliche.removed, [], 'the audit ledger stays empty when nothing is cut');
+});

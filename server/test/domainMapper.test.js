@@ -21,6 +21,7 @@ const {
   searchTypesFor,
   primaryInsightType,
   insightTypesFor,
+  toInsightsDomain,
   classifyEntity,
   groupByDomain,
 } = await import('../src/services/domainMapper.js');
@@ -206,6 +207,30 @@ test('primaryInsightType picks the single filter.type per domain', () => {
   assert.equal(primaryInsightType('fashion'), 'urn:entity:brand');
   assert.deepEqual(insightTypesFor('film'), ['urn:entity:movie', 'urn:entity:tv_show']);
   assert.deepEqual(insightTypesFor('music'), ['urn:entity:artist']);
+});
+
+// task 193: the production affinityFn must see a domain the client accepts.
+test('toInsightsDomain: agent vocab maps, raw URNs pass through, unknown falls through', () => {
+  // Agent vocabulary -> insights URN (the fetchAffinityVector contract).
+  assert.equal(toInsightsDomain('books'), 'urn:entity:book');
+  assert.equal(toInsightsDomain('dining'), 'urn:entity:place');
+  assert.equal(toInsightsDomain('fashion'), 'urn:entity:brand');
+  assert.equal(toInsightsDomain('film'), 'urn:entity:movie');
+  assert.equal(toInsightsDomain('music'), 'urn:entity:artist');
+  // Raw URNs pass through untouched (primaryInsightType throws on them).
+  assert.equal(toInsightsDomain('urn:entity:brand'), 'urn:entity:brand');
+  assert.equal(toInsightsDomain('urn:entity:place'), 'urn:entity:place');
+  assert.equal(
+    toInsightsDomain('  urn:Entity:Book '),
+    '  urn:Entity:Book ',
+    'the URN check is case/space tolerant and returns the value unchanged',
+  );
+  // Unknown vocabulary falls through so the client keeps its own
+  // INVALID_TARGET_DOMAIN guidance instead of a mapper DomainMappingError.
+  assert.equal(toInsightsDomain('spaceship'), 'spaceship');
+  // Non-strings pass through for the client to reject.
+  assert.equal(toInsightsDomain(undefined), undefined);
+  assert.equal(toInsightsDomain(null), null);
 });
 
 // --- round-trip consistency with the existing service clients -------------------

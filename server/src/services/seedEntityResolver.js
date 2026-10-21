@@ -90,6 +90,10 @@ export const RESOLUTION_CODES = Object.freeze({
   NO_VALID_ID: 'no_valid_id',
   NO_MAPPED_ENTITY: 'no_mapped_entity',
   UPSTREAM_ERROR: 'upstream_error',
+  // Task 193: candidates existed but NONE is a record Qloo accepts as an
+  // affinity signal (upstream 400 on every probe) — an honest 400 content
+  // answer, never a 500 all_domains_failed.
+  NO_USABLE_SIGNAL: 'no_usable_signal',
 });
 
 /** Qloo issues UUID entity ids (live + fixtures, verified). */
@@ -98,6 +102,14 @@ export const ENTITY_ID_PATTERN =
 
 /** Quota guard: how many probes one resolution may try. */
 export const MAX_PROBE_ATTEMPTS = 3;
+/** Cap on ALTERNATIVE signal probes per resolution (the best is probed too);
+ *  covers the full list — selectBestCandidate caps alternatives at 6. */
+export const MAX_SIGNAL_PROBES = 6;
+/** A promoted alternative must score at least this FRACTION of the winner
+ *  (task 193): a swap is a rescue of a comparably-ranked candidate (another
+ *  edition of the same work), never a jump to a weaker match on a different
+ *  topic — a 'festival' anchor must not swap to a mall food court. */
+export const SWAP_SCORE_FLOOR = 0.9;
 
 /** A fuzzy PLACE match against a name-based seed must clear this floor. */
 export const MIN_FUZZY_SIMILARITY = 0.5;
@@ -279,6 +291,11 @@ export function selectBestCandidate(results, options = {}) {
       name: entry.candidate.name,
       category: classifyEntity(entry.candidate),
       score: entry.score,
+      // Signal-fallback fields (task 193): an alternative can BECOME the
+      // anchor when the best record is rejected as a Qloo signal, so it
+      // carries everything a full entity needs.
+      subtype: entry.candidate.subtype ?? null,
+      popularity: entry.candidate.popularity ?? null,
     }));
 
   return {
@@ -361,6 +378,34 @@ function failureFrom(diagnostics, seed, attempts) {
  * @throws {SeedResolutionError} code no_results | no_valid_id |
  *         no_mapped_entity | upstream_error.
  */
+/**
+ * Signal-usability probe (task 193): Qloo rejects certain entity RECORDS
+ * as `signal.interests.entities` — upstream 400, even against their own
+ * domain — which fails every target domain at once (500 all_domains_failed).
+ * A probe that RESOLVES means the record is usable; an upstream 400 means
+ * it is NOT (walk the alternatives); transport/5xx/timeout failures are a
+ * property of the moment, NOT of the record, so they never demote a chosen
+ * anchor (the affinity vector reports them honestly later).
+ *
+ * @param {Function} signalProbe `(ids, domain, {take}) => page` (affinityFn)
+ * @param {object} candidate best entry or an enriched alternative
+ * @returns {Promise<boolean>} false only on a definite upstream rejection
+ */
+async function isSignalUsable(signalProbe, candidate) {
+  const id = typeof candidate?.id === 'string' ? candidate.id : null;
+  const category =
+    typeof candidate?.category === 'string' ? candidate.category : classifyEntity(candidate);
+  // A record with no classifiable domain cannot be probed (and could not
+  // drive the vector either) — treat it as unusable, not as valid.
+  if (id === null || typeof category !== 'string' || category === '') return false;
+  try {
+    await signalProbe([id], category, { take: 1 });
+    return true;
+  } catch (err) {
+    return err?.status !== 400;
+  }
+}
+
 export async function resolveTextQuery(rawText, options = {}) {
   // RELIABILITY: options may arrive as null/array/garbage from callers
   // and MCP wrappers — anything non-object degrades to {} (defaults),
@@ -379,6 +424,9 @@ export async function resolveTextQuery(rawText, options = {}) {
     extraTypes = undefined,
     weights = undefined,
     search = searchEntities,
+    // Task 193: OPTIONAL signal-usability probe — `(ids, domain, {take})`
+    // (the affinityFn contract). Absent = today's behavior, zero probes.
+    signalProbe = undefined,
   } = safeOptions;
 
   // Steps 1-2: pure engine work, no I/O — typed failures propagate.
@@ -440,7 +488,46 @@ export async function resolveTextQuery(rawText, options = {}) {
     diagnostics = mergeDiagnostics(diagnostics, selection.diagnostics);
 
     if (selection.best !== null) {
-      const best = selection.best;
+      let best = selection.best;
+      let alternatives = selection.alternatives;
+      // SIGNAL USABILITY (task 193): Qloo rejects certain entity RECORDS
+      // as `signal.interests.entities` (upstream 400, even their own
+      // domain) — which failed EVERY target domain at once -> 500
+      // all_domains_failed (the hosting stability probe's finding). Verify
+      // the chosen record with the injected probe; when it is rejected,
+      // walk the ranked alternatives (bounded) for a record the graph DOES
+      // accept, so the dossier runs on a usable anchor. Nothing usable
+      // fails typed (400 no_usable_signal) — never an opaque 500. Absent a
+      // probe the path is byte-for-byte today's behavior.
+      if (typeof signalProbe === 'function') {
+        const topScore = selection.relevance?.score;
+        const eligible =
+          typeof topScore === 'number'
+            ? selection.alternatives.filter(
+                (entry) =>
+                  typeof entry.score === 'number' &&
+                  entry.score >= topScore * SWAP_SCORE_FLOOR,
+              )
+            : selection.alternatives;
+        const chain = [selection.best, ...eligible.slice(0, MAX_SIGNAL_PROBES)];
+        let usable = null;
+        for (const candidate of chain) {
+          if (await isSignalUsable(signalProbe, candidate)) {
+            usable = candidate;
+            break;
+          }
+        }
+        if (usable === null) {
+          throw new SeedResolutionError(
+            `no candidate for "${seed.normalized}" is usable as a Qloo affinity signal`,
+            { code: RESOLUTION_CODES.NO_USABLE_SIGNAL, details: { attempts } },
+          );
+        }
+        if (usable !== selection.best) {
+          best = usable;
+          alternatives = alternatives.filter((entry) => entry.id !== usable.id);
+        }
+      }
       return Object.freeze({
         verified: true,
         mode: env.MOCK_MODE ? 'mock' : 'live',
@@ -464,7 +551,7 @@ export async function resolveTextQuery(rawText, options = {}) {
         idValid: ENTITY_ID_PATTERN.test(best.id),
         match: selection.match,
         ambiguous: selection.ambiguous,
-        alternatives: Object.freeze(selection.alternatives.map((a) => Object.freeze(a))),
+        alternatives: Object.freeze(alternatives.map((a) => Object.freeze(a))),
         attempts: Object.freeze(attempts.map((a) => Object.freeze({ ...a }))),
       });
     }
