@@ -1797,3 +1797,29 @@ DONE (via netlify env:set --secret --context <ctx>): set BOTH QLOO_API_KEY and Q
 VERIFIED: the REDEPLOYED production function reads the secret vars and reaches Qloo — GET /api/health returns 200 with qloo.status=ok, reachable=true, mode=live. The runtime reads process.env regardless of the CLI write-only flag, so the secret marking does not affect the function.
 
 NOTE: env:list (default dev context) correctly does NOT show the production-scoped secret vars; they exist in the production/deploy-preview/branch-deploy contexts. QLOO_BASE_URL=https://hackathon.api.qloo.com (the schema default, now explicit + protected).
+
+## Task 178 — ENMG medical report: translation UK->EN + PDF deliverable
+
+Status: DONE (PDF verified 6/6 pages)
+Date: 2026-10-21
+
+SOURCE: /mnt/data/Здоров'я/Дослідження/2026-04-16 - ЕНМГ - VERTEBRA.pdf — 6-page A4 SCAN (Konica Minolta, no text layer). pdftotext returned 0 lines. Extraction path: pdftoppm raster @150/300 DPI -> visual read of all 6 pages -> ambiguity resolution via ImageMagick crops (right abductor hallucis stimulation-site labels, right extensor digitorum brevis amplitude row, residual-latency box, F-wave analysis columns, waveform scale legends).
+
+DELIVERABLE: /mnt/data/Здоров'я/Дослідження/2026-04-16 - ENMG - VERTEBRA (EN translation).pdf — full English translation: header, motor/sensory NCV tables, M-response tables, residual-latency boxes, F-wave parameters + analysis, conclusion/comment/recommendations/disclaimer/signature block. ALL numeric values, units, decimals (comma), bold-normal markers reproduced verbatim; 12 waveform recordings embedded as crops from the source pages with English trace annotations (stimulation site, current, pulse width, rate, scale per division).
+
+ARCHIVE IRON PALETTE ENFORCED in the report CSS: only #101114 / #1F2326 / #96A2A8 / #D4A853 / #E06338 / #F4EFE6. Zero emojis. Vanilla HTML/CSS (no frameworks), ES-module constraint not engaged.
+
+TOOLCHAIN NOTE: system google-chrome is FATAL at init on this box (chrome_crashpad_handler exits 2: "--database is required", handler invoked without args, flags --disable-crash-reporter/--user-data-dir do not help). Renderer used instead: Playwright-bundled chrome-headless-shell (~/.cache/ms-playwright/chromium_headless_shell-1243) with --print-to-pdf. weasyprint unavailable (PEP 668 externally-managed env), soffice rejected (no flexbox support).
+
+FIXES DURING BUILD: page 5 overflow clipped the second F-wave analysis table -> figure max-height classes; first attempt applied with LOWER specificity than `.row figure img` and vertically squashed the waveforms -> escalated selector to `.row figure img.vh26/.vh30` (0,2,2 beats 0,1,2); signature row date/label run-together -> flex gap. Final: exactly 6 A4 pages, all content inside margins, verified page-by-page at 100 DPI.
+
+## Task 178 — first staging (deploy-preview) deployment
+
+Status: DONE (live + verified)
+Date: 2026-10-21
+
+WHAT: `netlify deploy` (WITHOUT --prod) creates a deploy-preview — a per-draft, non-production URL for testing (Netlify's staging equivalent). Deployed 8 files + 1 function to https://6ad8807e5eddd3b9e5a2961b--suto-osnova.netlify.app.
+
+VERIFIED (full stack on the staging URL): GET / -> 200 (static client); GET /api/health -> 200 qloo.ok/reachable (the serverless function runs with the DEPLOY-PREVIEW env vars set in task 177); POST /api/generate/worldbuilder -> 200, entity Oldboy, ranked 10 (the FULL pipeline — seed resolution, cross-domain expansion, math chain, layers, connections, tonality — works serverless on staging). The staging env (deploy-preview context) carries the protected QLOO_API_KEY/QLOO_BASE_URL, so the API is fully live off-production.
+
+NOTE: this is a per-draft deploy-preview URL (immutable, tied to deploy 6ad8807e). For a PERSISTENT staging URL (e.g. staging--suto-osnova.netlify.app), create and push a `staging` git branch — Netlify (git-connected) auto-deploys it as a branch deploy; the branch-deploy env context is already configured (task 177). Production remains https://suto-osnova.netlify.app (deployed separately via --prod).
