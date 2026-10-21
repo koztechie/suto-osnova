@@ -38,3 +38,22 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Security headers (task 182): Netlify serves HSTS + the HTTPS redirect
+# by default but NOT the rest — added here. The CSP is tuned for the
+# vanilla client (external /assets bundle, same-origin /api, data: for
+# the inline favicon SVG; no inline scripts, no eval).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+
+# Hashed build assets are content-addressed — cache them immutably.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

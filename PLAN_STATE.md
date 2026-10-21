@@ -1861,3 +1861,16 @@ RESULTS (all HTTP 200, envelope.status=ok):
 NARRATIVE GROUNDING verified live (the earlier iteration fixes hold on production): the experiential narrative is 1774 chars, CITES verified entities with scores (Oldboy, Léon, Björk, Taxi Driver, Reservoir Dogs; e.g. "98% audience affinity with the dining venue 마카오"), and contains ZERO raw 16-decimal floats (the rounding fix). So generation works across all modes on the live server AND the output is grounded + clean.
 
 NOTE: meta.provenance is empty because provenance is spread across meta.resolution/expansion/chain/coverage/synthesis (not a single "provenance" key) — not a defect.
+
+## Task 182 — HTTPS security headers + SSL certificate verification
+
+Status: DONE (SSL verified; missing headers ADDED + live-verified under CSP)
+Date: 2026-10-21
+
+SSL (verified against the live server): DigiCert Global G2-issued wildcard *.netlify.app cert, SAN covers the subdomain, valid Feb 16 2026 -> Mar 19 2027, `openssl ... Verify return code: 0 (ok)` (trusted chain), TLSv1.3 negotiated by default (TLS_AES_128_GCM_SHA256). HSTS present and strong (max-age=31536000; includeSubDomains; preload). HTTP->HTTPS: 301 redirect. Netlify serves these by default — all GOOD.
+
+GAP FOUND: Netlify does NOT add the rest of the security headers — no CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy or Permissions-Policy were present.
+
+FIX (netlify.toml [[headers]]): added for /* — X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy: camera=(), microphone=(), geolocation=(), and a CSP tuned for the vanilla client (default-src/script-src/style-src/img-src data:/font-src data:/connect-src 'self'; style 'unsafe-inline' for inline style attributes; object-src none; base-uri self; frame-ancestors none). Plus immutable caching for the content-addressed /assets/* build output.
+
+VERIFIED (live): all six headers present on https://suto-osnova.netlify.app; the app STILL WORKS UNDER THE CSP — real-browser check showed the built /assets CSS+JS load, 3 mode radios + seed input render, the client reaches /api/health (connectivity=online, proving connect-src 'self' allows it), and ZERO console errors (no CSP violations). netlifyDeploy gate 8/8; full suite 1184/1184 (two stable runs); lint clean.
