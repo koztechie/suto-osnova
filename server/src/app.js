@@ -23,6 +23,7 @@ import {
 import { sendError, classifyError } from './httpErrors.js';
 import { createLogger } from './logger.js';
 import { newRequestId } from './ids.js';
+import { serveStaticMirror } from './middleware/staticMirror.js';
 import { env } from './config/env.js';
 
 const log = createLogger('http');
@@ -80,6 +81,17 @@ export function createHttpHandler() {
           await handleGenerateAntithesis(req, res, req.body, requestId);
           return;
         }
+      }
+
+      // Static mirror (task 191): an OPT-IN path so ONE process serves
+      // the WHOLE app on Render/VPS (client + /api, same origin). Only
+      // when STATIC_DIR is set; the default keeps the legacy echo below.
+      if (process.env.STATIC_DIR && (req.method === 'GET' || req.method === 'HEAD') && !url.pathname.startsWith('/api/')) {
+        const served = await serveStaticMirror(req, res, url.pathname, process.env.STATIC_DIR);
+        if (served) return;
+        // Unknown path -> the SPA shell (client-side routes), else 404.
+        const shell = await serveStaticMirror(req, res, '/index.html', process.env.STATIC_DIR);
+        if (shell) return;
       }
 
       // Body parsing errors (413/400) surface through the same global

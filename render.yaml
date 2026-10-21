@@ -1,0 +1,36 @@
+# Render backup-mirror blueprint (task 191).
+#
+# A single Docker web service serves the WHOLE app (built client via
+# STATIC_DIR + the /api gateway) — a complete, Netlify-independent mirror
+# on ONE origin (the client calls same-origin /api). Render injects PORT;
+# the server reads it from env. Create -> Dashboard > New > Blueprint and
+# point it at this repo, or `render.yaml` is auto-detected on connect.
+
+services:
+  - type: web
+    name: suto-osnova-mirror
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Required at runtime — set in the Render dashboard (never committed).
+      - key: QLOO_API_KEY
+        sync: false
+      - key: MOCK_MODE
+        value: "false"
+      # Optional LLM synthesis (the dossier narrative).
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_BASE_URL
+        value: "https://openrouter.ai/api/v1"
+      - key: LLM_MODEL
+        value: "nvidia/nemotron-3.5-lightning:free"
+      - key: LLM_REASONING
+        value: "off"
+      - key: LLM_MAX_TOKENS
+        value: "800"
+      - key: LLM_TIMEOUT_MS
+        value: "12000"
