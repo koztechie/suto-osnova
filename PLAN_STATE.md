@@ -1,5 +1,20 @@
 # PLAN_STATE
 
+> **CURRENT STATE (updated at task 200, 2026-10-21)** — verifiable quick-status snapshot; the full chronological per-task log follows below (append-only since task 27).
+>
+> | Item | State |
+> |---|---|
+> | Production | `https://suto-osnova.netlify.app` — hosting stability probe **STABLE 13/13**, exit 0 (task 199, anonymous access, no auth wall) |
+> | Test suite | **1201/1201** + `npm run lint` clean (release gate run at the tag; docs-only commits since) |
+> | Release | annotated tag **`v1.0.0-hackathon`** -> commit `7aba407` ("Production release for Qloo Agentic Hackathon"), pushed with `main --tags` and verified in remote parity |
+> | Repository | `github.com/koztechie/suto-osnova` — **PUBLIC** (task 197, secret-scanned HEAD+history), **MIT** license detected in the About column (task 198), in sync with `origin/main` |
+> | Rules compliance | Hackathon Rules **section 4 — COMPLIANT** (task 199): demo link, public repo + visible license, unrestricted judging access; record in `docs/HACKATHON_COMPLIANCE.md` |
+> | Cloud backup | GitHub repo (source of truth, full history) + the Netlify deployed copy; `.env` was never tracked (verified in history scans) |
+> | Repo hygiene | clean of test screenshots/logs (task 194) with the `scripts/verifyRepoHygiene.mjs` gate + ignore block |
+> | Known follow-ups (quality loop, non-blocking) | preset `Ambient Festival` -> typed 400 `no_usable_signal` (its search page holds no usable mapped music anchor; needs search type-scoping for festival-style seeds); literary/wardrobe relevance tuning |
+>
+> Every cell above was measured in tasks 193-199 of this session; per-task evidence lives in the matching entries below.
+
 ## Task 27 — Reference mock data for 10 test scenarios
 
 Status: DONE
@@ -2028,3 +2043,10 @@ RULE SOURCE: Qloo Agentic Hackathon Official Rules, section "4. How To Enter" (q
 FRESH EVIDENCE (all ANONYMOUS, no credentials): the hosting stability probe against the production site -> STABLE 13/13 exit 0 (static 12/12 p95 157 ms, API health 6/6 p95 297 ms qloo=ok, security headers, immutable assets, the three public demo presets: 2 live dossiers, 1 typed handled outcome, 0 crashes); GET / -> HTTP 200 with EMPTY redirect_url (no auth wall) serving the app HTML; HEAD / -> 200; GET /api/health -> 200; anonymous api.github.com -> private=false, visibility=public, license "MIT License" (SPDX MIT), i.e. the About column shows the license (task 198 chain).
 
 RECORD: docs/HACKATHON_COMPLIANCE.md (English, per the rules' language requirement) — clause-to-evidence table + reproduce-the-verification commands.
+
+## Task 200 — refresh the development journal record
+
+Status: DONE
+Date: 2026-10-21
+
+Update: the journal had grown to 2030 lines / 167 chronological entries with no opening status view. A CURRENT STATE summary block was inserted directly under the `# PLAN_STATE` heading — production URL + fresh stability result, suite count at the release gate, the release tag and its commit, repository visibility/license, rules-section-4 compliance pointer, backup topology, repo hygiene and the known non-blocking quality follow-ups. Every cell is sourced from measurements made in tasks 193-199 of this session (probe 13/13, suite 1201/1201, tag v1.0.0-hackathon -> 7aba407, PUBLIC + MIT, docs/HACKATHON_COMPLIANCE.md). The chronological log below is untouched; entries stay append-only.
