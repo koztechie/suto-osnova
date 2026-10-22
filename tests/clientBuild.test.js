@@ -1,8 +1,9 @@
 /**
  * CLIENT BUILD gate (tasks 171-172) — verifies the Vite production build
  * actually MINIFIES CSS and COMPRESSES JS, preserves the same-origin
- * `/api` gateway, leaks no secret, keeps the asset contract, and the
- * final HTML+CSS+JS bundle stays under the 180 KB budget.
+ * `/api` gateway, leaks no secret, keeps the asset contract (with the
+ * stylesheet INLINED into the HTML — zero render-blocking requests),
+ * and the final HTML+CSS+JS bundle stays under the 180 KB budget.
  *
  * The build is run ONCE for the file (via scripts/buildClient.mjs) and
  * the emitted `dist/` (gitignored) is asserted against the raw
@@ -103,9 +104,19 @@ test('the gateway stays same-origin /api with no external origin and no key', as
   }
 });
 
-test('the asset contract holds: hashed assets, robots.txt at root, og:image present', async () => {
+test('the asset contract holds: CSS inlined, hashed JS, robots.txt at root, og:image present', async () => {
   const html = await readFile(path.join(DIST, 'index.html'), 'utf8');
-  assert.match(html, /href="\/assets\/[^"]+\.css"/, 'the stylesheet is a hashed /assets ref');
+  // Lighthouse "render-blocking requests": NO stylesheet link survives
+  // the build — the single built CSS ships as an inline <style> block,
+  // byte-identical to the emitted /assets bundle (scripts/lib/inlineStylesheet.mjs
+  // pins the transform; this pins the real build output).
+  assert.ok(
+    !/<link\b(?=[^>]*\brel="stylesheet")/.test(html),
+    'no <link rel="stylesheet"> survives — nothing blocks first paint',
+  );
+  const inlined = html.match(/<style>([\s\S]*?)<\/style>/)?.[1];
+  assert.ok(inlined, 'the built HTML carries an inline <style> block');
+  assert.equal(inlined, await builtAsset('.css'), 'the inlined CSS is byte-identical to the emitted asset');
   assert.match(html, /src="\/assets\/[^"]+\.js"/, 'the module script is a hashed /assets ref');
   assert.ok(html.includes('og:image'), 'the built HTML keeps the og:image meta');
   assert.ok(!html.includes('./public/'), 'Vite rewrote the ./public refs (no broken paths)');

@@ -31,7 +31,8 @@ export default defineConfig({
     // the built-in default so no extra minifier dependency is needed.
     cssMinify: true,
     // A single CSS file (main.css + its @imports) and a single JS entry
-    // (main.js + its module graph) — the smallest render-blocking set.
+    // (main.js + its module graph) — one bundle each; the build script
+    // then INLINES the CSS into index.html so nothing blocks first paint.
     cssCodeSplit: false,
     modulePreload: { polyfill: false },
     rollupOptions: {
