@@ -2,10 +2,14 @@
 #
 # WHY (hackathon rules, section 4 "Functionality"): the project must run
 # CONSISTENTLY on its intended platform — and the judging window
-# (November 2-5) is exactly when that matters most. This job is free and
-# needs NO SECRETS by design: the deployed function carries the Qloo key
-# server-side; the sentinel only proves the PUBLIC SURFACE is up — the
-# same view the judges have.
+# (November 2-5) is exactly when that matters most. The second job
+# watches the ORGANIZERS' updates feed: finalist notifications and any
+# schedule changes land there, and the participant does not sit on
+# Devpost all day.
+#
+# Both jobs are free and need NO SECRETS by design: the deployed
+# function carries the Qloo key server-side; the sentinel only proves
+# the PUBLIC SURFACE is up — the same view the judges have.
 #
 # A failed run emails the repository owner automatically (GitHub default).
 name: uptime sentinel
@@ -35,3 +39,22 @@ jobs:
           echo "$body"
           echo "$body" | grep -q '"status":"ok"' || { echo 'FAIL: health not ok'; exit 1; }
           echo 'OK: health'
+  updates-feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: No NEW organizer update appears unnoticed
+        run: |
+          # Devpost blocks a plain fetcher (403) — a browser UA is required.
+          body=$(curl -fsS --max-time 30 \
+            -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
+            https://qloo.devpost.com/updates)
+          echo "$body" | grep -oE 'href="/updates/[0-9]+-[^"]+"' | sort -u > /tmp/slugs.txt
+          cat /tmp/slugs.txt
+          extra=$(grep -v '47166-' /tmp/slugs.txt || true)
+          if [ -n "$extra" ]; then
+            echo 'FAIL: a new organizer update appeared — read it now:'
+            echo "$extra"
+            exit 1
+          fi
+          echo 'OK: only the known update #47166'

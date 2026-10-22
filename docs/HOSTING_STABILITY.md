@@ -113,3 +113,10 @@ a degraded gateway answers 503 and trips the sentinel). A failed run emails the
 repository owner automatically (GitHub default). No secrets in CI by design: the
 deployed function carries the Qloo key; the sentinel checks only the outside. It
 blankets the judging window (November 2-5) without any manual action.
+
+The workflow's second job (`updates-feed`) watches the ORGANIZERS' updates feed on
+qloo.devpost.com — finalist notifications and schedule changes land there. It fails
+(-> email) as soon as any update appears beyond the known #47166. Devpost blocks a
+plain fetcher (403), so the job uses a browser User-Agent; the known-update list is
+one line in `.github/workflows/uptime.yml` and must be extended deliberately when a
+new update is processed.

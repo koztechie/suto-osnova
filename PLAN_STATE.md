@@ -2348,3 +2348,14 @@ READING BETWEEN THE LINES of the resources page: it lists two channels we had co
 2. THE ORGANIZERS' DISCORD: a visibility channel where participants introduce themselves and organizers drop showcase requests. Prepared a ready-to-paste introduction (English, zero emoji per the repo's aesthetic rule): what the agent does, the four-endpoint grounding, the three modes, live demo with the Inspector, public MIT repo, 1,200+ tests, official-harness validation, and an ask for festival/event feedback. New section "Organizer channels — Discord introduction" at the end of docs/SUBMISSION_DRAFT.md; the Ukrainian guide's post-submit list now points to it.
 
 VERIFICATION (scripted, exit 0): the harness claim grounded in package.json (devDep present) and the mcp:verify script definition before publication; both touched files clean (links, zero emoji, zero banned terms after excluding fenced paste material); the Discord block itself carries the demo link and is emoji/banned-free; hygiene CLEAN.
+
+## Quality loop — updates/site-map/gallery fragment: organizers' feed now machine-watched
+
+Status: DONE — the uptime sentinel gained a second job detecting NEW organizer updates; document updated.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES: the updates feed is the channel where the finalist notification and any schedule changes will land — and the participant does not sit on Devpost daily. The site map confirmed there is NO FAQ or discussions surface (both 404), so the feed plus Discord are the only organizer channels; the gallery stays unpublished ("haven't published this gallery yet"), so there is also no competitor intel to monitor. Conclusion: the one thing worth automating is the updates feed.
+
+IMPLEMENTED: `.github/workflows/uptime.yml` gained the `updates-feed` job (same keyless cron, 4-hour cadence): fetches qloo.devpost.com/updates with a BROWSER User-Agent (a plain fetcher gets 403 — established when the intel was collected), extracts every `/updates/<id>-<slug>` link, and fails -> email as soon as any update appears beyond the known #47166. The known-update allowlist is a single deliberate line to extend when a new update is processed — documented in docs/HOSTING_STABILITY.md alongside the sentinel rationale. The Ukrainian guide now states the automation exists AND that the human should still look (belt and braces), and folds the Discord mention into the questions/introductions bullet.
+
+VERIFICATION (scripted, exit 0): positive simulation against the LIVE feed (only #47166 -> OK); NEGATIVE simulation with a synthetic second slug (detector fired correctly); workflow YAML parses with exactly the two jobs; both touched documents emoji/banned-free.
