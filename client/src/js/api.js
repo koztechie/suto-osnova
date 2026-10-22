@@ -77,9 +77,25 @@ export function fetchHealth() {
 /**
  * Fetch the static domain registry (GET /api/categories).
  * Returns { status, domains: [...] }.
+ *
+ * SINGLE-FLIGHT (Lighthouse network dependency tree: six identical
+ * /api/categories requests per page load): the registry changes only
+ * with a DEPLOY, so every consumer — anchor hints, the domain grid,
+ * the five domain plates — shares ONE network round trip, cached for
+ * the session. A FAILED attempt is NOT cached: the slot clears and the
+ * next caller retries, so a transient blip never permanently strips
+ * the hints.
  */
+let categoriesPromise = null;
+
 export function fetchCategories() {
-  return request('/categories');
+  if (categoriesPromise === null) {
+    categoriesPromise = request('/categories').catch((error) => {
+      categoriesPromise = null; // failures are never cached — allow a retry
+      throw error;
+    });
+  }
+  return categoriesPromise;
 }
 
 /**

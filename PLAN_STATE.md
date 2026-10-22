@@ -2158,3 +2158,20 @@ CONTRACT UPDATE: tests/clientBuild.test.js's asset-contract test pinned the OLD 
 MEASURED: local build 0 render-blocking requests; bundle = HTML 29090B + CSS 15263B (inlined + file) + JS 23508B = 66.3KB, well under the 180KB budget; new targeted suite 13/13 (8 inliner unit tests incl. 4 failure modes + 5 integration).
 
 LIVE (deployed via `netlify deploy --prod`, Netlify reran the build): GET / -> 200, 0 stylesheet links, inline <style> starts with the palette; DOM check in the live page: styleSheets=1 with 153 rules APPLIED (brand color computed = rgb(212,168,83) gold, --palette-bg = #101114), cssRequests=0 (was 1), 10 total resources; /api/health 200 (gateway untouched); the old hashed CSS URL still 200. NOTE: the live HTML carries a ~340B HTML comment injected by Netlify's EDGE ("This site is hosted on Netlify…") — platform artifact, not part of the deployed file; our artifact is byte-identical to dist/.
+
+## Quality loop — Lighthouse network dependency tree: /api/categories 6x -> 1x
+
+Status: DONE — deployed to production, live-verified (exactly ONE /api/categories request per page load).
+Date: 2026-10-22
+
+FINDING (user-supplied Lighthouse audit): the network dependency tree showed the critical chain HTML (333 ms) -> /assets/index-*.js (733 ms) -> /api/health (1225 ms) and — the real defect — SIX identical /api/categories requests (1.00-1.04 KiB each, ~0.9-1.1 s each) per single page load.
+
+ROOT CAUSE: six independent consumers each call fetchCategories() eagerly at boot with no shared cache — client/src/js/anchorInput.js (hints), domainCards.js (grid), sonicCard.js, literaryCard.js, materialCard.js, gastronomyCard.js (the five plates; visualCard.js imports it too). client/src/js/api.js held no memoization.
+
+FIX (client/src/js/api.js, single point): fetchCategories() is now SINGLE-FLIGHT — concurrent and sequential callers share ONE request; the resolved registry is cached for the session (it changes only with a deploy); a FAILED attempt is NOT cached (the slot clears, the next caller retries — a transient blip never permanently strips the hints). /api/health deliberately stays UNmemoized: the connectivity probe re-runs by design. Zero call-site changes — the injectable fetchImpl contract is untouched.
+
+TESTS (tests/clientApiSingleFlight.test.js, 5 tests, runs the REAL module in Node 22): six concurrent consumers -> exactly 1 network call and the same promise instance; sequential calls reuse the resolved cache (still 1 call); a failed fetch is not cached (2 calls, retry succeeds); /api/health is NOT memoized (2 probes -> 2 calls); a REGRESSION GUARD greps every client module so no direct fetch('/api/categories') or request('/categories') can reappear outside api.js. Targeted run 14/14 (this file + clientReadiness graph + clientBuild with the rebuilt bundle).
+
+LIVE (deployed via `netlify deploy --prod`): performance.getEntriesByType('resource') on the fresh production page -> apiCalls = [/api/health, /api/categories], categories = 1 (was 6), health = 1, total resources = 3; functional proof that the single response still feeds every consumer: #domain-grid has 5 populated domain items ("Film & TV", ...), connectivity label "Qloo link: online".
+
+REMAINING (documented, not a client defect): the residual critical chain HTML -> JS -> /api/health (~1.2 s under Lighthouse mobile throttling) is dominated by the serverless function round trip; Lighthouse marks this insight as not affecting the score. The 6->1 fix removes 5 wasted invocations per load (rate-limit pressure, Netlify function quota, ~5 KiB).
