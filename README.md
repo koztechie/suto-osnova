@@ -365,6 +365,8 @@ netlify deploy --prod
   text (all fields), pre-submit checklist, post-close rules
 - [docs/SUBMISSION_GUIDE_UA.md](docs/SUBMISSION_GUIDE_UA.md) — the same workflow as a
   step-by-step guide in Ukrainian (the Devpost form itself stays English, per rules)
+- [docs/FINAL_ONAIR_UA.md](docs/FINAL_ONAIR_UA.md) — on-air finalist prep: speech
+  script, judge Q&A, rescue phrases, checklists
 - [AGENTS.md](AGENTS.md) — the engineering rules of this codebase
 
 ## License

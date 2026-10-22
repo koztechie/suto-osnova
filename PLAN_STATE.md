@@ -2276,3 +2276,16 @@ FIX: a full step-by-step guide in Ukrainian covering the same workflow end to en
 DESIGN CONSTRAINT KEPT: no duplication of the English paste-material (single source of truth stays SUBMISSION_DRAFT.md); the guide only INSTRUCTS and links. README Documentation list gained the guide row.
 
 VERIFICATION (scripted, exit 0): file-relative links resolve (five targets), zero emoji, zero banned terms, README links the guide, 11/11 critical facts present (all Kyiv dates, both anchors, no_usable_signal, W-8BEN, Nov 20, Field 7, Join/Enter button names); hygiene CLEAN.
+
+## On-air finalist scenario — docs/FINAL_ONAIR_UA.md (addresses the language barrier at the live final)
+
+Status: DONE — speech script + judge Q&A published, linked from the Ukrainian guide and the README.
+Date: 2026-10-22
+
+USER'S REAL BLOCKER (stated directly): "if I become a finalist I go on air, and all I can say is broken English — is the hackathon over for me?" Answer, grounded in the rules and update #47166: no. The four judging criteria score the SUBMISSION (scoring runs Nov 2, before the Nov 5 air date) — the Top 3 slot is minutes long, presents work already done, and the product can carry the segment through screen share.
+
+DELIVERED: docs/FINAL_ONAIR_UA.md — (1) what the finalist is NOT required to do (improvise, justify language, translate live); (2) a 9-sentence speech script in simple English (max 10 words per sentence) with a Ukrainian meaning column and a full minute at slow pace; (3) a screen-share demo order with pre-opened tabs and the never-demo-Ambient-Festival warning carried over from HOSTING_STABILITY.md, each action paired with a one-line English phrase; (4) 8 judge questions mapped to their intent in Ukrainian plus ready one-line answers (four endpoints / fail-closed / who pays / first commit October 15 / 1,200 tests / non-obvious / what's next / one engineer 199 commits); (5) four rescue phrases for missed questions and stuck moments; (6) a pronunciation table for the seven hard words (Qloo, dossier, endpoints, curators, graph, Kozlovsky, SUTO OSNOVA); (7) a technical checklist (mic, light, two tabs ready, printed script NEXT to the video window, 3 practice reads, wired-connection fallback); (8) post-air steps pointing at the if-you-win runbook.
+
+LINKED: the Ukrainian guide's finalist section now points to the scenario file; README Documentation list gained the row.
+
+VERIFICATION (scripted, exit 0): links resolve across all three touched files; zero emoji; zero banned terms; script has exactly 9 numbered sentences and the Q&A table exactly 8 questions (first run undercounted Q&A because the CHECKER itself dropped the first data row — document was correct, checker fixed); 12/12 critical facts present (dates, anchors, no_usable_signal, October 15, 199 commits, 1,200 tests, Nov 20, rescue phrase, endpoint list); hygiene CLEAN.
