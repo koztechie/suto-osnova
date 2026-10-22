@@ -2598,3 +2598,81 @@ DEFECT 2 (false journal claim, commit 3756a1a): the batch script asserted the an
 FIXES: (1) Field 8 inserted (the four exact Additional-info answers: begin date = first commit October 15, 2026; demo URL; repo URL; the optional existing-project question answered with the new-project truth); (2) the wizard section RESTORED before the checklist and updated to the real state (steps 1-2 done with slug evidence, step 3 in progress, ten screenshots, Field 8 mapped to step 4); (3) a STRUCTURAL ORDER-GATE added to every future verification of this file: 14 required section headings must exist IN ORDER (Field 1..8, wizard, checklist, after submitting, money runbook, finalist prep, Discord) plus the non-heading blocks (Entrant conditions, Self-audit) — a slice that deletes anything now fails immediately.
 
 VERIFICATION (scripted, exit 0): 14/14 sections in order; Field 8 facts present; wizard state text present; zero emoji; zero banned terms; file-relative links resolve; hygiene gate CLEAN. (First run failed only on markdown asterisks inside a needle — checker normalized, document correct.)
+
+================================================================
+FINAL ENTRY — TASK 240 — 100% READY AND SUBMITTED
+SUTO OSNOVA on the Qloo Agentic Hackathon
+================================================================
+Status: FINAL — submission LIVE, verified from the public internet.
+Date: 2026-10-22 (recorded before the hard deadline: 2026-10-31 05:45 Kyiv)
+
+1. SUBMISSION — VERIFIED, NOT ASSUMED
+   Public project page https://devpost.com/software/1500101 -> HTTP 200;
+   its canonical (and og:url) resolution is the permanent slug
+   https://devpost.com/software/suto-osnova-agentic-cultural-intelligence
+   — the published-entry URL form. On the page, measured live:
+   - title "SUTO OSNOVA — agentic cultural intelligence | Devpost"
+     (= Field 1, 43 chars, within the 60-char limit);
+   - the Project Story sections (Inspiration ... What's next) present;
+   - Built with tags present including the space-free tokens (QlooAPI,
+     Node.js) — the select2 space trap survived the fix;
+   - the ten gallery captions visible ("SUTO OSNOVA — landing: cultural
+     anchor input, demo presets, live Qloo connectivity" ...);
+   - no draft/preview markers; "Submission history" section present.
+   All five wizard steps completed: Manage team -> Project overview ->
+   Project details -> Additional info -> Submit.
+
+2. READINESS LEDGER (every claim carries its evidence file)
+   - Rules compliance: docs/HACKATHON_COMPLIANCE.md — 12 MET rows
+     (4 submission pillars + 6 re-audit + 2 section-7 warranties), all
+     measured anonymously against the live deployment and the GitHub API.
+   - Paste materials: docs/SUBMISSION_DRAFT.md — Fields 1..8 mapped onto
+     the real 5-step wizard, hard limits enforced (name 43/60, pitch
+     116/200), space-free tags, story-shaped description, protected by a
+     14-section structural order-gate.
+   - Participant runbook (Ukrainian): docs/SUBMISSION_GUIDE_UA.md —
+     readiness dashboard, Kyiv-time milestone table (deadline
+     31.10 05:45 Kyiv), sign-in step, privacy consent, 15-section rules
+     digest, Submitted-not-Draft receipt procedure.
+   - If-finalist prep: docs/FINAL_ONAIR_UA.md — 9-sentence speech, 9
+     judge answers, rescue phrases, pronunciation, never-demo-Ambient-
+     Festival warning (verified anchor: Glastonbury).
+   - If-winner runbook: money paperwork (W-8BEN, 10-business-day forms,
+     example due 20.11.2026), identity/role evidence (single git author
+     Eugene Kozlovsky, 199 commits, matching GitHub).
+   - Visual assets: 10 demo frames + 2 palette-pure covers (1200x630 and
+     1200x800, exactly 6 palette RGB values each, independently decoded),
+     all hosted as release assets in v1.0.0-hackathon (12 assets, URLs
+     verified 200), Devpost captions in docs/DEMO_FRAMES.md.
+   - Intel record: docs/QLOO_HACKATHON.md — 18/18 sections analyzed in
+     the quality loop, dated snapshot + manual-only refresh policy (ToS).
+   - Engineering: CI green on every push including the repo-hygiene gate
+     (added after the screenshot-name incident); uptime sentinel running
+     every 4 hours (demo shell + /api/health + degraded-alarm); hosted
+     probe STABLE; hygiene CLEAN; no tracked artifacts.
+
+3. WINNER ANNOUNCEMENT — EXPECTED 2026-11-23 (task instruction),
+   WITH A DOCUMENTED DISCREPANCY (recorded, not resolved):
+   - Per the entrant's instruction (task 240): expect the winner
+     announcement on 23 November 2026.
+   - Every OFFICIAL public source, re-verified with a single bounded
+     updates-feed refresh on 2026-10-22, still says 5 November 2026:
+     rules section 1 verbatim ("on or around November 5, 2026 (3:00 pm
+     Eastern Time)"), the /details/dates table ("November 05 at 3:00pm
+     EST"), the JSON-LD endDate window, and update #47166 — the feed
+     contains exactly ONE update, with the Top 3 live final on November 5
+     (Calacanis / Cedric the Entertainer / Alex Elias).
+   - Operational stance: be air-ready from NOVEMBER 5 (the live final is
+     that day, whatever the outer announcement date is); treat
+     2026-11-23 as the expected outer announcement per the instruction;
+     the authoritative channel for any schedule change is the entrant's
+     Devpost participant email (our CI deliberately does not read the
+     feed — Devpost ToS prohibits automated access).
+
+4. WHAT REMAINS (deliberate, non-blocking)
+   - Freeze repo + deployment by end of 2026-11-01 (judging opens
+     2026-11-02 19:00 Kyiv) — no risky pushes after that.
+   - Keep the demo sentinel green through the window; answers to any
+     judge contact via the prepared materials.
+
+END OF JOURNAL. SUTO OSNOVA is submitted and 100% ready.
