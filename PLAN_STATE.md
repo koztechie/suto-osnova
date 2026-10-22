@@ -2402,3 +2402,18 @@ THE SECOND GAP (found via the inventory's manage URL): Devpost explicitly allows
 INCIDENT (recorded): the corrected workflow file was first written to a mistyped workdir (hachathons/) which auto-created the tree; the stray directory contained exactly that one file and was removed (rm -rf) before rewriting to the correct path.
 
 VERIFICATION (scripted, exit 0): YAML has exactly one job; NO curl line touches devpost (the only devpost strings are in the ToS-explaining comment — the first check failed on that naivety, plus "Terms of # Service" line wrap and "remain." vs "remains." — three checker bugs, files correct, checker fixed); guides carry the Submitted receipt and the official email channel; stale automation claim gone; zero emoji/banned; links resolve; hygiene CLEAN.
+
+## Quality loop COMPLETE — all 18 intel sections analyzed; readiness dashboard added
+
+Status: DONE — the final fragment (relevance tail + fetch log) closed the loop over the whole report; the participant gained a single "where we stand" block.
+Date: 2026-10-22
+
+FINAL FRAGMENT ANALYSIS: both visible bullets (criteria rubric, finalist availability) were already implemented by earlier rounds; the fetch log is provenance — its one operational implication (re-fetches are possible only manually, since the ToS-compliant sentinel removal forbids automated access to the devpost Site) is now the standing rule for this project.
+
+LOOP LEDGER (18/18 sections processed across this quality loop): 1 snapshot -> entry-category line + public-consent notice; 2 key dates -> the Kyiv timezone table + the Nov 1 freeze; 3 prizes -> the if-you-win runbook; 4 bonus/final -> the on-air scenario; 5 judges -> panel-lens prep; 6 criteria -> four-criterion pitch + tie-break ordering; 7 what-to-build -> fail-closed differentiator + lateral generalization line; 8 what-to-submit -> five-pillar checklist + Submitted-not-Draft receipt; 9 eligibility -> entrant conditions; 10 how-to-enter -> numbered steps; 11 resources -> harness validation surfaced + Discord introduction; 12 updates -> (sentinel added, then ToS-removed -> official email channel); 13 site map -> nothing actionable (documented); 14 gallery -> no competitor intel (documented); 15 rules index -> the Ukrainian 15-section digest; 16 links -> ToS read + manage-URL receipt; 17 relevance -> readiness dashboard (this commit); 18 fetch log -> standing manual-only refetch rule.
+
+THE DELIVERABLE: docs/SUBMISSION_GUIDE_UA.md now opens with "Стан підготовки (оновлено 2026-10-22)" — seven DONE items with evidence (paste texts, Kyiv deadline, 12 MET compliance rows with today's live re-measurement, on-air scenario, money runbook, uptime sentinel with its latest success, 18/18 analysis) and four remaining HUMAN actions in time order (submit by Oct 31 05:45 Kyiv; verify Submitted + screenshot; freeze by Nov 1; be reachable Nov 5 22:00).
+
+LIVE RE-MEASUREMENT this round: demo 200, gateway 200, repo private=false license=MIT, sentinel last run success.
+
+VERIFICATION (scripted, exit 0): the readiness block is the FIRST section; all six linked files resolve; critical facts present; zero emoji/banned; section count intact; hygiene CLEAN.
