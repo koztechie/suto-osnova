@@ -6,16 +6,29 @@ the official rules collected in
 [QLOO_HACKATHON.md](QLOO_HACKATHON.md) and verified against the live
 application.
 
-**Timing rules (official):**
+**Timing rules (official).** The close is confirmed by FOUR independent official
+records (home badge, rules §1, the `/details/dates` table, the JSON-LD `endDate`):
+**October 30, 2026, 11:45 pm EDT.** None of these clocks is your local clock —
+for an entrant on Kyiv time (UTC+2; Ukraine's seasonal clock change fell on
+October 25, 2026, so winter time already applies) the operative moments are:
 
-- Submit **before October 30, 2026, 11:45 pm EDT** — after the period
-  closes the submission itself cannot be modified (only the project page
-  in your Devpost portfolio). Prepare, verify, paste, submit — now, not
-  on the deadline evening.
+| Milestone | Official (ET) | UTC | Kyiv (UTC+2) |
+|---|---|---|---|
+| **Submissions CLOSE (hard deadline)** | Oct 30, 2026, 11:45 pm EDT | Oct 31, 03:45 | **Oct 31, 2026, 05:45** |
+| Recommended repo/deployment freeze (this draft) | Nov 1, before judging opens | — | **by end of Nov 1 (Kyiv)** |
+| Judging opens | Nov 2, 2026, 12:00 pm EST | Nov 2, 17:00 | Nov 2, 2026, 19:00 |
+| Judging ends (dates table) | Nov 5, 2026, 9:00am EST | Nov 5, 14:00 | Nov 5, 2026, 16:00 |
+| Winners announced ("on or around") | Nov 5, 2026, 3:00pm EST | Nov 5, 20:00 | Nov 5, 2026, 22:00 |
+
+(US clocks fall back on November 1 — every row from Nov 2 on is already EST/UTC-5;
+conversions computed with IANA `America/New_York` + `Europe/Kyiv`, not by hand.)
+
+- Submit **before Oct 31, 2026, 05:45 Kyiv time** — after the period closes the
+  submission itself cannot be modified (only the project page in your Devpost
+  portfolio). Prepare, verify, paste, submit — now, not on the deadline morning.
 - Drafts are allowed: Devpost lets you save a draft and finish later.
-- If selected to the Top 3: you must be available to appear live on
-  November 5 (see the update in [QLOO_HACKATHON.md](QLOO_HACKATHON.md)
-  section 4).
+- If selected to the Top 3: you must be available to appear live on November 5
+  (see the update in [QLOO_HACKATHON.md](QLOO_HACKATHON.md) section 4).
 
 ---
 

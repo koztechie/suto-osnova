@@ -2219,3 +2219,16 @@ READING BETWEEN THE LINES of the fragment (sponsor line, format, 2137 participan
 WORDING CORRECTION during self-review: dropped "the public history runs contiguously to the deadline" (future-tense claim, unverifiable) — replaced with the strictly true first-commit sentence.
 
 VERIFICATION (scripted, exit 0): 10/10 new facts present after whitespace normalization (the first run tripped on a line-wrapped bullet, not on content); git first-commit cross-check 2026-10-15; file-relative links resolve; zero emoji; zero banned terms in prose AND inside the fenced paste-material; hygiene CLEAN.
+
+## Quality loop — key-dates fragment: timezone conversion table for the entrant's clock
+
+Status: DONE — timezone-verified milestone table added to docs/SUBMISSION_DRAFT.md.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES: the dates section reports every official moment in US Eastern time only — never in the entrant's local zone. For a UTC+2 entrant "Oct 30, 11:45 pm EDT" is actually the MORNING of Oct 31, and misreading it as local time forfeits the contest outright. Also: the close is confirmed by FOUR independent official records (home badge, rules §1, /details/dates table, JSON-LD endDate) — maximum confidence on the hard deadline itself.
+
+RESEARCH, NOT ASSUMPTION: Ukraine's clock-change law (No. 4201, adopted July 2024) — web-verified — has NOT entered into force; seasonal changes continue in 2026, winter time began October 25, 2026, so both the deadline and the judging window fall under Kyiv UTC+2. The US side flips to EST on November 1, which every row after Nov 2 must reflect.
+
+IMPLEMENTED: a five-row milestone table in the draft's timing block — Submissions CLOSE, recommended repo freeze, judging opens, judging ends (dates table), winners announced — each with the official ET value, the UTC value and the Kyiv (UTC+2) value: deadline Oct 31 05:45 Kyiv; judging opens Nov 2 19:00 Kyiv; judging ends Nov 5 16:00 Kyiv; winners Nov 5 22:00 Kyiv. Conversions computed with IANA zoneinfo (America/New_York + Europe/Kyiv), not by hand, and the table says so. The first submission bullet now reads "before Oct 31, 2026, 05:45 Kyiv time".
+
+VERIFICATION (scripted, exit 0): all 4 timestamp rows independently recomputed through zoneinfo and matched cell-by-cell against the document (the first run failed on the CHECKER's own %-H stripping the leading zero — the document was correct); file-relative links, zero emoji, zero banned terms; section structure intact; hygiene CLEAN.
