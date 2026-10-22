@@ -2232,3 +2232,18 @@ RESEARCH, NOT ASSUMPTION: Ukraine's clock-change law (No. 4201, adopted July 202
 IMPLEMENTED: a five-row milestone table in the draft's timing block — Submissions CLOSE, recommended repo freeze, judging opens, judging ends (dates table), winners announced — each with the official ET value, the UTC value and the Kyiv (UTC+2) value: deadline Oct 31 05:45 Kyiv; judging opens Nov 2 19:00 Kyiv; judging ends Nov 5 16:00 Kyiv; winners Nov 5 22:00 Kyiv. Conversions computed with IANA zoneinfo (America/New_York + Europe/Kyiv), not by hand, and the table says so. The first submission bullet now reads "before Oct 31, 2026, 05:45 Kyiv time".
 
 VERIFICATION (scripted, exit 0): all 4 timestamp rows independently recomputed through zoneinfo and matched cell-by-cell against the document (the first run failed on the CHECKER's own %-H stripping the leading zero — the document was correct); file-relative links, zero emoji, zero banned terms; section structure intact; hygiene CLEAN.
+
+## Quality loop — prizes/verification fragment: the "if you win" money runbook
+
+Status: DONE — post-win obligations prepared in docs/SUBMISSION_DRAFT.md, identity evidence verified.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES of section 3: the money is not lost at announcement — rules §8 make every award conditional on IDENTITY/QUALIFICATIONS/ROLE verification plus Required Forms returned within 10 BUSINESS DAYS, with forfeiture spelled out for failure. A winner who learns this on November 6 starts paperwork a week late. Second: role verification implies name consistency across the entry, the repo and the ID — that is checkable TODAY. Third: W-8BEN/W-9 and withholding are non-obvious for a non-US winner; the 60-day delivery clock starts only at COMPLETED forms.
+
+VERIFIED, NOT ASSUMED: git authorship is a SINGLE identity across the whole history — Eugene Kozlovsky <185587130+koztechie@users.noreply.github.com>, 199 commits, matching the GitHub profile name and package.json author. The runbook instructs the Devpost account to carry the same name (the usual verification stall point). The 10-business-day example was computed, not guessed: forms arriving Friday Nov 6, 2026 -> due Friday Nov 20, 2026.
+
+IMPLEMENTED: a new "If you win — the money & paperwork runbook" section: identity/role evidence inventory, the 10-business-day clock with the computed example and the explicit forfeiture warning, the document kit (government ID, role statement backed by the public git history, bank/postal details, W-8BEN for non-US / W-9 for US, taxes + withholding caveat), the 60-day delivery rule, one-prize-per-project + substitution, and an honest ambiguity note: the Calacanis $25,000 bonus lives only in the home text, never in rules §8 — stacking with a placed prize is unspecified, so it is framed as upside, not plan. Every claim sourced to QLOO_HACKATHON.md section 3.
+
+RULES COMPLIANCE STATUS: nothing post-win is due yet (no win, no forms) — section 8 compliance is preparedness, and it is now prepared.
+
+VERIFICATION (scripted, exit 0): 11/11 runbook facts present after whitespace normalization; the 10-business-day date independently recomputed (Nov 20, 2026); git authorship re-queried live (1 author, 199 commits, exact email match); file-relative links, zero emoji, zero banned terms; hygiene CLEAN.

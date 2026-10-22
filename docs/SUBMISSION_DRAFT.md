@@ -182,3 +182,32 @@ Self-audit evidence per rule: [HACKATHON_COMPLIANCE.md](HACKATHON_COMPLIANCE.md)
 - Finalists prepare for the November 5 live final; winners are announced on or around
   November 5 at 3:00 pm ET, with prize affidavits due within 10 business days of
   receipt if you win.
+
+## If you win — the money & paperwork runbook (rules §8)
+
+The award is conditional: the rules make it **subject to verification of the identity,
+qualifications and role of the winner in creating the submission**, plus completed
+Required Forms. Nothing is due today — but slow or incorrect paperwork forfeits the
+prize, so prepare now:
+
+- **Identity/role evidence is already consistent** — a single creator, `Eugene
+  Kozlovsky`, across all 199 git commits
+  (`185587130+koztechie@users.noreply.github.com`), the GitHub profile name and the
+  `package.json` `author` field. Make sure your **Devpost account carries the same
+  name** — that is where verification stalls if it does not match.
+- **The 10-business-day clock:** Required Forms must be returned within **10 business
+  days** of being sent. Example: forms arriving Friday **Nov 6, 2026** are due Friday
+  **Nov 20, 2026**. Late or wrong forms = delayed payment, **disqualification or
+  forfeiture** (the rules say so explicitly).
+- **Have ready:** a government ID (identity), your role statement (solo creator — the
+  public git history is the evidence), bank details for an electronic transfer or a
+  postal address (the prize is wired or mailed), and the tax form — **W-8BEN** for
+  non-US residents, **W-9** for US residents. Winners carry all fees/taxes in their
+  jurisdiction and **withholding may apply**.
+- **Delivery:** within **60 days** of the completed forms being received.
+- **One prize per project**; prizes are non-transferable and the Sponsor may substitute
+  equal-or-greater value. The separate Calacanis $25,000 investment appears only in the
+  home bonus text, not in rules §8 — whether it stacks with a placed prize is
+  unspecified: treat it as upside, not as a plan.
+
+Source text for every claim above: [QLOO_HACKATHON.md](QLOO_HACKATHON.md) section 3.
