@@ -2523,3 +2523,18 @@ DISTRIBUTION: uploaded to the v1.0.0-hackathon release (11 assets now; cover URL
 DOCS: DEMO_FRAMES gained the "Cover image (Devpost) — 1200x630" section (hosted URL, the pixel-purity claim with its method, the composition inventory, regeneration command, and the Devpost Cover-image upload step with suggested alt text); README row now advertises "10 demo frames + the 1200x630 Devpost cover"; Ukrainian guide gained the cover bullet (field name, exact dimensions, file path); release notes rewritten with the cover line.
 
 VERIFICATION (scripted, exit 0): IHDR exactly 1200x630; cover-report consistent (6/6 palette, 6 template colours, quantized); docs links/emoji/banned clean across all three files (the first run tripped on a line wrap inside the prose — the recurring checker class, fixed by whitespace normalization); exactly one hosted cover URL; gate CLEAN; zero tracked PNGs.
+
+## Task 216 — Devpost sign-in as `koztechie`: manual path prepared with live-verified materials
+
+Status: DONE — login is a USER-only operation (credentials are theirs by definition; the session headless browser in this environment exposes no visible window for interactive input, so an automated sign-in is not possible here). Delivered as the required anti-fragile step-by-step guide: docs/SUBMISSION_GUIDE_UA.md gained "Крок 0" and the readiness dashboard gained action 0.
+Date: 2026-10-22
+
+EVERY CLAIM MEASURED AGAINST THE LIVE PAGES (browser UA):
+1. https://secure.devpost.com/users/login -> 200; ONE form, action https://secure.devpost.com/users/login, method POST; fields labeled "Email" (input name user[login]) and "Password"; submit button "Log in with email"; CSRF token present.
+2. ZERO external login providers — /auth/ occurrences on the page: 0. (The natural assumption "log in with GitHub/Google" is FALSE here — measured before writing, not assumed.)
+3. Password recovery exists: https://secure.devpost.com/users/password/new.
+4. The account exists and its public identity is consistent: https://devpost.com/koztechie -> 200 with the title "Eugene Kozlovsky's (koztechie) software portfolio | Devpost" — the same Eugene Kozlovsky as the GitHub profile, all 199 git commits and package.json author, which is exactly the identity-consistency the prize-verification runbook requires (cross-linked inside the guide).
+
+THE GUIDE (Ukrainian, step 0 before everything): the exact URL with a phishing rule (the address bar must start with https://secure.devpost.com/); the no-OAuth fact so the user does not hunt for missing buttons; credential handling (their password manager); the official recovery link; a four-point verification that THEY are signed in as koztechie (header avatar instead of Log in/Sign up, the exact profile title, name consistency with GitHub/git as the future role evidence); the immediate post-login destination (the manage/submissions URL, tying into the Submitted-not-Draft receipt step); session hygiene through the deadline (cookies on, no logout until submit, re-login on expiry); and a troubleshooting block (Invalid email or password -> try Email first then recovery; reCAPTCHA/browser warnings; spam folder for the recovery mail).
+
+VERIFICATION (scripted, exit 0): 9/9 required strings present after whitespace AND marker normalization (the check itself tripped twice on markdown asterisks and backticks before being fixed — the document was correct both times); file-relative links resolve; zero emoji; zero banned terms; hygiene gate CLEAN.
