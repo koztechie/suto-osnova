@@ -312,3 +312,11 @@ Policy and Terms of Service apply, home footer).
 | https://qloo.devpost.com/updates/47166-top-3-finalists-to-appear-live-for-final-judging | 200 | 120,165 |
 | 13 listed paths in §13 | 404 | — |
 | 4 external links in §11 | 200 (follow redirects) | — |
+
+**Refresh policy.** This document is a DATED SNAPSHOT (2026-10-22). Pages will
+drift (participant counts, a published gallery, new updates). Refresh only MANUALLY
+— in a browser, or a single bounded request when a person asks for one; do not
+build automated re-crawls of qloo.devpost.com. The Devpost Terms of Service
+(info.devpost.com/terms) prohibit automated access to the Site, and that rule
+outweighs any convenience — an automated updates watcher was removed from this
+repository's CI for exactly that reason.

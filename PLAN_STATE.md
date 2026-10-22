@@ -2417,3 +2417,14 @@ THE DELIVERABLE: docs/SUBMISSION_GUIDE_UA.md now opens with "Стан підго
 LIVE RE-MEASUREMENT this round: demo 200, gateway 200, repo private=false license=MIT, sentinel last run success.
 
 VERIFICATION (scripted, exit 0): the readiness block is the FIRST section; all six linked files resolve; critical facts present; zero emoji/banned; section count intact; hygiene CLEAN.
+
+## Quality loop — fetch-log tail (final fragment): refresh policy recorded; edit-tool truncation caught and reverted
+
+Status: DONE — docs/QLOO_HACKATHON.md gained the refresh-policy note; an incident during this commit was detected by the section-count gate and fixed from git HEAD.
+Date: 2026-10-22
+
+FRAGMENT ANALYSIS: the closing rows of the section-18 fetch log are pure provenance — no new facts, no rules surface. The one meta-implication (the document is a DATED SNAPSHOT whose pages will drift, and ToS forbids automated re-crawls) was already the standing rule in the journal but NOT stated in the document itself. Added "Refresh policy" under section 18: refresh manually in a browser or by a single bounded request when a person asks; never build automated re-crawls of qloo.devpost.com; explicit pointer that the CI updates-watcher was removed for exactly this reason.
+
+INCIDENT (disclosed, fixed): the edit-tool call meant to append this note DELETED sections 1-12 of the file (git diff showed 216 deletions / 9 insertions — the working copy fell to 5,911 B / 6 sections while HEAD stayed whole at 16,445 B / 18 sections). The file's section-count verification FAILED and named the exact defect (sections found: 13..18). Recovery: `git checkout -- docs/QLOO_HACKATHON.md` restored the committed whole file, then the policy paragraph was re-appended through a deterministic shell append. Post-recovery: 18/18 sections, 16,966->16,875 B measured, git diff = +8 lines only.
+
+VERIFICATION (scripted, exit 0, run TWICE): sections 1-18 exactly in order; the refresh policy present; section-1-6 key facts (2,137, $15,000 USD, October 30 2026, Mike Diolosa, Technological Implementation) confirmed present after restoration; file-relative links, zero emoji, zero banned terms; hygiene CLEAN.
