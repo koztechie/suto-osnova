@@ -26,3 +26,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # Repo hygiene gate run against the REAL tree (the suite only pins
+      # the predicate). An incident on 2026-10-22 proved the gap: two
+      # screenshot-named files were committed while the gate had last run
+      # pre-commit, and CI stayed green.
+      - run: node scripts/verifyRepoHygiene.mjs

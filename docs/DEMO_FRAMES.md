@@ -1,11 +1,14 @@
 # Screenshot set — portfolio and Devpost
 
-Six high-resolution frames of the REAL production application, captured
-2026-10-22 with `scripts/makeScreenshots.mjs`. Every frame was taken only
+Seven high-resolution frames of the REAL production application, captured
+2026-10-22 with `scripts/makeDemoFrames.mjs`. Every frame was taken only
 after a **semantic assertion** passed in the page (the exact state each
 frame claims is verified before the shutter), so the set cannot contain a
 blank or half-rendered screen. Dimensions: **3360x2100** (1680x1050 CSS
 pixels at deviceScaleFactor 2) — sharp enough for any portfolio layout.
+The flagship frame (07) additionally proves the **Archival Iron palette is
+active**: all six canonical tokens present verbatim on `:root` and applied
+to live elements, checked programmatically before the capture.
 
 Local files: `screenshots/` (the directory is **gitignored by design** —
 the repo hygiene rule forbids tracking screenshots; `report.json` beside
@@ -22,12 +25,16 @@ repository's `v1.0.0-hackathon` tag — all six verified HTTP 200):
 | 4 | 04-domain-cards.png | the cultural domain plates populated (three or more visible cards) | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/04-domain-cards.png |
 | 5 | 05-antithesis-report.png | Taste antithesis report for *Post-Punk Berlin* | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/05-antithesis-report.png |
 | 6 | 06-api-inspector.png | API Inspector open with the recorded `/api` calls of the session | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/06-api-inspector.png |
+| 7 | 07-dashboard-archival-iron.png | MAIN working dashboard with the dossier rendered, and the Archival Iron palette **proven active** (6/6 `:root` tokens + applied computed styles) | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/07-dashboard-archival-iron.png |
+
+Frame 07 is captured after the antithesis frame and before the inspector
+frame (the inspector modal would cover the dashboard).
 
 ## Using them on the Devpost submission
 
 1. Open the submission form ("Enter a Submission") and locate the media /
    screenshots upload area.
-2. Upload the six PNGs from `screenshots/` with these captions:
+2. Upload the seven PNGs from `screenshots/` with these captions:
 
    | Frame | Caption |
    |---|---|
@@ -37,6 +44,7 @@ repository's `v1.0.0-hackathon` tag — all six verified HTTP 200):
    | 04 | Five cultural domain plates populated from Qloo (sonic, literary, material, gastronomic, visual) |
    | 05 | Taste antithesis: the cultural antipode report for "Post-Punk Berlin" |
    | 06 | Raw API Inspector: the client call log and Qloo provenance, verbatim |
+   | 07 | Main working dashboard with the active Archival Iron palette — anchor controls, rendered dossier, live connectivity |
 
 3. Optionally illustrate the text description with the hosted URLs
    (markdown image syntax):
@@ -58,9 +66,9 @@ account needed for viewers:
 
 ```bash
 npm i --no-save puppeteer-core        # package.json/lock stay untouched
-node scripts/makeScreenshots.mjs      # live production
+node scripts/makeDemoFrames.mjs      # live production
 # or against a local instance:
-node scripts/makeScreenshots.mjs http://localhost:5173
+node scripts/makeDemoFrames.mjs http://localhost:5173
 ```
 
 The script auto-resolves a Chromium (any cached `ms-playwright` bundle,

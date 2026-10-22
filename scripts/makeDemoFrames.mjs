@@ -13,18 +13,20 @@
  *   (chrome-linux64/chrome), then $SHOT_BROWSER, then /usr/bin/google-chrome.
  *
  * USAGE:
- *   node scripts/makeScreenshots.mjs                       # live production
- *   node scripts/makeScreenshots.mjs http://localhost:5173 # local client
+ *   node scripts/makeDemoFrames.mjs                       # live production
+ *   node scripts/makeDemoFrames.mjs http://localhost:5173 # local client
  *
  * OUTPUT: ./screenshots/ — a GITIGNORED directory (repo hygiene rule:
  * no test screenshots may ever be tracked; scripts/verifyRepoHygiene.mjs
- * enforces it). Upload the PNGs to Devpost manually; docs/SCREENSHOTS.md
+ * enforces it). Upload the PNGs to Devpost manually; docs/DEMO_FRAMES.md
  * documents every frame and the hosted URLs.
  *
  * SEQUENCING (rate-limit friendly — one generate at a time):
  *   1 landing (idle) -> 2 worldbuilder markdown -> 3 experiential
  *   markdown -> 4 domain cards (populated) -> 5 antithesis markdown ->
- *   6 API inspector with the recorded provenance of the calls above.
+ *   6 MAIN WORKING DASHBOARD with the Archival Iron palette VERIFIED
+ *   (all six canonical tokens verbatim on :root AND applied to live
+ *   elements) -> 7 API inspector with the recorded provenance.
  */
 import { mkdir, writeFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -114,6 +116,40 @@ async function setSeed(page, text) {
   const value = await page.$eval('#seed', (n) => n.value);
   if (value !== text) throw new Error(`seed typing failed: wanted "${text}", got "${value}"`);
   await page.select('#format', 'markdown');
+}
+
+/**
+ * ARCHIVAL IRON palette proof (task 211): the six canonical tokens must
+ * exist VERBATIM on :root (--palette-* definitions, measured 2026-10-22)
+ * AND be APPLIED to live elements (computed styles). Returns a failure
+ * string — empty means the palette is active.
+ */
+async function archivalIronActive(page) {
+  return page.evaluate(() => {
+    const values = new Set();
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try { rules = sheet.cssRules; } catch { continue; }
+      for (const rule of rules) {
+        if (rule.style && (rule.selectorText ?? '').includes(':root')) {
+          for (const prop of rule.style) {
+            if (prop.startsWith('--')) {
+              values.add(rule.style.getPropertyValue(prop).trim().toLowerCase());
+            }
+          }
+        }
+      }
+    }
+    const need = ['#101114', '#1f2326', '#96a2a8', '#d4a853', '#e06338', '#f4efe6'];
+    const defined = need.filter((hex) => values.has(hex));
+    const applied =
+      getComputedStyle(document.body).color === 'rgb(244, 239, 230)' &&
+      getComputedStyle(document.querySelector('.brand')).color === 'rgb(212, 168, 83)' &&
+      getComputedStyle(document.querySelector('.panel')).backgroundColor === 'rgb(31, 35, 38)';
+    return defined.length === need.length && applied
+      ? 'ok'
+      : `defined ${defined.length}/${need.length}, applied=${applied}`;
+  });
 }
 
 /**
@@ -224,7 +260,22 @@ async function main() {
         return /antithesis/i.test(t) && t.length > 400 ? 'ok' : '';
       }, 'taste antithesis report (Post-Punk Berlin)');
 
-    // 6. API Inspector — the recorded client calls of the session.
+    // 6 (file 07). MAIN WORKING DASHBOARD — controls + rendered dossier at
+    //    the top of the page, captured only when the Archival Iron palette
+    //    is PROVEN active: all six canonical tokens verbatim on :root and
+    //    applied to live elements (task 211).
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const palette = await archivalIronActive(page);
+    if (palette !== 'ok') {
+      throw new Error(`Archival Iron palette not active: ${palette}`);
+    }
+    await shoot(page, '07-dashboard-archival-iron.png',
+      async () => {
+        const text = await pageText(page);
+        return /ready/i.test(await status(page)) && text.length > 400 ? 'ok' : '';
+      }, 'main dashboard: filled dossier + Archival Iron palette active (6/6 tokens + applied)');
+
+    // 7. API Inspector — the recorded client calls of the session.
     await page.click('#open-inspector');
     await shoot(page, '06-api-inspector.png',
       async () => page.evaluate(() => {
