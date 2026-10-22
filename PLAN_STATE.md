@@ -2315,3 +2315,14 @@ IMPLEMENTED: (1) Field 3 of docs/SUBMISSION_DRAFT.md — an "It generalizes" sen
 ALSO: §8's five mandatory items re-verified live this round — demo 200, gateway 200 (public, no auth wall), public repo + MIT About (unchanged since the T-8 re-audit in HACKATHON_COMPLIANCE.md).
 
 VERIFICATION (scripted, exit 0): the dining-domain claim cross-checked against the actual mode source before publishing; both files clean on links/emoji/banned; Q&A structure intact (9 rows); hygiene CLEAN.
+
+## Quality loop — "running consistently" bar: permanent keyless uptime sentinel
+
+Status: DONE — .github/workflows/uptime.yml live on the default branch, record added to docs/HOSTING_STABILITY.md.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES of the Functionality clause: "installable and running CONSISTENTLY on its intended platform, functioning as depicted" — a single working demo is not the bar; the demo must not degrade DURING judging (November 2-5), when judges run it cold, repeatedly, possibly at night. A silent outage or a degraded gateway during that window is unrecoverable — the entry simply looks broken.
+
+IMPLEMENTED: a permanent uptime sentinel workflow (cron every 4 hours at :17, plus workflow_dispatch; read-only permissions; 5-minute timeout). Keyless BY DESIGN — no Qloo key in CI: the deployed function carries it server-side; the sentinel checks the OUTSIDE view, exactly what a judge sees. Two steps: (1) homepage must serve the app shell containing the "SUTO OSNOVA" marker AND the inlined <style> block (doubles as a regression guard for the render-blocking fix); (2) /api/health must answer 200 with "status":"ok" — the degraded state answers 503 and trips the alert, which reaches the repository owner via GitHub's default failure email. Documented in docs/HOSTING_STABILITY.md as the permanent companion of the manual three-preset probe.
+
+VERIFICATION: the workflow YAML parses (pyyaml, 2 steps); both curl assertions were simulated against the LIVE site before commit (homepage marker + inlined style present, health "status":"ok" with qloo.reachable true); the doc note carries the judging-window rationale; zero emoji.

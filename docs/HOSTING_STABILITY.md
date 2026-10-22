@@ -102,3 +102,14 @@ Pacing constants: `STATIC_SAMPLES`, `API_SAMPLES`, `API_SPACING_MS` (keeps the p
 `INBOUND_RATE_LIMIT=30` per `INBOUND_RATE_WINDOW_MS=60000`), `PRESET_MIN_DOSSIERS`,
 latency bounds `STATIC_P95_MS`/`API_P95_MS`, budget `GENERATE_MAX_MS=26000` (the pinned
 Netlify function timeout), `TLS_MIN_DAYS=7`.
+
+## Permanent uptime sentinel (rules section 4, "running consistently")
+
+`.github/workflows/uptime.yml` — a keyless cron (every 4 hours, plus
+`workflow_dispatch` on demand) proving the public surface exactly as the judges see
+it: the homepage must serve the app shell with the inlined stylesheet, and
+`/api/health` must answer 200 with `"status":"ok"` (backend up AND Qloo reachable —
+a degraded gateway answers 503 and trips the sentinel). A failed run emails the
+repository owner automatically (GitHub default). No secrets in CI by design: the
+deployed function carries the Qloo key; the sentinel checks only the outside. It
+blankets the judging window (November 2-5) without any manual action.

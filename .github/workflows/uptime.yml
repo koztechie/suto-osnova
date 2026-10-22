@@ -1,0 +1,37 @@
+# Uptime sentinel for the public demo.
+#
+# WHY (hackathon rules, section 4 "Functionality"): the project must run
+# CONSISTENTLY on its intended platform — and the judging window
+# (November 2-5) is exactly when that matters most. This job is free and
+# needs NO SECRETS by design: the deployed function carries the Qloo key
+# server-side; the sentinel only proves the PUBLIC SURFACE is up — the
+# same view the judges have.
+#
+# A failed run emails the repository owner automatically (GitHub default).
+name: uptime sentinel
+
+on:
+  schedule:
+    - cron: '17 */4 * * *' # every 4 hours, offset from the hour
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sentinel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Homepage serves the app shell with the inlined stylesheet
+        run: |
+          body=$(curl -fsS --max-time 30 https://suto-osnova.netlify.app/)
+          echo "$body" | grep -q 'SUTO OSNOVA' || { echo 'FAIL: app marker missing'; exit 1; }
+          echo "$body" | grep -q '<style>' || { echo 'FAIL: inlined stylesheet missing'; exit 1; }
+          echo 'OK: homepage shell'
+      - name: Gateway health is ok (backend up, Qloo reachable)
+        run: |
+          body=$(curl -fsS --max-time 30 https://suto-osnova.netlify.app/api/health)
+          echo "$body"
+          echo "$body" | grep -q '"status":"ok"' || { echo 'FAIL: health not ok'; exit 1; }
+          echo 'OK: health'
