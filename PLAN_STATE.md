@@ -2461,3 +2461,18 @@ Release: notes edited (7 frames, new script name, doc pointer); 7 assets confirm
 CONTENT UPDATES: docs/DEMO_FRAMES.md now says Seven, adds the frame-07 row (flagship claim + hosted URL), the Devpost caption row ("Main working dashboard with the active Archival Iron palette"), the capture-order note (07 runs before the inspector modal would cover the dashboard), and the intro paragraph documents the palette proof; README row 7-frame; Ukrainian guide counts 6->7.
 
 VERIFICATION (scripted, exit 0): hygiene gate CLEAN post-rename (exit 0, the very check that was red); zero stale references to the old names across md/mjs/js/yml outside the journal; CI YAML parses with 6 steps ending in the gate; node --check on the renamed script; docs canonical pass (7 hosted URLs present, palette claims, Seven/Сім counts, file-relative links, zero emoji, zero banned terms); report.json has 7 shots and all 7 PNGs exist at 3360x2100.
+
+## Task 212 — expanded scene dossier + domain cards frame (full-page)
+
+Status: DONE — 08-scene-dossier-domains.png captured at 3360x10016 (2.67MB) with a cap-removed-and-verified assertion; the set is now 8 frames, release refreshed.
+Date: 2026-10-22
+
+MEASURED FIRST (geometry probe on the live production page after a David Lynch Noir worldbuilder generate): the dossier <pre> is height-capped in the real UI — max-height 735px with overflow-y auto and scrollHeight 3601 — so a naive full-page shot would have silently truncated the very thing the task asks for ("expanded"). The domains section sits at y=1059 with 10 visible cards; the output text contains the "scene dossier" section (case-insensitive proof available).
+
+THE FRAME: scripts/makeDemoFrames.mjs gained frame 08 — worldbuilder mode reset (setMode/setSeed/startGenerate with the disabled-button and status-move guards from task 210), then the wait condition ITSELF removes the cap (max-height none, overflow visible) and only returns ok when ready status + "scene dossier" in the text + >=3 cards + clientHeight+5 >= scrollHeight — the shutter cannot fire until the complete document actually flows into the page. Captured with {fullPage: true} at deviceScaleFactor 2: 3360x10016. Content untouched: same text, same page, no fabrication — the frame materializes the scroll the user already performs inside the panel. Capture order (dashboard -> expanded scene -> inspector) intentionally differs from file numbers; the docblock and the doc both record why (the inspector modal covers the dashboard).
+
+RELEASE: all 8 PNGs re-uploaded with --clobber; 8/8 download URLs verified HTTP 200; release notes rewritten (8 frames, the 08 line with dimensions and the cap note, regeneration command, doc pointer).
+
+DOCS: docs/DEMO_FRAMES.md — Eight, the frame-08 row (full-page claim, cap-removal honesty, hosted URL), the caption row, the rewritten capture-order paragraph, and corrected dimensions wording (3360 wide; viewport frames 3360x2100, frame 08 at 3360x10016 — the earlier "3360x2100 set" phrasing would have been wrong for 08); README 8-frame line; Ukrainian guide counts and dimension wording.
+
+VERIFICATION (scripted, exit 0): 8/8 PNG IHDR widths 3360, frame heights match report.json (08 = 10016), size floors (08 >1MB, others >150KB); the report carries the cap-removed assertion for 08 and the 6/6 palette assertion still present for 07; 8 caption rows; 8 hosted URLs in the doc; hygiene gate CLEAN; zero stale references to the pre-rename names; links/emoji/banned clean across all three docs.

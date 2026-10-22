@@ -26,7 +26,11 @@
  *   markdown -> 4 domain cards (populated) -> 5 antithesis markdown ->
  *   6 MAIN WORKING DASHBOARD with the Archival Iron palette VERIFIED
  *   (all six canonical tokens verbatim on :root AND applied to live
- *   elements) -> 7 API inspector with the recorded provenance.
+ *   elements) -> 8 EXPANDED scene dossier full-page with the domain
+ *   cards (the <pre> internal scroll cap is removed for this frame,
+ *   verified before the shutter) -> 7 API inspector with the recorded
+ *   provenance. Capture order intentionally differs from file numbers
+ *   07/08 — the inspector modal would cover the dashboard.
  */
 import { mkdir, writeFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -178,9 +182,9 @@ async function startGenerate(page) {
 
 const report = [];
 
-async function shoot(page, name, assertFn, what) {
+async function shoot(page, name, assertFn, what, options = {}) {
   const text = await waitFor(page, assertFn, what);
-  const buf = await page.screenshot();
+  const buf = await page.screenshot(options);
   const { width, height } = pngSize(buf);
   const file = path.join(OUT, name);
   await writeFile(file, buf);
@@ -274,6 +278,37 @@ async function main() {
         const text = await pageText(page);
         return /ready/i.test(await status(page)) && text.length > 400 ? 'ok' : '';
       }, 'main dashboard: filled dossier + Archival Iron palette active (6/6 tokens + applied)');
+
+    // 8 (file 08). EXPANDED SCENE DOSSIER + the domain cards, full page.
+    //    The dossier <pre> is height-capped in the live UI (max-height
+    //    735px, measured) — for THIS frame the cap is removed INSIDE the
+    //    wait condition, so the frame is only written once the complete
+    //    document (the same text the user sees while scrolling the panel)
+    //    actually flows into the page. Content untouched: same text,
+    //    same page, no fabrication.
+    await page.evaluate(() => document.getElementById('generate-form')?.scrollIntoView({ block: 'start' }));
+    await setMode(page, 'worldbuilder');
+    await setSeed(page, 'David Lynch Noir');
+    await startGenerate(page);
+    await shoot(page, '08-scene-dossier-domains.png',
+      async () => {
+        const state = await page.evaluate(() => {
+          const t = document.getElementById('output-text');
+          t.style.maxHeight = 'none';   // uncap the internal scroll for this frame
+          t.style.overflow = 'visible';
+          const cards = [...document.querySelectorAll('.domain-card')]
+            .filter((c) => !c.hidden).length;
+          return {
+            ready: /ready/i.test(document.getElementById('status')?.innerText ?? ''),
+            scene: /scene dossier/i.test(t.innerText),
+            cards,
+            expanded: t.clientHeight + 5 >= t.scrollHeight,
+          };
+        });
+        return state.ready && state.scene && state.cards >= 3 && state.expanded ? 'ok' : '';
+      },
+      'full page: expanded scene dossier (cap removed, verified) + visible domain cards',
+      { fullPage: true });
 
     // 7. API Inspector — the recorded client calls of the session.
     await page.click('#open-inspector');

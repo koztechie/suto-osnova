@@ -1,11 +1,13 @@
 # Screenshot set — portfolio and Devpost
 
-Seven high-resolution frames of the REAL production application, captured
+Eight high-resolution frames of the REAL production application, captured
 2026-10-22 with `scripts/makeDemoFrames.mjs`. Every frame was taken only
 after a **semantic assertion** passed in the page (the exact state each
 frame claims is verified before the shutter), so the set cannot contain a
-blank or half-rendered screen. Dimensions: **3360x2100** (1680x1050 CSS
-pixels at deviceScaleFactor 2) — sharp enough for any portfolio layout.
+blank or half-rendered screen. Dimensions: **3360 wide** — every viewport
+frame is 3360x2100 (1680x1050 CSS pixels at deviceScaleFactor 2), and
+frame 08 is a full-page capture at **3360x10016**. Sharp enough for any
+portfolio layout.
 The flagship frame (07) additionally proves the **Archival Iron palette is
 active**: all six canonical tokens present verbatim on `:root` and applied
 to live elements, checked programmatically before the capture.
@@ -26,15 +28,17 @@ repository's `v1.0.0-hackathon` tag — all six verified HTTP 200):
 | 5 | 05-antithesis-report.png | Taste antithesis report for *Post-Punk Berlin* | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/05-antithesis-report.png |
 | 6 | 06-api-inspector.png | API Inspector open with the recorded `/api` calls of the session | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/06-api-inspector.png |
 | 7 | 07-dashboard-archival-iron.png | MAIN working dashboard with the dossier rendered, and the Archival Iron palette **proven active** (6/6 `:root` tokens + applied computed styles) | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/07-dashboard-archival-iron.png |
+| 8 | 08-scene-dossier-domains.png | EXPANDED scene dossier with the domain cards — a **full-page** capture (3360x10016): the complete Worldbuilder dossier, including the part the live UI keeps behind its internal scroll (the height cap is removed for this frame and re-verified before the shutter), flowing above the populated cultural plates | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/08-scene-dossier-domains.png |
 
-Frame 07 is captured after the antithesis frame and before the inspector
-frame (the inspector modal would cover the dashboard).
+Capture order intentionally differs from file numbers: frame 07 (dashboard)
+is shot after the antithesis frame, frame 08 (expanded scene) after 07,
+and the inspector frame last — its modal would cover the dashboard.
 
 ## Using them on the Devpost submission
 
 1. Open the submission form ("Enter a Submission") and locate the media /
    screenshots upload area.
-2. Upload the seven PNGs from `screenshots/` with these captions:
+2. Upload the eight PNGs from `screenshots/` with these captions:
 
    | Frame | Caption |
    |---|---|
@@ -45,6 +49,7 @@ frame (the inspector modal would cover the dashboard).
    | 05 | Taste antithesis: the cultural antipode report for "Post-Punk Berlin" |
    | 06 | Raw API Inspector: the client call log and Qloo provenance, verbatim |
    | 07 | Main working dashboard with the active Archival Iron palette — anchor controls, rendered dossier, live connectivity |
+   | 08 | Expanded scene dossier with the cultural domain plates — the complete Worldbuilder output in one full-page view |
 
 3. Optionally illustrate the text description with the hosted URLs
    (markdown image syntax):
