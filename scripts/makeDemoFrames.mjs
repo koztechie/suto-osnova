@@ -26,11 +26,14 @@
  *   markdown -> 4 domain cards (populated) -> 5 antithesis markdown ->
  *   6 MAIN WORKING DASHBOARD with the Archival Iron palette VERIFIED
  *   (all six canonical tokens verbatim on :root AND applied to live
- *   elements) -> 8 EXPANDED scene dossier full-page with the domain
- *   cards (the <pre> internal scroll cap is removed for this frame,
- *   verified before the shutter) -> 7 API inspector with the recorded
- *   provenance. Capture order intentionally differs from file numbers
- *   07/08 — the inspector modal would cover the dashboard.
+ *   elements) -> 9 antithesis CONTRAST panel (its OWN json-format
+ *   generate — the CULTURAL ANTIPODE panel is populated from the JSON
+ *   envelope only; markdown runs leave it hidden) -> 8 EXPANDED scene
+ *   dossier full-page with the domain cards (the <pre> internal scroll
+ *   cap is removed for this frame, verified before the shutter) -> 7 API
+ *   inspector with the recorded provenance. Capture order intentionally
+ *   differs from file numbers 07/08/09 — the inspector modal would cover
+ *   the dashboard.
  */
 import { mkdir, writeFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -113,13 +116,13 @@ async function setMode(page, value) {
 }
 
 /** Type a seed and VERIFY it actually landed in the input. */
-async function setSeed(page, text) {
+async function setSeed(page, text, format = 'markdown') {
   await page.click('#seed', { clickCount: 3 });
   await page.evaluate(() => { document.getElementById('seed').value = ''; });
   await page.type('#seed', text);
   const value = await page.$eval('#seed', (n) => n.value);
   if (value !== text) throw new Error(`seed typing failed: wanted "${text}", got "${value}"`);
-  await page.select('#format', 'markdown');
+  await page.select('#format', format);
 }
 
 /**
@@ -278,6 +281,33 @@ async function main() {
         const text = await pageText(page);
         return /ready/i.test(await status(page)) && text.length > 400 ? 'ok' : '';
       }, 'main dashboard: filled dossier + Archival Iron palette active (6/6 tokens + applied)');
+
+    // 9 (file 09). TASTE-ANTITHESIS ENGINE — the contrast visualization:
+    //    the CULTURAL ANTIPODE panel (per-domain antipode rows with
+    //    divergence percentages). MEASURED: the panel is populated from
+    //    the JSON envelope only (a markdown-format run renders the text
+    //    in the <pre> but leaves #antithesis hidden) — so this block
+    //    runs its OWN json-format antithesis generate: section height
+    //    ~552 CSS px, rows with names + divergence values like 11% / 6%.
+    await setMode(page, 'antithesis');
+    await setSeed(page, 'Post-Punk Berlin', 'json');
+    await startGenerate(page);
+    await page.evaluate(
+      () => document.getElementById('antithesis')?.scrollIntoView({ block: 'center' }),
+    );
+    await shoot(page, '09-antithesis-contrast.png',
+      async () => page.evaluate(() => {
+        const a = document.getElementById('antithesis');
+        if (!a || a.hidden || a.getBoundingClientRect().height < 300) return '';
+        const rows = a.querySelectorAll('.antithesis-row').length;
+        const diverging = [...a.querySelectorAll('.antithesis-divergence')]
+          .filter((e) => /\d+%/.test(e.innerText)).length;
+        const titleOk = (a.querySelector('.antithesis-title')?.innerText ?? '')
+          .toUpperCase().includes('CULTURAL ANTIPODE');
+        const modeOk = document.querySelector('input[name="mode"]:checked')?.value === 'antithesis';
+        return rows >= 3 && diverging >= 3 && titleOk && modeOk ? 'ok' : '';
+      }),
+      'antithesis engine: CULTURAL ANTIPODE contrast panel (>=3 rows, >=3 divergence %, antithesis mode)');
 
     // 8 (file 08). EXPANDED SCENE DOSSIER + the domain cards, full page.
     //    The dossier <pre> is height-capped in the live UI (max-height

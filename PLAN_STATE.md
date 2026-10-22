@@ -2476,3 +2476,20 @@ RELEASE: all 8 PNGs re-uploaded with --clobber; 8/8 download URLs verified HTTP 
 DOCS: docs/DEMO_FRAMES.md — Eight, the frame-08 row (full-page claim, cap-removal honesty, hosted URL), the caption row, the rewritten capture-order paragraph, and corrected dimensions wording (3360 wide; viewport frames 3360x2100, frame 08 at 3360x10016 — the earlier "3360x2100 set" phrasing would have been wrong for 08); README 8-frame line; Ukrainian guide counts and dimension wording.
 
 VERIFICATION (scripted, exit 0): 8/8 PNG IHDR widths 3360, frame heights match report.json (08 = 10016), size floors (08 >1MB, others >150KB); the report carries the cap-removed assertion for 08 and the 6/6 palette assertion still present for 07; 8 caption rows; 8 hosted URLs in the doc; hygiene gate CLEAN; zero stale references to the pre-rename names; links/emoji/banned clean across all three docs.
+
+## Task 213 — taste-antithesis engine frame with the contrast visualization
+
+Status: DONE — 09-antithesis-contrast.png captured (3360x2100, 325KB); the set is now 9 frames, release refreshed (9/9 URLs 200).
+Date: 2026-10-22
+
+MEASURED FIRST (probe on the live production page after a Post-Punk Berlin antithesis generate): the contrast visualization is the #antithesis panel — title "CULTURAL ANTIPODE", domain headers (FILM / MUSIC / BOOKS), rows (.antithesis-row) pairing an item name (.antithesis-name) with a divergence percentage (.antithesis-divergence — 11%, 6%...), section height 552 CSS px, populated when status reads ready; #affinity stays hidden (worldbuilder surface).
+
+DEFECT FOUND BY THE FIRST RUN (status ready but the wait never passed): the panel is populated from the JSON envelope ONLY — the pipeline's setSeed forced format=markdown, so the antithesis TEXT rendered in the <pre> while #antithesis stayed hidden. The probe had used the default json format, which is exactly why the two disagreed. Fixes: setSeed gained a format parameter (default markdown, unchanged for every other frame), and frame 09 runs its OWN json-format antithesis generate with the disabled-button/status-move guards. The docblock sequence line was corrected in the same pass (the previous "same session state, no extra generate" claim became false with this fix — recorded honestly rather than left stale).
+
+THE FRAME: setMode(antithesis) + setSeed('Post-Punk Berlin', 'json') + startGenerate -> scrollIntoView(#antithesis, center) -> wait condition measured against the probe: section visible with height >= 300, >= 3 rows, >= 3 divergence values matching /\d+%/, the CULTURAL ANTIPODE title, and the antithesis radio still checked -> viewport shot at deviceScaleFactor 2. Capture order: ... 07 dashboard -> 09 contrast -> 08 expanded scene -> 06 inspector (recorded in docblock and doc).
+
+RELEASE: all 9 PNGs re-uploaded with --clobber; 9/9 download URLs verified HTTP 200; 9 assets; notes rewritten (9 frames + the 09 line).
+
+DOCS: DEMO_FRAMES Nine, frame-09 row (with the JSON-only honesty note), caption row, rewritten capture-order paragraph; README 9-frame; Ukrainian guide counts. INCIDENT NOTE: the count replacements first ran through a shell one-liner whose THIRD line died on the Ukrainian apostrophe inside single quotes — bash executes line-by-line, so lines 1-2 applied and line 3 did not; the remainder was completed via a Python replace with explicit assertions (no partial state left).
+
+VERIFICATION (scripted, exit 0): 9/9 PNG IHDR widths 3360, heights match report.json (09 = 2100), size floors held; report carries the CULTURAL ANTIPODE/divergence assertion; 9 caption rows; 9 hosted URLs; hygiene gate CLEAN; links/emoji/banned clean across all three docs; UA counts updated.
