@@ -148,6 +148,46 @@ Taste intelligence: Qloo Taste AI API. No other third-party services; no tracker
 
 ---
 
+## Field 8 — Additional info (step 4: four special questions — exact answers)
+
+| Question (verbatim on the form) | Required | ENTER EXACTLY |
+|---|---|---|
+| When did you begin your project? | * | `October 15, 2026` |
+| The public URL to your project: | * | `https://suto-osnova.netlify.app` |
+| Link to your PUBLIC code repo: | * | `https://github.com/koztechie/suto-osnova` |
+| If this was an existing project, in what ways did you significantly upgrade and improve it to work with Qloo? | optional | `Not an existing project — SUTO OSNOVA was created from scratch inside the submission period: first commit 2026-10-15, full history public, Qloo integrated from day one (four endpoints behind the hardened transport).` |
+
+- The start date equals the FIRST COMMIT of the public repository — a
+  judge cross-checking git history finds exactly this date (rules §4
+  "New & Existing" answered by evidence, not adjectives).
+- The optional fourth answer pre-empts the Stage One fairness check: the
+  project is new (nothing to retro-fit) and Qloo was present from day
+  one.
+- The four hidden `submission_field_id` inputs (28597/28598/28599/28701)
+  and `version=1` — do not touch.
+
+## The real Devpost wizard (5 steps — measured from the live form 2026-10-22)
+
+The submission is a **five-step wizard**, not a single page. Your state
+as of 2026-10-22: **steps 1 and 2 are done** (the URL slug
+`suto-osnova-agentic-cultural-intelligence` proves the name was saved,
+2/5), step 3 "Project details" is the current work. Map:
+
+| Step | Title | What goes in |
+|---|---|---|
+| 1 | Manage team | Done (solo entrant — one representative) |
+| 2 | Project overview | **Field 1** (Project name, <=60 chars) + **Field 2** (Elevator pitch, <=200 chars) + the **thumbnail** (3:2 cover) — DONE |
+| 3 | Project details | **Field 3** (Project Story markdown) + **Field 4** (demo URL) + **Field 5** (repo) + **Field 6** (10 space-free tags) + **ten screenshots** (01..10) with the captions from [DEMO_FRAMES.md](DEMO_FRAMES.md) |
+| 4 | Additional info | **Field 8** — the four exact answers (+ the Field 7 credits text only if credits/license fields appear) |
+| 5 | Submit | Final review -> Submit, then the Submitted-not-Draft receipt check |
+
+**Thumbnail (right rail of step 2):** JPG/PNG/GIF, 5 MB max, the form
+hints "best results, use a 3:2 ratio" —
+`screenshots/cover-devpost-1200x800.png` goes there; keep
+`screenshots/cover-devpost-1200x630.png` for the cover/featured use as
+the 1200x630 spec requires. Both are pixel-pure Archival Iron (6/6
+palette RGB, verified).
+
 ## Pre-submit checklist (all five official pillars)
 
 - [ ] **Functional demo** — https://suto-osnova.netlify.app loads anonymously,

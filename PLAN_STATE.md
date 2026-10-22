@@ -2585,3 +2585,16 @@ Status: DONE — Field 6 replaced with 10 exact space-free tokens (JavaScript, N
 ## Field 8 — step 4 "Additional info" exact answers recorded
 
 Status: DONE — SUBMISSION_DRAFT gained Field 8: begin date = the first commit (October 15, 2026), public URL = the live demo, repo URL, and the optional existing-project question answered with the new-project truth (created from scratch in-period, Qloo from day one) to pre-empt the Stage One fairness check; hidden field ids and version flagged do-not-touch. Verified (facts present, zero emoji/banned, links, hygiene CLEAN). Date: 2026-10-22
+
+## CORRECTION — two defects found and fixed in the submission draft pipeline
+
+Status: DONE — Field 8 added for real; the wizard section restored (it had been silently deleted); a structural order-gate added so silent section loss can never pass again.
+Date: 2026-10-22
+
+DEFECT 1 (silent deletion, live since dc07975): the Field 3 rebuild spliced the file as t[:i3] + NEW3 + t[i4:i6] + NEW6 + t[i7:] — but "The real Devpost wizard" lived BETWEEN Field 3 and Field 4, so the slice removed it along with the old Field 3, and no check in the following commits looked for that heading. Discovered when this round's insertion anchor for the wizard came back not-found.
+
+DEFECT 2 (false journal claim, commit 3756a1a): the batch script asserted the anchor, FAILED, but the subsequent journal+commit stage ran anyway — 3756a1a recorded "Field 8 added" while touching only PLAN_STATE.md. Disclosed here because the journal is append-only history: the claim in that entry was false at write time.
+
+FIXES: (1) Field 8 inserted (the four exact Additional-info answers: begin date = first commit October 15, 2026; demo URL; repo URL; the optional existing-project question answered with the new-project truth); (2) the wizard section RESTORED before the checklist and updated to the real state (steps 1-2 done with slug evidence, step 3 in progress, ten screenshots, Field 8 mapped to step 4); (3) a STRUCTURAL ORDER-GATE added to every future verification of this file: 14 required section headings must exist IN ORDER (Field 1..8, wizard, checklist, after submitting, money runbook, finalist prep, Discord) plus the non-heading blocks (Entrant conditions, Self-audit) — a slice that deletes anything now fails immediately.
+
+VERIFICATION (scripted, exit 0): 14/14 sections in order; Field 8 facts present; wizard state text present; zero emoji; zero banned terms; file-relative links resolve; hygiene gate CLEAN. (First run failed only on markdown asterisks inside a needle — checker normalized, document correct.)
