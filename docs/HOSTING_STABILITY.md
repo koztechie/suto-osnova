@@ -114,9 +114,12 @@ repository owner automatically (GitHub default). No secrets in CI by design: the
 deployed function carries the Qloo key; the sentinel checks only the outside. It
 blankets the judging window (November 2-5) without any manual action.
 
-The workflow's second job (`updates-feed`) watches the ORGANIZERS' updates feed on
-qloo.devpost.com — finalist notifications and schedule changes land there. It fails
-(-> email) as soon as any update appears beyond the known #47166. Devpost blocks a
-plain fetcher (403), so the job uses a browser User-Agent; the known-update list is
-one line in `.github/workflows/uptime.yml` and must be extended deliberately when a
-new update is processed.
+**Removed by design (ToS compliance):** the workflow previously contained a second
+job auto-fetching the ORGANIZERS' updates feed on qloo.devpost.com. After reading the
+Devpost Terms of Service (info.devpost.com/terms — "Uses manual or automated software,
+devices, scripts robots, or other means or processes to access, 'scrape,' 'crawl'..."
+is prohibited), that job was deleted: third-party automated access is out of bounds
+even at 6 requests/day. The official, ToS-clean update channel for a participant is
+Devpost's own email notification (enabled by joining the hackathon) plus a manual
+look at /updates — instructions in docs/SUBMISSION_GUIDE_UA.md. The sentinel's own
+deployment checks (fully ours) remain.

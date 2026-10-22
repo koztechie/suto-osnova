@@ -181,6 +181,10 @@ Self-audit evidence per rule: [HACKATHON_COMPLIANCE.md](HACKATHON_COMPLIANCE.md)
 
 ## After submitting
 
+- **Verify it actually landed:** open
+  https://devpost.com/submit-to/31054-qloo-agentic-hackathon/manage/submissions —
+  the entry must read **Submitted**, not "Draft". A saved draft is NOT a
+  submission once the period closes; keep a screenshot as your receipt.
 - The submission is frozen at the deadline; the Devpost portfolio project page can
   still be updated (that is allowed after close).
 - **Operational freeze (read the two official schedules against each other):** the

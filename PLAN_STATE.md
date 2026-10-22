@@ -2384,3 +2384,21 @@ MEASURED (all clean):
 3. reCAPTCHA: it guards the DEVMOST form (Google's policy applies THERE); this deployment loads no Google scripts — covered by the tracker gate; nothing to implement.
 
 VERIFICATION: tests/clientBuild.test.js 5/5 including the new assertion (against a fresh build); hygiene CLEAN; the compliance document now carries 12 MET rows (4 pillars + 6 re-audit + 2 warranties).
+
+## Quality loop — link inventory/ToS: third-party scraper REMOVED (self-correction) + Submitted-vs-Draft verification step
+
+Status: DONE — the updates-feed sentinel job deleted for Devpost ToS compliance; official email channel documented; submission status receipt step added to both guides.
+Date: 2026-10-22
+
+THE FINDING: the inventory's Devpost ToS link (rules section 14 incorporates it BY REFERENCE into our consent) had never been opened. A bounded keyword scan found: "Uses manual or automated software, devices, scripts robots, or other means or processes to access, 'scrape,' 'crawl' or 'spider' the Site..." is PROHIBITED — and the updates-feed job I added two commits ago does exactly automated access to a third-party Site (6 requests/day, but the clause has no volume carve-out). Also scanned: one-account-one-vote rules (no public voting exists on this hackathon — nothing to do), "content should be accurate, your own work, and respectful" (satisfied), standard indemnity (mirrored in the rules digest).
+
+SELF-CORRECTION IMPLEMENTED:
+1. `.github/workflows/uptime.yml` — the `updates-feed` job DELETED; the workflow now checks only OUR OWN deployment (fully ours, no third-party access). The scope decision and its ToS rationale are recorded as a comment in the workflow itself.
+2. docs/HOSTING_STABILITY.md — the old updates-job paragraph replaced by "Removed by design (ToS compliance)" with the verbatim prohibited-act quote and pointer to the official channel.
+3. docs/SUBMISSION_GUIDE_UA.md — the automation claim replaced with the OFFICIAL ToS-clean channel: Devpost's own participant email notifications (enabled by joining) plus a manual look at /updates, with an explicit note that our CI does NOT read that feed.
+
+THE SECOND GAP (found via the inventory's manage URL): Devpost explicitly allows saving a DRAFT — the classic fatal confusion is "Save draft" mistaken for a submitted entry, discovered only after the close when no edits are possible. Added a status-receipt step: step 6 in the Ukrainian guide and a bullet in the draft's After submitting — open the manage/submissions URL, the entry must read Submitted NOT "Draft", keep a screenshot.
+
+INCIDENT (recorded): the corrected workflow file was first written to a mistyped workdir (hachathons/) which auto-created the tree; the stray directory contained exactly that one file and was removed (rm -rf) before rewriting to the correct path.
+
+VERIFICATION (scripted, exit 0): YAML has exactly one job; NO curl line touches devpost (the only devpost strings are in the ToS-explaining comment — the first check failed on that naivety, plus "Terms of # Service" line wrap and "remain." vs "remains." — three checker bugs, files correct, checker fixed); guides carry the Submitted receipt and the official email channel; stale automation claim gone; zero emoji/banned; links resolve; hygiene CLEAN.
