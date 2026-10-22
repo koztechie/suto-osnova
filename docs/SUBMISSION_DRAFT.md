@@ -158,7 +158,8 @@ Taste intelligence: Qloo Taste AI API. No other third-party services; no tracker
 - [ ] **Eligibility** — you are at or above the age of majority where you reside, and
       your country/territory is not excluded (the rules name Brazil, Quebec, Russia,
       Crimea, Cuba, Iran, North Korea, or any other comprehensively sanctioned
-      jurisdiction); no conflict-of-interest exclusion applies to you.
+      jurisdiction); you are not a Judge, not employed by a Judge and hold no role in
+      the hackathon's promotion; no conflict-of-interest exclusion applies to you.
 - [ ] **Third-party integrations authorized** — every dependency is open source
       (MIT: `@modelcontextprotocol/sdk`, `zod`, `vite`) or the organizer's own
       material (Qloo API access via the official form, `@qloo/qloo-harness`); the
@@ -211,3 +212,53 @@ prize, so prepare now:
   unspecified: treat it as upside, not as a plan.
 
 Source text for every claim above: [QLOO_HACKATHON.md](QLOO_HACKATHON.md) section 3.
+
+## If you're named a finalist — preparation (update #47166)
+
+Notification arrives **shortly after submissions close** (Oct 31 – Nov 1), and the Top 3
+appear live on **November 5, 22:00 Kyiv** (timing table above) to present, answer
+questions and learn the result in real time. The preparation window is measured in
+days — prepare before you need it.
+
+**Demo run order (about 2 minutes, one browser tab):**
+
+1. Open https://suto-osnova.netlify.app — the footer carries the Qloo attribution, the
+   header connectivity reads "Qloo link: online".
+2. Preset **David Lynch Noir** (Worldbuilder) → export Markdown → show the dossier.
+3. Experiential mode with the anchor **Glastonbury Festival** → show the resonance
+   index with its evidence breakdown. **Do NOT demo the "Ambient Festival" preset in
+   public** — it currently returns the typed `no_usable_signal` outcome (documented in
+   [HOSTING_STABILITY.md](HOSTING_STABILITY.md)); Glastonbury is the verified working
+   festival anchor (its dossier is in
+   [../examples/dossier_live_festival.md](../examples/dossier_live_festival.md)).
+4. Open the **API Inspector** — client call log plus raw Qloo provenance: the live
+   proof of "thoroughly and skillfully uses Qloo".
+
+**60-90 second pitch — one sentence per judging criterion (the exact scoring words):**
+
+- **Technological Implementation** — four Qloo endpoints behind one hardened transport
+  (rate limit, retries, cache, single-flight, privacy guard); deterministic engine math
+  testable offline; 1,200+ tests green on every push.
+- **Design** — three coherent modes, three formats, one visual language; a product a
+  judge can use, not a proof of concept.
+- **Potential Impact** — festival and venue curation teams, production/story teams and
+  editorial curators each get a defensible, cited dossier in one request instead of
+  generic model guesses.
+- **Quality of the Idea** — culture as a measured layer (cross-domain affinity math,
+  uniqueness tiers, pop-cliche filter) with the LLM bound to validated numbers — the
+  opposite of prompting a model to sound cultural.
+
+**Panel lenses to be ready for.** The panel spans the sponsor's engineering
+leadership, a director of a frontier AI lab, live-events and entertainment
+executives, and an active angel investor — every domain the product already serves:
+
+- *"Where exactly is Qloo used?"* → the four endpoints; the Inspector shows it live.
+- *"Where is the agent?"* → the explicit state machine (`IDLE -> SEED_RESOLUTION ->
+  AFFINITY_EXPANSION -> ANTITHESIS_GENERATION (explicit skip outside that mode) ->
+  DOSSIER_SYNTHESIS -> COMPLETED`, with typed fail paths); the LLM narrates only
+  validated numbers.
+- *"Would it work without Qloo?"* → no: it fails closed with a typed refusal; the
+  graph is the product.
+- *"Who pays?"* → festival and venue curation teams, production design teams,
+  editorial curators — the dossier replaces hours of manual cultural research per
+  anchor.

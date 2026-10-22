@@ -2247,3 +2247,19 @@ IMPLEMENTED: a new "If you win — the money & paperwork runbook" section: ident
 RULES COMPLIANCE STATUS: nothing post-win is due yet (no win, no forms) — section 8 compliance is preparedness, and it is now prepared.
 
 VERIFICATION (scripted, exit 0): 11/11 runbook facts present after whitespace normalization; the 10-business-day date independently recomputed (Nov 20, 2026); git authorship re-queried live (1 author, 199 commits, exact email match); file-relative links, zero emoji, zero banned terms; hygiene CLEAN.
+
+## Quality loop — judges/final-live fragment: panel-lens prep + finalist runbook + eligibility completion
+
+Status: DONE — finalist preparation section and the judge-employer eligibility clause added to docs/SUBMISSION_DRAFT.md.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES of the six-judge table: the panel is six LENSES, not six names — sponsor engineering leadership (implementation depth), a frontier-AI-lab director (is the agent real or a prompt), live-events and entertainment executives (our Experiential and Worldbuilder modes are literally their domains), an active angel investor (who pays — also the sole selector of the personal $25K bonus). Every lens already has a true answer in the product; what was missing was preparing them BEFORE the notification, which arrives days before the on-air final.
+
+IMPLEMENTED:
+1. Finalist preparation section: the notification/air-date timeline (Oct 31 - Nov 1 notify, Nov 5 22:00 Kyiv on air); a 2-minute demo run order — footer attribution, connectivity "Qloo link: online", David Lynch Noir preset, Experiential with GLASTONBURY FESTIVAL, API Inspector provenance — with an explicit public-demo WARNING that the "Ambient Festival" preset currently returns typed 400 no_usable_signal (cross-checked against docs/HOSTING_STABILITY.md which records exactly that row) so nobody demos a typed refusal on air; a 60-90s pitch with one sentence per judging criterion using the exact scoring words; four panel-lens Q&A answers (where Qloo is used, where the agent is, would it work without Qloo, who pays).
+2. The state machine in the pitch matches the README diagram phase-for-phase: IDLE -> SEED_RESOLUTION -> AFFINITY_EXPANSION -> ANTITHESIS_GENERATION (explicit skip outside that mode) -> DOSSIER_SYNTHESIS -> COMPLETED — caught and fixed an omission of the ANTITHESIS_GENERATION phase before commit (a judge cross-checking the README would have seen five phases, not four).
+3. Rules section 3 completeness: the entrant-eligibility checklist bullet now names the Judge/employer/promotion exclusion explicitly (was only jurisdictions + conflict of interest).
+
+SELF-CATCH: the new pitch contained "festival programmers" — a music-industry role, but the banned-terminology rule is absolute; replaced with "festival and venue curation teams" in both spots (the gate itself caught it: first run failed on banned ['programmers']).
+
+VERIFICATION (scripted, exit 0): links resolve; zero emoji; zero banned terms after stripping URLs/code/quotes/fences; all 6 state-machine phases present and cross-checked against README; Ambient Festival -> no_usable_signal claim confirmed against docs/HOSTING_STABILITY.md (the row exists verbatim); timeline/Kyiv facts present; hygiene CLEAN.
