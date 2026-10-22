@@ -73,6 +73,9 @@ would not: the graph *is* the product.
   origin (Netlify), all engine math (`AdaptiveThreshold`, `LongTailFilter`,
   `PopClicheFilter`, `UniquenessCoefficient` — U(p)=log2(1/p)/log2(1e6)) pure and
   deterministic, injectable I/O, offline fixtures under `MOCK_MODE`.
+- **Built entirely inside the submission period**: the first commit is 2026-10-15 —
+  nothing in the project predates the contest window (verifiable in the public
+  commit history).
 - A **Raw API Call Inspector** inside the demo: the client call log, live Qloo
   connectivity and the backend's provenance ledger, shown verbatim — judges can audit
   exactly what Qloo was asked.
@@ -137,12 +140,30 @@ Taste intelligence: Qloo Taste AI API. No other third-party services; no tracker
 - [ ] **External hosting** — live website on Netlify, nothing local-only.
 - [ ] **Open-source license in About** — MIT, visible in the repository About section.
 
+**Entrant conditions (beyond the five pillars, rules §3-§4):**
+
+- [ ] **Eligibility** — you are at or above the age of majority where you reside, and
+      your country/territory is not excluded (the rules name Brazil, Quebec, Russia,
+      Crimea, Cuba, Iran, North Korea, or any other comprehensively sanctioned
+      jurisdiction); no conflict-of-interest exclusion applies to you.
+- [ ] **Third-party integrations authorized** — every dependency is open source
+      (MIT: `@modelcontextprotocol/sdk`, `zod`, `vite`) or the organizer's own
+      material (Qloo API access via the official form, `@qloo/qloo-harness`); the
+      optional narrative uses an OpenAI-compatible endpoint under the operator's own
+      credentials.
+
 Self-audit evidence per rule: [HACKATHON_COMPLIANCE.md](HACKATHON_COMPLIANCE.md).
 
 ## After submitting
 
 - The submission is frozen at the deadline; the Devpost portfolio project page can
   still be updated (that is allowed after close).
+- **Operational freeze (read the two official schedules against each other):** the
+  rules text has judging ending Nov 5 at 11:45 pm ET, the platform's dates table has
+  it ending Nov 5 at 9:00am EST with winners announced at 3:00pm EST — they cannot
+  both hold. Treat the **start of judging (November 2) as the hard cutoff**: freeze
+  the repository and the deployment on **November 1**, and push nothing risky after
+  it — including on deadline day, when field edits are already prohibited.
 - Watch the [updates feed](https://qloo.devpost.com/updates) — finalist notifications
   arrive shortly after close.
 - Finalists prepare for the November 5 live final; winners are announced on or around

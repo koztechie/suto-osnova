@@ -2203,3 +2203,19 @@ IMPLEMENTED:
 4. README Documentation list links the draft.
 
 VERIFICATION: client test cluster 43/43 (structure, readiness, fcp budget, typography, contrast, build with the new footer); scripted checks across README + SUBMISSION_DRAFT + QLOO_HACKATHON + HACKATHON_COMPLIANCE (file-relative links, zero emoji, zero banned terms after stripping fenced paste-material, draft facts present, 10 MET rows, endpoint table, footer string); hygiene CLEAN; deployed via `netlify deploy --prod` and the live HTML serves the new attribution with GET / -> 200.
+
+## Quality loop — snapshot/key-dates fragment: entrant-side compliance + operational freeze dates
+
+Status: DONE — three gaps closed in docs/SUBMISSION_DRAFT.md, all facts git/live-verified.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES of the fragment (sponsor line, format, 2137 participants, $25K+$25K, categories, eligibility line, the head of section 2):
+1. Rules section 3 is ENTRANT-side, not submission-side — my checklist covered only the five submission pillars. Added an entrant-conditions block: age of majority, the explicit exclusion list (Brazil, Quebec, Russia, Crimea, Cuba, Iran, North Korea + comprehensively sanctioned), and the conflict-of-interest exclusion.
+2. Rules section 4 "New & Existing" requires EXPLAINING the project's period — added a true, git-verifiable line to the description: "Built entirely inside the submission period: the first commit is 2026-10-15". VERIFIED: `git log --reverse` first commit = 2026-10-15, ZERO commits before October — the claim is checkable by any judge.
+3. Rules section 4 "Third Party Integrations" requires authorization — added a checklist bullet naming every dependency class: MIT open source (@modelcontextprotocol/sdk, zod, vite), organizer-own material (Qloo key via the official form, @qloo/qloo-harness), OpenAI-compatible narrative under the operator's own credentials.
+4. The two official schedules CANNOT both hold (rules: judging ends Nov 5 11:45pm ET; the dates table: ends Nov 5 9:00am EST with winners 3:00pm EST — announcement cannot precede the judging end by 8h45). Operational reading written into the draft's post-submit section: treat NOVEMBER 2 (judging opens) as the hard cutoff, freeze repo + deployment on NOVEMBER 1, push nothing risky after — and no field edits exist after Oct 30 anyway.
+5. Between the lines of "Sponsor = Qloo" + judges list: Qloo's own CTO scores the implementation — the judge-facing surfaces already answer that (README Qloo API surface section, footer attribution, live API Inspector), no further change needed.
+
+WORDING CORRECTION during self-review: dropped "the public history runs contiguously to the deadline" (future-tense claim, unverifiable) — replaced with the strictly true first-commit sentence.
+
+VERIFICATION (scripted, exit 0): 10/10 new facts present after whitespace normalization (the first run tripped on a line-wrapped bullet, not on content); git first-commit cross-check 2026-10-15; file-relative links resolve; zero emoji; zero banned terms in prose AND inside the fenced paste-material; hygiene CLEAN.
