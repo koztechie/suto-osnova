@@ -340,6 +340,8 @@ netlify deploy --prod
 - [docs/04_TECH_STACK.md](docs/04_TECH_STACK.md) — technology decisions
 - [docs/architecture/AGENT_PIPELINE.md](docs/architecture/AGENT_PIPELINE.md) — the agent pipeline
 - [docs/architecture/MODES_SPECIFICATION.md](docs/architecture/MODES_SPECIFICATION.md) — mode contracts
+- [docs/QLOO_HACKATHON.md](docs/QLOO_HACKATHON.md) — the hackathon's Devpost intel: dates,
+  prizes, judges, criteria, submission pillars, full rules index (collected 2026-10-22)
 - [AGENTS.md](AGENTS.md) — the engineering rules of this codebase
 
 ## License
