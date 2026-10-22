@@ -2506,3 +2506,20 @@ THE FRAME: shoot() gained an __element option (elementHandle screenshot instead 
 DOCS: DEMO_FRAMES Ten + intro dimensions now honest about three shapes (viewport 3360x2100 / full-page 3360x10016 / element 1408x5636), frame-10 row with the full inventory of what the image proves, caption row ("audit-grade integration evidence"), rewritten capture-order paragraph; README 10-frame line; Ukrainian guide counts (Десять кадрів). Release notes rewritten with the 10 lines.
 
 VERIFICATION (scripted, exit 0): 10/10 PNG signature and report consistency with per-frame dimension classes (10 requires the wide-tall element shape, 08 the full-page shape, others 3360 width); size floors held; frame table rows exactly 1..10 and 10 caption rows; 10 hosted URLs in the doc and 10/10 verified HTTP 200 on the wire; hygiene gate CLEAN; links/emoji/banned clean across all three docs. Two checker regex bugs were caught and fixed during this task (the caption counter matched the wrong table column, then the row counter expected "01" instead of "1") — the documents were correct both times.
+
+## Task 215 — Devpost cover image 1200x630 in the Archival Iron aesthetic
+
+Status: DONE — screenshots/cover-devpost-1200x630.png generated (1200x630 exact, 39,653 bytes), pixel-purity proven, hosted in the release (URL 200); docs updated.
+Date: 2026-10-22
+
+MEASURED FIRST: the brand stack — --font-serif Lora/Georgia, --font-mono IBM Plex Mono (client/src/css/typography.css); the exact monogram geometry the production bundle ships (scripts/monogramIcon.mjs inline SVG: inset rect rx6, ring circle r9.5 stroke #96a2a8, the S-mark path stroke #d4a853); and the brand precedent from task 155: social-card.png QUANTIZES every pixel to the nearest palette colour — the codebase already treats pixel-level palette purity as the house rule.
+
+PIPELINE (scripts/makeCover.mjs): an HTML template asserted to contain ONLY the six palette hex codes (the assert runs before rendering and also rejects any rgb()/rgba() call) -> headless Chromium render at 1200x630 @1x -> a browser-side quantization pass (OffscreenCanvas: decode, snap every pixel to the nearest of the six, re-encode — Chromium does the PNG codec work, no local codec code) -> PNG + cover-report.json in the gitignored screenshots/ directory. Composition: production monogram geometry, serif "SUTO OSNOVA" lockup with a gold rule, the descriptor line, three numbered mode chips (gold/gold/rust), Qloo attribution (250M+ entities), the URL, all inside the inset frame on the archival plate. A palette/parameter bug (report referenced an undefined `palette` instead of PALETTE) and a dynamic-readdir namespace bug were both caught by running the script, not by eyeballing.
+
+PROOF AT PIXEL LEVEL (independent python PNG decode: IHDR + IDAT inflate + full unfilter of all five filter types): the final bitmap contains EXACTLY 6 unique RGB values, ALL inside the Archival Iron palette, ZERO alien colours — stronger than a source audit, the artifact itself is palette-pure. cover-report.json independently records 1200x630, quantized=true, 6 template colours.
+
+DISTRIBUTION: uploaded to the v1.0.0-hackathon release (11 assets now; cover URL verified HTTP 200); never tracked (screenshots/ gitignored; git ls-files empty; hygiene gate CLEAN).
+
+DOCS: DEMO_FRAMES gained the "Cover image (Devpost) — 1200x630" section (hosted URL, the pixel-purity claim with its method, the composition inventory, regeneration command, and the Devpost Cover-image upload step with suggested alt text); README row now advertises "10 demo frames + the 1200x630 Devpost cover"; Ukrainian guide gained the cover bullet (field name, exact dimensions, file path); release notes rewritten with the cover line.
+
+VERIFICATION (scripted, exit 0): IHDR exactly 1200x630; cover-report consistent (6/6 palette, 6 template colours, quantized); docs links/emoji/banned clean across all three files (the first run tripped on a line wrap inside the prose — the recurring checker class, fixed by whitespace normalization); exactly one hosted cover URL; gate CLEAN; zero tracked PNGs.
