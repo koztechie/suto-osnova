@@ -51,3 +51,20 @@ curl -s https://api.github.com/repos/koztechie/suto-osnova \
   untracked.
 - Submission materials must be in English (§4 Language Requirements) — this record and the
   repository documentation are in English.
+
+## Re-audit (measured 2026-10-22 — T-8 days before the deadline)
+
+Five pillars re-verified live the day the submission material was frozen into
+[SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md):
+
+| Pillar | Live result (2026-10-22) | Status |
+|---|---|---|
+| Functional demo | anonymous `GET /` → 200; `GET /api/health` → 200 | MET |
+| Public repository | `gh api repos/koztechie/suto-osnova` → `private=false`, license `MIT`, About name `MIT License` | MET |
+| Instructions to run | `README.md` (22 KB) + `docs/` + `AGENTS.md` present | MET |
+| External hosting, fully published | Netlify production — no local-only step exists in the flow | MET |
+| License visible in About | `LICENSE` at root; GitHub About renders `MIT License` | MET |
+| Access free, no restriction | anonymous 200 with no redirect; tracker gate `VERIFY: PASS`; repo hygiene `CLEAN` | MET |
+
+Post-close rule (§5): the submission itself is frozen at 2026-10-30 23:45 EDT — paste the
+draft before then.

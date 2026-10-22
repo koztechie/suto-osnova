@@ -218,6 +218,25 @@ Stage contracts live in [docs/architecture/AGENT_PIPELINE.md](docs/architecture/
 The `engine/` layer never performs I/O — every network client is injectable, which is exactly how
 the whole cycle runs offline under `MOCK_MODE`.
 
+### Qloo API surface
+
+Every taste fact in a dossier originates from the Qloo Taste AI graph
+(`https://hackathon.api.qloo.com`), through exactly four endpoints:
+
+| Endpoint | Powers | Client |
+|---|---|---|
+| `GET /search` | anchor/seed resolution against the graph | `server/src/services/entitySearchClient.js` |
+| `GET /v2/insights` | cross-domain affinities — the measured taste vector | `server/src/services/crossDomainClient.js` |
+| `GET /v2/tags` | taste-tag catalogs feeding all five extraction layers | `server/src/services/tasteTagsClient.js` |
+| `GET /v2/audiences` | audience insight rows for Experiential Mode | `server/src/services/audienceInsightsClient.js` |
+
+One shared transport (`server/src/services/qlooClient.js`): `X-Api-Key`, sliding-window rate limit,
+bounded retries, two-tier disk cache, single-flight de-duplication and the unconditional privacy
+guard. The optional narrative calls an OpenAI-compatible `chat/completions` and is bound to the
+numbers by `OutputValidator` (the hallucination backstop). And when Qloo cannot answer, the agent
+returns a typed refusal (e.g. `no_usable_signal`) instead of inventing taste — cultural
+intelligence is the differentiator, not decoration.
+
 ## Stack
 
 - **Client** — hand-rolled ES modules, zero frameworks, zero runtime dependencies (`client/`).
@@ -342,6 +361,8 @@ netlify deploy --prod
 - [docs/architecture/MODES_SPECIFICATION.md](docs/architecture/MODES_SPECIFICATION.md) — mode contracts
 - [docs/QLOO_HACKATHON.md](docs/QLOO_HACKATHON.md) — the hackathon's Devpost intel: dates,
   prizes, judges, criteria, submission pillars, full rules index (collected 2026-10-22)
+- [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — paste-ready Devpost submission
+  text (all fields), pre-submit checklist, post-close rules
 - [AGENTS.md](AGENTS.md) — the engineering rules of this codebase
 
 ## License
