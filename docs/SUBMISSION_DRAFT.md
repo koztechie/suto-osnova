@@ -51,6 +51,9 @@ Agents, but with taste: an agent that stops guessing what people love and measur
 "Glastonbury Festival" — into a decision-ready cultural dossier, grounded end to end in
 Qloo's taste graph (250M+ entities across music, film/TV, dining, fashion, travel and more).
 
+**Entry category:** an agentic tool (rules option a) — a standalone agent with an
+explicit state machine; Qloo is its knowledge layer, not a plugin.
+
 ### What it does
 
 Three agent modes, three export formats, one pipeline:
@@ -234,7 +237,9 @@ days — prepare before you need it.
 4. Open the **API Inspector** — client call log plus raw Qloo provenance: the live
    proof of "thoroughly and skillfully uses Qloo".
 
-**60-90 second pitch — one sentence per judging criterion (the exact scoring words):**
+**60-90 second pitch — one sentence per judging criterion (the exact scoring words).**
+Order note: tie-breaks are resolved on the first criterion **first — Technological
+Implementation**, so lead with implementation depth whenever the question is "why you":
 
 - **Technological Implementation** — four Qloo endpoints behind one hardened transport
   (rate limit, retries, cache, single-flight, privacy guard); deterministic engine math

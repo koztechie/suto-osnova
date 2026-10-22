@@ -60,6 +60,9 @@
 ## 4. Питання журі — готові відповіді (8 штук)
 
 Читайте відповідь НАВІТЬ якщо зрозуміли питання — коротко і точно.
+Порядок критеріїв має значення: якщо бали нічия, судді порівнюють за ПЕРШИМ
+критерієм — **Technological Implementation**. Тому на питання «чому саме ви»
+починайте з технічної глибини (рядок "Why should you win?" у таблиці).
 
 | Питання (так пролунає) | Що питають (українською) | Відповідь (читати англійською) |
 |---|---|---|
@@ -71,6 +74,7 @@
 | Why is this idea non-obvious? | Чому ідея незвична? | Most entries ask a model to sound cultural. Mine measures taste first. The model only explains measured numbers. |
 | What's next after the hackathon? | Що далі? | More presets for events and studios, and an MCP server any AI agent can use. |
 | Are you a team? | Ви команда? | One engineer: me. 199 commits, full history public. |
+| Why should you win? | Чому маєте виграти? | Implementation depth first: four Qloo endpoints, one hardened transport, 1,200 tests, provenance on screen. |
 
 ## 5. Рятувальні фрази (якщо не розчули або застрягли)
 

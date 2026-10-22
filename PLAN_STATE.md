@@ -2289,3 +2289,16 @@ DELIVERED: docs/FINAL_ONAIR_UA.md — (1) what the finalist is NOT required to d
 LINKED: the Ukrainian guide's finalist section now points to the scenario file; README Documentation list gained the row.
 
 VERIFICATION (scripted, exit 0): links resolve across all three touched files; zero emoji; zero banned terms; script has exactly 9 numbered sentences and the Q&A table exactly 8 questions (first run undercounted Q&A because the CHECKER itself dropped the first data row — document was correct, checker fixed); 12/12 critical facts present (dates, anchors, no_usable_signal, October 15, 199 commits, 1,200 tests, Nov 20, rescue phrase, endpoint list); hygiene CLEAN.
+
+## Quality loop — criteria-tail/what-to-build fragment: entry category declared + tie-break order weaponized
+
+Status: DONE — rules category (a) stated in the submission description, tie-break ordering wired into both the pitch and the on-air scenario.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES:
+1. Tie-breaking resolves on the FIRST criterion — Technological Implementation — before any other, and a full tie falls to a panel VOTE (subjective). Consequence: implementation depth is not just score #1 of four, it is the tiebreaker that precedes everything, and the on-air impression only matters at total parity. Both operational docs now say so.
+2. Rules section 4 offers THREE legitimate project shapes — (a) agentic tool, (b) built using an agent framework, (c) Qloo integrated into an existing agent. SUTO OSNOVA is shape (a) (a custom vanilla state machine, no third-party framework), which is legitimate but was never STATED — a Stage One pass/fail reviewer skimming the entry could stall on the ambiguity. The description now opens with "Entry category: an agentic tool (rules option a) — a standalone agent with an explicit state machine; Qloo is its knowledge layer, not a plugin."
+
+IMPLEMENTED: (1) Field 3 of docs/SUBMISSION_DRAFT.md gained the entry-category line; (2) the pitch block gained the tie-break order note (lead with implementation depth on "why you"); (3) docs/FINAL_ONAIR_UA.md gained a Ukrainian note explaining the tie-break order plus a NINTH judge question "Why should you win?" with the criterion-#1-first answer (four Qloo endpoints, one hardened transport, 1,200 tests, provenance on screen).
+
+VERIFICATION (scripted, exit 0): all three eligible shapes cross-checked VERBATIM against the fetched rules source (/tmp/devpost/rules.html) before being referenced; 4/4 draft facts; scenario structure intact (9 speech sentences, Q&A now 9/9); file-relative links, zero emoji, zero banned terms in both files; hygiene CLEAN.
