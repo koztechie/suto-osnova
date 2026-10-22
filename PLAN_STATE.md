@@ -2263,3 +2263,16 @@ IMPLEMENTED:
 SELF-CATCH: the new pitch contained "festival programmers" — a music-industry role, but the banned-terminology rule is absolute; replaced with "festival and venue curation teams" in both spots (the gate itself caught it: first run failed on banned ['programmers']).
 
 VERIFICATION (scripted, exit 0): links resolve; zero emoji; zero banned terms after stripping URLs/code/quotes/fences; all 6 state-machine phases present and cross-checked against README; Ambient Festival -> no_usable_signal claim confirmed against docs/HOSTING_STABILITY.md (the row exists verbatim); timeline/Kyiv facts present; hygiene CLEAN.
+
+## Accessibility correction — Ukrainian working guide for the participant
+
+Status: DONE — docs/SUBMISSION_GUIDE_UA.md published (5.9 KB), linked from the README.
+Date: 2026-10-22
+
+ROOT CAUSE of the user's blocker: every operational artifact was written in English (correct for the Devpost form — rules require English submission material — and for judge-facing docs), but the participant does not read English, so the instructions were unusable BY THE PERSON who must act on them.
+
+FIX: a full step-by-step guide in Ukrainian covering the same workflow end to end: the Kyiv-time deadline table (hard close 2026-10-31 05:45 Kyiv, freeze by Nov 1, judging opens Nov 2 19:00, winners Nov 5 22:00 with the EDT/EST explanation why the site shows another date), the field-by-field Devpost mapping (which English block from SUBMISSION_DRAFT.md goes into which form field — the FORM stays English per rules), the pre-submit checklist translated, post-submit actions, the finalist demo order including the "never demo Ambient Festival" warning (still English-content inside, but instructed in Ukrainian), the W-8BEN 10-business-day paperwork with the Nov 20 example, and a file map with each document's language and purpose stated.
+
+DESIGN CONSTRAINT KEPT: no duplication of the English paste-material (single source of truth stays SUBMISSION_DRAFT.md); the guide only INSTRUCTS and links. README Documentation list gained the guide row.
+
+VERIFICATION (scripted, exit 0): file-relative links resolve (five targets), zero emoji, zero banned terms, README links the guide, 11/11 critical facts present (all Kyiv dates, both anchors, no_usable_signal, W-8BEN, Nov 20, Field 7, Join/Enter button names); hygiene CLEAN.

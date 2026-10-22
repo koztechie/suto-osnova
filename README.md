@@ -363,6 +363,8 @@ netlify deploy --prod
   prizes, judges, criteria, submission pillars, full rules index (collected 2026-10-22)
 - [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — paste-ready Devpost submission
   text (all fields), pre-submit checklist, post-close rules
+- [docs/SUBMISSION_GUIDE_UA.md](docs/SUBMISSION_GUIDE_UA.md) — the same workflow as a
+  step-by-step guide in Ukrainian (the Devpost form itself stays English, per rules)
 - [AGENTS.md](AGENTS.md) — the engineering rules of this codebase
 
 ## License
