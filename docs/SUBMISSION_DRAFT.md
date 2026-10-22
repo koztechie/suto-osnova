@@ -65,78 +65,39 @@ judging criterion is carried inside the story:
 ````markdown
 ## Inspiration
 
-The pitch of this hackathon is real: agents can reason and plan, but ask
-them what people actually love and they guess. I wanted an agent that
-ANSWERS with evidence — cultural taste measured on Qloo's taste graph
-instead of model confidence. And as the challenge itself puts it: if the
-submission would work the same without Qloo, you're building the wrong
-thing — so the graph had to be the product, not a decoration.
+The pitch of this hackathon is real: agents can reason and plan, but ask them what people actually love and they guess. I wanted an agent that ANSWERS with evidence — cultural taste measured on Qloo's taste graph instead of model confidence. And as the challenge itself puts it: if the submission would work the same without Qloo, you're building the wrong thing — so the graph had to be the product, not a decoration.
 
 ## What it does
 
-SUTO OSNOVA turns a plain cultural anchor ("David Lynch Noir",
-"Glastonbury Festival") into a decision-ready dossier in one request:
+SUTO OSNOVA turns a plain cultural anchor ("David Lynch Noir", "Glastonbury Festival") into a decision-ready dossier in one request:
 
-- **Worldbuilder** — mise-en-scene scene dossier: top affinities, sonic,
-  literary, material, gastronomic and visual layers;
-- **Experiential** — live-event activation: resonance index with
-  weighted evidence, curation, audience insights, food zones;
-- **Taste antithesis** — the cultural antipode with divergence
-  percentages per domain.
+- **Worldbuilder** — mise-en-scene scene dossier: top affinities, sonic, literary, material, gastronomic and visual layers;
+- **Experiential** — live-event activation: resonance index with weighted evidence, curation, audience insights, food zones;
+- **Taste antithesis** — the cultural antipode with divergence percentages per domain.
 
-Exports as JSON (schema `suto-osnova.dossier/v1`), Markdown, or
-print-ready HTML/PDF. No accounts, no storage: the page stores nothing
-and tracks nobody. Live demo: https://suto-osnova.netlify.app
+Exports as JSON (schema `suto-osnova.dossier/v1`), Markdown, or print-ready HTML/PDF. No accounts, no storage: the page stores nothing and tracks nobody. Live demo: https://suto-osnova.netlify.app
 
 ## How I built it
 
-Vanilla ES6+ front end (zero frameworks) over a Node.js 22 serverless
-gateway on one origin. Every taste fact comes from four Qloo endpoints —
-`/search`, `/v2/insights`, `/v2/tags`, `/v2/audiences` — behind one
-hardened transport: X-Api-Key, sliding-window rate limit, bounded
-retries, two-tier cache, single-flight, privacy guard. The engine math
-(adaptive thresholds, pop-cliche filter, a uniqueness coefficient) is
-pure and deterministic, so the whole cycle also runs offline against
-recorded fixtures. The optional LLM narrative is bound to the measured
-numbers by a validator. The MCP surface (18 tools, qloo_* namespace) is
-validated against the official Qloo harness (`npm run mcp:verify`), and
-1,200+ tests run on every push. Everything was built inside the
-submission period — first commit 2026-10-15, full history public.
+Vanilla ES6+ front end (zero frameworks) over a Node.js 22 serverless gateway on one origin. Every taste fact comes from four Qloo endpoints — `/search`, `/v2/insights`, `/v2/tags`, `/v2/audiences` — behind one hardened transport: X-Api-Key, sliding-window rate limit, bounded retries, two-tier cache, single-flight, privacy guard. The engine math (adaptive thresholds, pop-cliche filter, a uniqueness coefficient) is pure and deterministic, so the whole cycle also runs offline against recorded fixtures. The optional LLM narrative is bound to the measured numbers by a validator. The MCP surface (18 tools, qloo_* namespace) is validated against the official Qloo harness (`npm run mcp:verify`), and 1,200+ tests run on every push. Everything was built inside the submission period — first commit 2026-10-15, full history public.
 
 ## Challenges I ran into
 
-Qloo rejects some entities as signals — even against their own domain.
-Rather than paper over that, the resolver PROBES the signal and swaps in
-a comparably-scored alternative, or fails closed with a typed refusal
-(`no_usable_signal`): a wrong answer is never worth a fabricated one.
-Balancing the uniqueness filter — measuring how un-crowded a taste is
-without burying genuinely popular picks — took real iteration.
+Qloo rejects some entities as signals — even against their own domain. Rather than paper over that, the resolver PROBES the signal and swaps in a comparably-scored alternative, or fails closed with a typed refusal (`no_usable_signal`): a wrong answer is never worth a fabricated one. Balancing the uniqueness filter — measuring how un-crowded a taste is without burying genuinely popular picks — took real iteration.
 
 ## Accomplishments that I'm proud of
 
-- The **API Inspector**: the demo shows its own wiring — the client call
-  log, live Qloo transport state (rate limiter, cache counters) and the
-  backend's provenance ledger, verbatim. Judges can audit exactly what
-  Qloo was asked.
-- A fail-closed agent: when Qloo cannot answer, it refuses instead of
-  inventing taste.
-- A permanent uptime sentinel guarding the demo through the judging
-  window, and pixel-locked brand assets (the cover is palette-pure down
-  to the pixel).
+- The **API Inspector**: the demo shows its own wiring — the client call log, live Qloo transport state (rate limiter, cache counters) and the backend's provenance ledger, verbatim. Judges can audit exactly what Qloo was asked.
+- A fail-closed agent: when Qloo cannot answer, it refuses instead of inventing taste.
+- A permanent uptime sentinel guarding the demo through the judging window, and pixel-locked brand assets (the cover is palette-pure down to the pixel).
 
 ## What I learned
 
-How far cross-domain affinity math takes you: one anchor seeds five
-domains at once, and measured divergence is a far better editorial
-signal than a model's confidence score.
+How far cross-domain affinity math takes you: one anchor seeds five domains at once, and measured divergence is a far better editorial signal than a model's confidence score.
 
 ## What's next for SUTO OSNOVA — agentic cultural intelligence
 
-The measured layer already returns dining recommendations from the
-graph — the hackathon's lateral directions (room moods, health-aware
-dining, community journeys) are parameter sets on this pipeline, not new
-products. Next: more presets for events and studios, and deeper MCP
-integration for any AI agent.
+The measured layer already returns dining recommendations from the graph — the hackathon's lateral directions (room moods, health-aware dining, community journeys) are parameter sets on this pipeline, not new products. Next: more presets for events and studios, and deeper MCP integration for any AI agent.
 ````
 ## Field 4 — Try it! (demo URL)
 

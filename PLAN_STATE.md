@@ -2573,3 +2573,7 @@ FIX 1 — FIELD 3 REWRITTEN to the platform's suggested story shape (7 sections:
 FIX 2 — FIELD 6 REWRITTEN as an ordered 10-tag list for select2 (JavaScript, Node.js, Netlify, HTML5, CSS3, Markdown, JSON, Qloo Taste AI API, Model Context Protocol, GitHub Actions) with the click-the-suggestion-else-Enter mechanic; 10 <= 25 limit.
 
 VERIFICATION (scripted, exit 0): all 7 story headings present; the 4 endpoint paths, transport terms, mcp:verify, 18 tools, 1,200+ tests, 2026-10-15, no_usable_signal, demo URL, lateral directions and the verbatim "wrong thing" bar cross-checked as substrings; exactly 10 tags inside the fence (the first count swept in a wrapped prose line — checker fixed to count fence contents only); markdown fences balanced; zero emoji; zero banned terms (story uses "How I built it", no prohibited vocabulary); hygiene gate CLEAN.
+
+## Correction — Field 3 line breaks removed (user request)
+
+Status: DONE — the About-the-project markdown is now unwrapped: every paragraph and every list item is a single line (74 -> 35 lines). Content proven unchanged: the normalized word sequence before and after is identical (527 == 527 words), zero indented continuation lines remain, all 7 story headings stay on their own lines. Date: 2026-10-22
