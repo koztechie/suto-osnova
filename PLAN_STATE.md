@@ -2577,3 +2577,7 @@ VERIFICATION (scripted, exit 0): all 7 story headings present; the 4 endpoint pa
 ## Correction — Field 3 line breaks removed (user request)
 
 Status: DONE — the About-the-project markdown is now unwrapped: every paragraph and every list item is a single line (74 -> 35 lines). Content proven unchanged: the normalized word sequence before and after is identical (527 == 527 words), zero indented continuation lines remain, all 7 story headings stay on their own lines. Date: 2026-10-22
+
+## Correction — Built with tags must be space-free (select2 commits on space; user-reported from the live form)
+
+Status: DONE — Field 6 replaced with 10 exact space-free tokens (JavaScript, Node.js, Netlify, HTML5, CSS3, Markdown, JSON, QlooAPI, MCP, GitHubActions), a space-commits warning, and the junk-chip cleanup procedure (× on each accidentally committed chip, e.g. Qloo|Taste|AI|API, before re-adding). Verified: zero whitespace in any of the 10 tags. Date: 2026-10-22

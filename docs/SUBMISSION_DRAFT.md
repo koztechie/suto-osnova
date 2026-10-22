@@ -113,9 +113,10 @@ https://github.com/koztechie/suto-osnova
 
 ## Field 6 — Built with (step 3 — select2 tags, required, up to 25)
 
-Type each tag into the "Built with" box, **click the suggested entry
-when Devpost offers one**, otherwise press Enter. Recommended order (10
-tags, well within the 25-tag limit):
+**A space COMMITS the current text as a tag in this widget — never type
+a space inside a tag.** Type one of the exact tokens below and press
+Enter (or click the matching single-token suggestion if the dropdown
+offers it). Recommended order — 10 tags, all space-free:
 
 ```
 JavaScript
@@ -125,10 +126,18 @@ HTML5
 CSS3
 Markdown
 JSON
-Qloo Taste AI API
-Model Context Protocol
-GitHub Actions
+QlooAPI
+MCP
+GitHubActions
 ```
+
+- `QlooAPI` = the Qloo Taste AI API (the graph every taste fact comes
+  from); `MCP` = Model Context Protocol; `GitHubActions` = the CI that
+  runs the suite.
+- If a multi-word phrase was already committed by accident (e.g. you
+  typed "Qloo Taste AI API" and got the chips `Qloo`, `Taste`, `AI`,
+  `API`), click the small × on each junk chip inside the Built with box
+  first, then add the correct token. Ten tags total, the limit is 25.
 
 ## Field 7 — License / additional credits
 
