@@ -2370,3 +2370,17 @@ ANALYSIS of the fragment (gallery consequences + the full 15-section rules index
 THE ONE DELIVERABLE the participant actually needs: the complete rules index exists only in English, and the user does not read English — informed consent requires understanding what is being agreed to. Added "Правила стисло (українською)" to docs/SUBMISSION_GUIDE_UA.md: one Ukrainian line per each of the 15 official sections (dates, organizer, who is in/out, entry steps, modification rules, two-stage judging with the tie-break, IP and the three-year publicity rights, prize mechanics with the 10-business-day forms, liability/release, finality of decisions, New York law, Devpost terms precedence, privacy policy), each cross-checked against the intel digest in docs/QLOO_HACKATHON.md section 15.
 
 VERIFICATION (scripted, exit 0): the digest section contains exactly the numbered sequence 1..15; key theses ($15K/$6K/$4K, 10 business days, three years, New York, cross-link) present; links/emoji/banned clean; hygiene CLEAN.
+
+## Quality loop — rules-index tail: the section 7 WARRANTIES measured with evidence
+
+Status: DONE — warranty compliance block added to docs/HACKATHON_COMPLIANCE.md (12 MET rows total); a permanent eval/Function assertion added to the build gate.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES: the fragment's closing note carries two warranties the ENTRANT makes — no third-party rights infringed, no malicious code — and a reCAPTCHA remark. Warranties are rules obligations like any other, so they were measured, not assumed.
+
+MEASURED (all clean):
+1. Malicious code: `eval(` / `new Function(` = 0 in client source AND in the shipped dist bundle; exactly one script tag in the built HTML (same-origin module); zero external origins in the bundle (pre-existing gate); tracker gate PASS; CSP `script-src 'self'` without unsafe-eval. The eval/Function check is now a PERMANENT assertion inside tests/clientBuild.test.js so the warranty holds for every future build, not just today's snapshot.
+2. Third-party rights: all shipped media is self-generated (favicon.svg/ico + social-card.png from scripts/monogramIcon.mjs — the SVG literally carries the generator comment); the hygiene allowlist permits no other tracked media; zero external url(http...) in the built CSS (no third-party fonts/images); cultural names and titles appear only as factual taste-anchor data; organizers' wording is quoted only in the submission draft, attributed to their sections.
+3. reCAPTCHA: it guards the DEVMOST form (Google's policy applies THERE); this deployment loads no Google scripts — covered by the tracker gate; nothing to implement.
+
+VERIFICATION: tests/clientBuild.test.js 5/5 including the new assertion (against a fresh build); hygiene CLEAN; the compliance document now carries 12 MET rows (4 pillars + 6 re-audit + 2 warranties).

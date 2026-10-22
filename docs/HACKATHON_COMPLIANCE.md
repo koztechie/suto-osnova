@@ -68,3 +68,17 @@ Five pillars re-verified live the day the submission material was frozen into
 
 Post-close rule (§5): the submission itself is frozen at 2026-10-30 23:45 EDT — paste the
 draft before then.
+
+## Warranty compliance (rules §7 — measured 2026-10-22)
+
+Beyond the five §4 pillars, the rules make every entrant WARRANT two things. Both
+verified with evidence:
+
+| Warranty | Evidence | Status |
+|---|---|---|
+| No third-party rights infringed | All shipped media is ORIGINAL and self-generated: `client/public/{favicon.svg,favicon.ico,social-card.png}` come from `scripts/monogramIcon.mjs` (the SVG carries the generator comment); the tracked-media allowlist gate (`scripts/verifyRepoHygiene.mjs`) permits nothing else; zero external `url(http…)` in the built CSS (no third-party fonts or images); cultural names/titles appear only as factual taste-anchor data; the organizers' own wording is quoted only inside the submission draft, attributed to their sections | MET |
+| No malicious code | `eval(` / `new Function(` count = 0 in the client source AND in the shipped bundle (now a permanent assertion in `tests/clientBuild.test.js`); exactly one `<script>` in the built HTML, same-origin module; zero external origins baked into the bundle (existing gate); tracker gate `VERIFY: PASS`; CSP `script-src 'self'` with no `unsafe-eval` | MET |
+
+Note: the reCAPTCHA protecting the Devpost form is Google's (their Privacy Policy and
+Terms apply to that form); this deployment loads no Google scripts (tracker gate
+covers it).

@@ -90,6 +90,12 @@ test('the gateway stays same-origin /api with no external origin and no key', as
   assert.ok(js.includes('/api'), 'the built client still targets the /api gateway');
   const external = js.match(/https?:\/\/[a-zA-Z0-9.-]+/g) ?? [];
   assert.deepEqual(external, [], `no external origin may be baked in: ${external.join(', ')}`);
+  // Rules section 7 warranty (no malicious code): no dynamic code execution
+  // in the SHIPPED bundle — eval/new Function are the classic vectors.
+  assert.ok(
+    !/\beval\(|new Function\(/.test(js),
+    'no eval / new Function may ship in the bundle (warranty: no malicious code)',
+  );
 
   // No API key anywhere in the emitted build.
   const env = await readFile(path.join(ROOT, '.env'), 'utf8').catch(() => '');
