@@ -15,8 +15,10 @@
  * untouched) and a Chromium (auto-resolved: $SHOT_BROWSER -> ms-playwright
  * cache -> system Chrome).
  *
- * USAGE:   node scripts/makeCover.mjs [outputPath]
- * DEFAULT: screenshots/cover-devpost-1200x630.png  (gitignored dir — a
+ * USAGE:   node scripts/makeCover.mjs [--size 1200x630] [outputPath]
+           (1200x630 = the Devpost cover spec; 1200x800 = the 3:2 ratio
+           the thumbnail uploader hints at)
+ DEFAULT: screenshots/cover-devpost-1200x630.png  (gitignored dir — a
  * cover is uploaded to Devpost by hand; hosted copy lives in the
  * v1.0.0-hackathon release).
  */
@@ -27,10 +29,14 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const OUT = process.argv[2]
-  ?? path.join(ROOT, 'screenshots', 'cover-devpost-1200x630.png');
-const W = 1200;
-const H = 630;
+/** `--size 1200x630` (default) or `--size 1200x800` (Devpost's 3:2 hint). */
+const sizeArg = process.argv.find((a) => /^\d+x\d+$/.test(a)) ?? '1200x630';
+const [W, H] = sizeArg.split('x').map(Number);
+if (!(W >= 400 && H >= 400 && W <= 4000 && H <= 4000)) {
+  throw new Error(`unreasonable cover size: ${sizeArg}`);
+}
+const OUT = process.argv.find((a) => a.endsWith('.png'))
+  ?? path.join(ROOT, 'screenshots', `cover-devpost-${W}x${H}.png`);
 
 /** The ONLY colours allowed anywhere in the template or the bitmap. */
 const PALETTE = ['#101114', '#1f2326', '#96a2a8', '#d4a853', '#e06338', '#f4efe6'];
@@ -62,7 +68,7 @@ async function resolveBrowser() {
  * client/src/css/typography.css (--font-serif for the brand, --font-mono
  * for the technical lines).
  */
-const TEMPLATE = `<!doctype html>
+const templateFor = (W, H) => `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -158,7 +164,7 @@ function assertPaletteLocked(template) {
 }
 
 async function main() {
-  const used = assertPaletteLocked(TEMPLATE);
+  const used = assertPaletteLocked(templateFor(W, H));
   const { default: puppeteer } = await import('puppeteer-core');
   const executablePath = await resolveBrowser();
   console.log(`browser: ${executablePath}`);
@@ -173,7 +179,7 @@ async function main() {
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
-    await page.setContent(TEMPLATE, { waitUntil: 'load' });
+    await page.setContent(templateFor(W, H), { waitUntil: 'load' });
     const raw = await page.screenshot({ type: 'png' });
 
     // Browser-side quantization: decode -> snap every pixel to the

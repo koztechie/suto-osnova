@@ -32,17 +32,28 @@ conversions computed with IANA `America/New_York` + `Europe/Kyiv`, not by hand.)
 
 ---
 
-## Field 1 — Submission name
+## Field 1 — Project name (step 2 "Project overview" — HARD LIMIT 60 characters)
+
+The live Devpost form enforces **60 characters** with a live counter (the
+earlier long name was 77 characters and does not fit). Primary:
 
 ```
-SUTO OSNOVA — the cultural intelligence agent for mise-en-scene worldbuilding
+SUTO OSNOVA — agentic cultural intelligence
 ```
 
-## Field 2 — Short description (one-liner)
+43 characters. Alternates, also within the limit:
+
+- `SUTO OSNOVA — cultural intelligence agent` (41)
+- `SUTO OSNOVA: agentic cultural intelligence` (42)
+- `SUTO OSNOVA — agents with cultural taste` (40)
+
+## Field 2 — Elevator pitch (same step — HARD LIMIT 200 characters)
 
 ```
 Agents, but with taste: an agent that stops guessing what people love and measures it on Qloo's taste graph instead.
 ```
+
+115 characters, fits the 200-character textarea.
 
 ## Field 3 — "What does your project do?" (Markdown — paste as-is)
 
@@ -125,6 +136,26 @@ explicit tiers (microtail -> mainstream), and a non-obvious sort — then the LL
 narrates numbers that already exist. The result is provably grounded, provably
 non-generic, and refuses to answer when the graph cannot.
 ````
+
+## The real Devpost wizard (5 steps — measured from the live form 2026-10-22)
+
+The submission is a **five-step wizard**, not a single page. Map the
+fields below onto it:
+
+| Step | Title | What goes in |
+|---|---|---|
+| 1 | Manage team | Already done (solo entrant — one representative) |
+| 2 | Project overview | **Field 1** (Project name, <=60 chars) + **Field 2** (Elevator pitch, <=200 chars) + the **thumbnail upload** (see below) -> Save & continue |
+| 3 | Project details | **Field 3** (description, Markdown) + **Field 4** (Try it URL) + **Field 5** (repository) + **Field 6** (technologies) + the **eight screenshots** with the captions from [DEMO_FRAMES.md](DEMO_FRAMES.md) |
+| 4 | Additional info | Whatever the step asks — the prepared credits/license text is **Field 7** |
+| 5 | Submit | Final review -> submit, then the Submitted-not-Draft receipt check |
+
+**Thumbnail (right rail of step 2):** JPG/PNG/GIF, 5 MB max, the form
+hints "best results, use a 3:2 ratio" — upload
+`screenshots/cover-devpost-1200x800.png` (3:2) there; keep
+`screenshots/cover-devpost-1200x630.png` for the cover/featured use as
+the 1200x630 spec requires. Both are pixel-pure Archival Iron (6/6
+palette RGB, verified).
 
 ## Field 4 — Try it! (demo URL)
 

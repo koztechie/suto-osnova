@@ -2538,3 +2538,21 @@ EVERY CLAIM MEASURED AGAINST THE LIVE PAGES (browser UA):
 THE GUIDE (Ukrainian, step 0 before everything): the exact URL with a phishing rule (the address bar must start with https://secure.devpost.com/); the no-OAuth fact so the user does not hunt for missing buttons; credential handling (their password manager); the official recovery link; a four-point verification that THEY are signed in as koztechie (header avatar instead of Log in/Sign up, the exact profile title, name consistency with GitHub/git as the future role evidence); the immediate post-login destination (the manage/submissions URL, tying into the Submitted-not-Draft receipt step); session hygiene through the deadline (cookies on, no logout until submit, re-login on expiry); and a troubleshooting block (Invalid email or password -> try Email first then recovery; reCAPTCHA/browser warnings; spam folder for the recovery mail).
 
 VERIFICATION (scripted, exit 0): 9/9 required strings present after whitespace AND marker normalization (the check itself tripped twice on markdown asterisks and backticks before being fixed — the document was correct both times); file-relative links resolve; zero emoji; zero banned terms; hygiene gate CLEAN.
+
+## Quality loop — the LIVE Devpost submission page (logged-in state): real wizard mapped, 60-char limit caught, 3:2 thumbnail variant created
+
+Status: DONE — draft materials re-aligned to the actual 5-step Devpost wizard; Field 1 corrected (the old name was 77 chars against a hard 60-char form limit); a pixel-pure 3:2 cover variant added for the thumbnail slot.
+Date: 2026-10-22
+
+THE FRAGMENT WAS THE AUTHENTIC LOGGED-IN STEP-2 PAGE — measurements extracted:
+1. The user is signed in (task 216 done manually); a DRAFT submission EXISTS: id 1254524, status "Draft", title "Untitled", 1/5 steps done (Manage team completed); deadline badge datetime=2026-10-30T23:45:00-04:00, "8 more days" — matches every date in our docs; participants now 2169 (drift from 2137 at snapshot — exactly what the refresh policy anticipated).
+2. The REAL submission flow is a FIVE-STEP wizard: Manage team -> Project overview -> Project details -> Additional info -> Submit, with public preview at /software/<id>.
+3. HARD FIELD LIMITS from the live form: Project name <= 60 characters (live counter), Elevator pitch <= 200 characters. OUR FIELD 1 WAS 77 CHARACTERS — it would not fit.
+4. The thumbnail rail: JPG/PNG/GIF, 5 MB, "For best results, use a 3:2 ratio" — our 1200x630 cover is NOT 3:2.
+
+FIXES:
+1. SUBMISSION_DRAFT Field 1 replaced with the 43-character primary name "SUTO OSNOVA — agentic cultural intelligence" plus three alternates, each with its measured count, and the field now documents the discovered 60-char constraint; Field 2 documented at 115/200 characters. New section "The real Devpost wizard (5 steps)" maps every prepared field onto the actual steps (including the thumbnail upload in step 2 and the screenshots+captions in step 3) and carries the pixel-purity note for both cover files.
+2. scripts/makeCover.mjs parameterized with `--size WxH` (default 1200x630 preserved — regression-run and verified after the refactor); generated screenshots/cover-devpost-1200x800.png for the 3:2 thumbnail hint. BOTH covers independently decoded: exactly 6 palette RGB values, zero alien colours, exact IHDR dimensions. The 3:2 variant uploaded to the release (12 assets, URL 200).
+3. The Ukrainian guide's field table replaced by the REAL wizard table (5 steps, current 1/5 state, 60/200 limits, which cover file goes into the thumbnail slot); DEMO_FRAMES cover section gained the 3:2 row with both hosted URLs and the which-file-where guidance; release notes rewritten (two covers).
+
+VERIFICATION (scripted, exit 0): character limits asserted against the ACTUAL strings (43 <= 60, 115 <= 200); wizard mapping present in both the draft and the guide; 2 cover URLs in the doc; both PNG IHDRs exact; cover-report legitimately records the last run (the default-path regression pass — the first check wrongly demanded the 3:2 report and was fixed, the file was correct); links/emoji/banned clean across four docs; hygiene gate CLEAN.
