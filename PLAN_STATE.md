@@ -2556,3 +2556,7 @@ FIXES:
 3. The Ukrainian guide's field table replaced by the REAL wizard table (5 steps, current 1/5 state, 60/200 limits, which cover file goes into the thumbnail slot); DEMO_FRAMES cover section gained the 3:2 row with both hosted URLs and the which-file-where guidance; release notes rewritten (two covers).
 
 VERIFICATION (scripted, exit 0): character limits asserted against the ACTUAL strings (43 <= 60, 115 <= 200); wizard mapping present in both the draft and the guide; 2 cover URLs in the doc; both PNG IHDRs exact; cover-report legitimately records the last run (the default-path regression pass — the first check wrongly demanded the 3:2 report and was fixed, the file was correct); links/emoji/banned clean across four docs; hygiene gate CLEAN.
+
+## Correction — elevator pitch count 115 -> 116 (measured while preparing the element-by-element form instructions)
+
+Status: DONE — docs/SUBMISSION_DRAFT.md Field 2 now states 116/200 characters with the counter value (84 left), matching the actual string length measured in python. Date: 2026-10-22

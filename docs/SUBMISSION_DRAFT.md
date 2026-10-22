@@ -53,7 +53,7 @@ SUTO OSNOVA — agentic cultural intelligence
 Agents, but with taste: an agent that stops guessing what people love and measures it on Qloo's taste graph instead.
 ```
 
-115 characters, fits the 200-character textarea.
+116 characters, fits the 200-character textarea (84 characters left in the counter).
 
 ## Field 3 — "What does your project do?" (Markdown — paste as-is)
 
