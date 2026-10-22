@@ -367,6 +367,8 @@ netlify deploy --prod
   step-by-step guide in Ukrainian (the Devpost form itself stays English, per rules)
 - [docs/FINAL_ONAIR_UA.md](docs/FINAL_ONAIR_UA.md) — on-air finalist prep: speech
   script, judge Q&A, rescue phrases, checklists
+- [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) — the 6-frame 3360x2100 screenshot set
+  for the Devpost submission and portfolio (hosted URLs + captions)
 - [AGENTS.md](AGENTS.md) — the engineering rules of this codebase
 
 ## License
