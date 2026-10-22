@@ -55,108 +55,89 @@ Agents, but with taste: an agent that stops guessing what people love and measur
 
 116 characters, fits the 200-character textarea (84 characters left in the counter).
 
-## Field 3 — "What does your project do?" (Markdown — paste as-is)
+## Field 3 — About the project (step 3 "Project Story" — Markdown, required)
+
+The Devpost hint asks for a STORY (what inspired you, what you learned,
+how you built it, the challenges) and the form ships ready-made section
+headings for exactly that shape. Paste this complete Markdown — every
+judging criterion is carried inside the story:
 
 ````markdown
-**SUTO OSNOVA** turns a plain cultural anchor — "David Lynch Noir", "Post-Punk Berlin",
-"Glastonbury Festival" — into a decision-ready cultural dossier, grounded end to end in
-Qloo's taste graph (250M+ entities across music, film/TV, dining, fashion, travel and more).
+## Inspiration
 
-**Entry category:** an agentic tool (rules option a) — a standalone agent with an
-explicit state machine; Qloo is its knowledge layer, not a plugin.
+The pitch of this hackathon is real: agents can reason and plan, but ask
+them what people actually love and they guess. I wanted an agent that
+ANSWERS with evidence — cultural taste measured on Qloo's taste graph
+instead of model confidence. And as the challenge itself puts it: if the
+submission would work the same without Qloo, you're building the wrong
+thing — so the graph had to be the product, not a decoration.
 
-### What it does
+## What it does
 
-Three agent modes, three export formats, one pipeline:
+SUTO OSNOVA turns a plain cultural anchor ("David Lynch Noir",
+"Glastonbury Festival") into a decision-ready dossier in one request:
 
-- **Worldbuilder (Character & Scene Dossier)** — anchor to a full mise-en-scène:
-  top affinities, sonic architecture, literary substrate, material culture,
-  gastronomic topology, visual chiaroscuro — with tonality and connections.
-- **Experiential Activation (Live Events)** — festival/event anchors to an event
-  resonance index with weighted evidence, curated picks, audience insights and food zones.
-- **Taste Antithesis** — the cultural antipode report: what this taste is *not*,
-  and where it flips.
-- Exports as **JSON envelope** (schema `suto-osnova.dossier/v1`), **Markdown document**
-  or **print-ready HTML/PDF**. No account, no storage: the page stores nothing and
-  tracks nobody.
+- **Worldbuilder** — mise-en-scene scene dossier: top affinities, sonic,
+  literary, material, gastronomic and visual layers;
+- **Experiential** — live-event activation: resonance index with
+  weighted evidence, curation, audience insights, food zones;
+- **Taste antithesis** — the cultural antipode with divergence
+  percentages per domain.
 
-### Why Qloo is the differentiator (not an add-on)
+Exports as JSON (schema `suto-osnova.dossier/v1`), Markdown, or
+print-ready HTML/PDF. No accounts, no storage: the page stores nothing
+and tracks nobody. Live demo: https://suto-osnova.netlify.app
 
-Every taste fact comes from exactly four Qloo endpoints — `GET /search` (anchor
-resolution), `GET /v2/insights` (cross-domain affinities — the measured vector),
-`GET /v2/tags` (taste-tag catalogs for all five extraction layers), `GET /v2/audiences`
-(audience rows for events) — over one hardened transport (`X-Api-Key`, sliding-window
-rate limit, bounded retries, two-tier cache, single-flight, privacy guard).
+## How I built it
 
-Remove the Qloo key and the agent **refuses to invent**: it fails closed with a typed
-refusal (e.g. `no_usable_signal`) instead of fabricating taste. The narrative layer is
-bound to the measured numbers by a validator (the hallucination backstop). If this app
-would work the same without Qloo, it would be the wrong thing — and it demonstrably
-would not: the graph *is* the product.
+Vanilla ES6+ front end (zero frameworks) over a Node.js 22 serverless
+gateway on one origin. Every taste fact comes from four Qloo endpoints —
+`/search`, `/v2/insights`, `/v2/tags`, `/v2/audiences` — behind one
+hardened transport: X-Api-Key, sliding-window rate limit, bounded
+retries, two-tier cache, single-flight, privacy guard. The engine math
+(adaptive thresholds, pop-cliche filter, a uniqueness coefficient) is
+pure and deterministic, so the whole cycle also runs offline against
+recorded fixtures. The optional LLM narrative is bound to the measured
+numbers by a validator. The MCP surface (18 tools, qloo_* namespace) is
+validated against the official Qloo harness (`npm run mcp:verify`), and
+1,200+ tests run on every push. Everything was built inside the
+submission period — first commit 2026-10-15, full history public.
 
-### Technical depth (for the implementation score)
+## Challenges I ran into
 
-- Vanilla ES6+ client with zero frameworks, Node.js 22 serverless gateway on one
-  origin (Netlify), all engine math (`AdaptiveThreshold`, `LongTailFilter`,
-  `PopClicheFilter`, `UniquenessCoefficient` — U(p)=log2(1/p)/log2(1e6)) pure and
-  deterministic, injectable I/O, offline fixtures under `MOCK_MODE`.
-- **Built entirely inside the submission period**: the first commit is 2026-10-15 —
-  nothing in the project predates the contest window (verifiable in the public
-  commit history).
-- A **Raw API Call Inspector** inside the demo: the client call log, live Qloo
-  connectivity and the backend's provenance ledger, shown verbatim — judges can audit
-  exactly what Qloo was asked.
-- An **MCP server** (stdio) exposing the stack's **18 tools** — including the canonical
-  `qloo_*` namespace — so any MCP client can drive the same capabilities. The MCP
-  surface is validated against the **official Qloo harness** (`npm run mcp:verify`
-  drives `@qloo/qloo-harness` through the identical stdio handshake and compares
-  protocol, tools and resources side by side).
-- 1,200+ tests on every push (GitHub Actions: lint + full suite), plus standalone
-  gates for repo hygiene, trackers and hosting stability.
+Qloo rejects some entities as signals — even against their own domain.
+Rather than paper over that, the resolver PROBES the signal and swaps in
+a comparably-scored alternative, or fails closed with a typed refusal
+(`no_usable_signal`): a wrong answer is never worth a fabricated one.
+Balancing the uniqueness filter — measuring how un-crowded a taste is
+without burying genuinely popular picks — took real iteration.
 
-### The case it matters
+## Accomplishments that I'm proud of
 
-Cultural decisions — what to stage, shoot, stock, serve or sell — are currently made
-from generic model guesses or expensive manual research. SUTO OSNOVA turns a graph
-query into a cited, filtered, export-ready dossier in one request: live-event teams
-get resonance and curation they can defend, story teams get a scene kit that isn't a
-cliché, and every claim carries provenance back to Qloo. The judges can verify all of
-it themselves — the demo shows its own wiring.
+- The **API Inspector**: the demo shows its own wiring — the client call
+  log, live Qloo transport state (rate limiter, cache counters) and the
+  backend's provenance ledger, verbatim. Judges can audit exactly what
+  Qloo was asked.
+- A fail-closed agent: when Qloo cannot answer, it refuses instead of
+  inventing taste.
+- A permanent uptime sentinel guarding the demo through the judging
+  window, and pixel-locked brand assets (the cover is palette-pure down
+  to the pixel).
 
-**It generalizes:** the same measured layer already returns dining recommendations
-from the graph (the gastronomy layer and the event food zones are live today), so the
-organizers' lateral directions — room moods, health-aware dining, community journeys —
-are parameter sets on this pipeline, not new products.
+## What I learned
 
-### What makes the idea non-obvious
+How far cross-domain affinity math takes you: one anchor seeds five
+domains at once, and measured divergence is a far better editorial
+signal than a model's confidence score.
 
-Most entries ask an LLM to *sound* cultural. SUTO OSNOVA makes culture a **measured
-layer**: cross-domain affinity math, a pop-cliché filter, a uniqueness coefficient with
-explicit tiers (microtail -> mainstream), and a non-obvious sort — then the LLM only
-narrates numbers that already exist. The result is provably grounded, provably
-non-generic, and refuses to answer when the graph cannot.
+## What's next for SUTO OSNOVA — agentic cultural intelligence
+
+The measured layer already returns dining recommendations from the
+graph — the hackathon's lateral directions (room moods, health-aware
+dining, community journeys) are parameter sets on this pipeline, not new
+products. Next: more presets for events and studios, and deeper MCP
+integration for any AI agent.
 ````
-
-## The real Devpost wizard (5 steps — measured from the live form 2026-10-22)
-
-The submission is a **five-step wizard**, not a single page. Map the
-fields below onto it:
-
-| Step | Title | What goes in |
-|---|---|---|
-| 1 | Manage team | Already done (solo entrant — one representative) |
-| 2 | Project overview | **Field 1** (Project name, <=60 chars) + **Field 2** (Elevator pitch, <=200 chars) + the **thumbnail upload** (see below) -> Save & continue |
-| 3 | Project details | **Field 3** (description, Markdown) + **Field 4** (Try it URL) + **Field 5** (repository) + **Field 6** (technologies) + the **eight screenshots** with the captions from [DEMO_FRAMES.md](DEMO_FRAMES.md) |
-| 4 | Additional info | Whatever the step asks — the prepared credits/license text is **Field 7** |
-| 5 | Submit | Final review -> submit, then the Submitted-not-Draft receipt check |
-
-**Thumbnail (right rail of step 2):** JPG/PNG/GIF, 5 MB max, the form
-hints "best results, use a 3:2 ratio" — upload
-`screenshots/cover-devpost-1200x800.png` (3:2) there; keep
-`screenshots/cover-devpost-1200x630.png` for the cover/featured use as
-the 1200x630 spec requires. Both are pixel-pure Archival Iron (6/6
-palette RGB, verified).
-
 ## Field 4 — Try it! (demo URL)
 
 ```
@@ -169,10 +150,23 @@ https://suto-osnova.netlify.app
 https://github.com/koztechie/suto-osnova
 ```
 
-## Field 6 — Built with (technologies)
+## Field 6 — Built with (step 3 — select2 tags, required, up to 25)
+
+Type each tag into the "Built with" box, **click the suggested entry
+when Devpost offers one**, otherwise press Enter. Recommended order (10
+tags, well within the 25-tag limit):
 
 ```
-Qloo Taste AI API, JavaScript ES6+, Node.js 22, Netlify (static + serverless functions), Model Context Protocol (MCP), JSON Schema, Markdown, OpenAI-compatible chat/completions (optional narrative), GitHub Actions
+JavaScript
+Node.js
+Netlify
+HTML5
+CSS3
+Markdown
+JSON
+Qloo Taste AI API
+Model Context Protocol
+GitHub Actions
 ```
 
 ## Field 7 — License / additional credits

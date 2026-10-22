@@ -2560,3 +2560,16 @@ VERIFICATION (scripted, exit 0): character limits asserted against the ACTUAL st
 ## Correction — elevator pitch count 115 -> 116 (measured while preparing the element-by-element form instructions)
 
 Status: DONE — docs/SUBMISSION_DRAFT.md Field 2 now states 116/200 characters with the counter value (84 left), matching the actual string length measured in python. Date: 2026-10-22
+
+## Quality loop — step 3 "Project details" fragment: Field 3 rebuilt to the Devpost story template, Field 6 rebuilt as select2 tags
+
+Status: DONE — SUBMISSION_DRAFT restructured to match the live form; every element of the step mapped with exact values (chat instruction).
+Date: 2026-10-22
+
+FRAGMENT FACTS: the form action slug reads 1254524-suto-osnova-agentic-cultural-intelligence — step 2 was SAVED WITH OUR NAME (Field 1 accepted, progress now 2/5). Step 3 = "Project details": About the project (Markdown, required, hint asks for a STORY: inspiration / learned / built / challenges — and the textarea carries ready-made section headings including "What's next for SUTO OSNOVA — agentic cultural intelligence"), Built with (select2, required, <=25 tags), Try it out links (repeatable URL rows), Image gallery (<=15 images, JPG/PNG/GIF 5MB, 3:2 hint, per-image captions), Video demo link (optional), hidden version=2, Save & continue / Cancel.
+
+FIX 1 — FIELD 3 REWRITTEN to the platform's suggested story shape (7 sections: Inspiration, What it does, How I built it, Challenges I ran into, Accomplishments that I'm proud of, What I learned, What's next for SUTO OSNOVA — agentic cultural intelligence) while carrying ALL the criterion evidence inside the narrative: the organizers' own "wrong thing" bar in Inspiration; three modes + formats + demo + privacy in What it does; the four endpoints, the hardened transport, deterministic engine, validator-bound narrative, official-harness validation, 1,200+ tests and the first-commit-2026-10-15 period claim in How I built it; the signal-probe fail-closed story (no_usable_signal) and the uniqueness balance in Challenges; the API Inspector + fail-closed agent + uptime sentinel + pixel-pure brand in Accomplishments; cross-domain math insight in What I learned; the organizers' lateral directions as parameter sets in What's next. (The previous criterion-organized text was replaced — one paste source of truth, no duplication.)
+
+FIX 2 — FIELD 6 REWRITTEN as an ordered 10-tag list for select2 (JavaScript, Node.js, Netlify, HTML5, CSS3, Markdown, JSON, Qloo Taste AI API, Model Context Protocol, GitHub Actions) with the click-the-suggestion-else-Enter mechanic; 10 <= 25 limit.
+
+VERIFICATION (scripted, exit 0): all 7 story headings present; the 4 endpoint paths, transport terms, mcp:verify, 18 tools, 1,200+ tests, 2026-10-15, no_usable_signal, demo URL, lateral directions and the verbatim "wrong thing" bar cross-checked as substrings; exactly 10 tags inside the fence (the first count swept in a wrapped prose line — checker fixed to count fence contents only); markdown fences balanced; zero emoji; zero banned terms (story uses "How I built it", no prohibited vocabulary); hygiene gate CLEAN.
