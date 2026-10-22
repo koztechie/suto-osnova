@@ -179,8 +179,9 @@ test('behaviour: a failed probe degrades to no hints and never throws', async ()
 
 test('wiring and style: started on boot, local route, overlay, XSS-safe', () => {
   assert.match(main, /startAnchorInput\(\)/, 'main.js starts the combobox on boot');
-  assert.match(api, /return request\('\/categories'\);/,
-    'fetchCategories targets the LOCAL /categories gateway route only');
+  const categoryRequests = api.match(/request\('\/categories'\)/g) ?? [];
+  assert.equal(categoryRequests.length, 1,
+    'fetchCategories targets the LOCAL /categories gateway route exactly once (single-flight)');
   assert.ok(!/innerHTML/.test(moduleSource.replace(/\/\*[\s\S]*?\*\//g, '')),
     'the module never touches innerHTML (comments stripped for the probe)');
 
