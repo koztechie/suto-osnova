@@ -1,12 +1,13 @@
 # Screenshot set — portfolio and Devpost
 
-Nine high-resolution frames of the REAL production application, captured
+Ten high-resolution frames of the REAL production application, captured
 2026-10-22 with `scripts/makeDemoFrames.mjs`. Every frame was taken only
 after a **semantic assertion** passed in the page (the exact state each
 frame claims is verified before the shutter), so the set cannot contain a
 blank or half-rendered screen. Dimensions: **3360 wide** — every viewport
-frame is 3360x2100 (1680x1050 CSS pixels at deviceScaleFactor 2), and
-frame 08 is a full-page capture at **3360x10016**. Sharp enough for any
+frame is 3360x2100 (1680x1050 CSS pixels at deviceScaleFactor 2), frame 08
+is a full-page capture at **3360x10016**, and frame 10 is an element
+capture of the inspector panel at **1408x5636**. Sharp enough for any
 portfolio layout.
 The flagship frame (07) additionally proves the **Archival Iron palette is
 active**: all six canonical tokens present verbatim on `:root` and applied
@@ -30,17 +31,20 @@ repository's `v1.0.0-hackathon` tag — all six verified HTTP 200):
 | 7 | 07-dashboard-archival-iron.png | MAIN working dashboard with the dossier rendered, and the Archival Iron palette **proven active** (6/6 `:root` tokens + applied computed styles) | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/07-dashboard-archival-iron.png |
 | 8 | 08-scene-dossier-domains.png | EXPANDED scene dossier with the domain cards — a **full-page** capture (3360x10016): the complete Worldbuilder dossier, including the part the live UI keeps behind its internal scroll (the height cap is removed for this frame and re-verified before the shutter), flowing above the populated cultural plates | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/08-scene-dossier-domains.png |
 | 9 | 09-antithesis-contrast.png | The taste-antithesis ENGINE's contrast visualization — the CULTURAL ANTIPODE panel with per-domain rows (FILM / MUSIC / BOOKS) and their divergence percentages, from a JSON-format run (the panel is populated from the JSON envelope only) | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/09-antithesis-contrast.png |
+| 10 | 10-qloo-inspector-provenance.png | THE judge-grade integration proof — the **complete** API Inspector panel (element capture, 1408x5636): the client call log with the real `/api/generate` timings, the RAW Qloo connectivity block (upstream `latencyMs`, the live `rateLimiter` state, `hitsMemory`/`misses` cache counters) and the full provenance ledger (`resolution` with relevance signals, `expansion` across film/music/books/dining/fashion) — every section's scroll cap removed and re-verified before the shutter | https://github.com/koztechie/suto-osnova/releases/download/v1.0.0-hackathon/10-qloo-inspector-provenance.png |
 
 Capture order intentionally differs from file numbers: frame 07 (dashboard)
 is shot after the antithesis frame, frame 09 (contrast panel) runs its own
-json-format generate after 07, frame 08 (expanded scene) after 09, and
-the inspector frame last — its modal would cover the dashboard.
+json-format generate after 07, frame 08 (expanded scene) after 09, the
+inspector viewport frame (06) opens the modal, and frame 10 captures the
+full panel as an element right after 06 — its modal covers the dashboard,
+which is why the dashboard frames come earlier.
 
 ## Using them on the Devpost submission
 
 1. Open the submission form ("Enter a Submission") and locate the media /
    screenshots upload area.
-2. Upload the nine PNGs from `screenshots/` with these captions:
+2. Upload the ten PNGs from `screenshots/` with these captions:
 
    | Frame | Caption |
    |---|---|
@@ -53,6 +57,7 @@ the inspector frame last — its modal would cover the dashboard.
    | 07 | Main working dashboard with the active Archival Iron palette — anchor controls, rendered dossier, live connectivity |
    | 08 | Expanded scene dossier with the cultural domain plates — the complete Worldbuilder output in one full-page view |
    | 09 | Cultural antipode engine: the contrast panel with divergence percentages per domain (film, music, books) |
+   | 10 | Qloo API call inspector, complete: raw upstream transport state and the full provenance ledger — audit-grade integration evidence |
 
 3. Optionally illustrate the text description with the hosted URLs
    (markdown image syntax):

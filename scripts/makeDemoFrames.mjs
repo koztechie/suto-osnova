@@ -31,7 +31,10 @@
  *   envelope only; markdown runs leave it hidden) -> 8 EXPANDED scene
  *   dossier full-page with the domain cards (the <pre> internal scroll
  *   cap is removed for this frame, verified before the shutter) -> 7 API
- *   inspector with the recorded provenance. Capture order intentionally
+ *   inspector (viewport, call log) -> 10 INSPECTOR FULL PANEL proof for
+ *   engineer judges (call log + raw Qloo transport + provenance ledger;
+ *   all four scroll caps removed and verified; element screenshot of
+ *   .inspector-panel). Capture order intentionally
  *   differs from file numbers 07/08/09 — the inspector modal would cover
  *   the dashboard.
  */
@@ -187,7 +190,15 @@ const report = [];
 
 async function shoot(page, name, assertFn, what, options = {}) {
   const text = await waitFor(page, assertFn, what);
-  const buf = await page.screenshot(options);
+  const { __element, ...pageOptions } = options;
+  let buf;
+  if (__element) {
+    const handle = await page.$(__element);
+    if (!handle) throw new Error(`element not found for screenshot: ${__element}`);
+    buf = await handle.screenshot();
+  } else {
+    buf = await page.screenshot(pageOptions);
+  }
   const { width, height } = pngSize(buf);
   const file = path.join(OUT, name);
   await writeFile(file, buf);
@@ -348,6 +359,55 @@ async function main() {
         const calls = document.getElementById('inspector-calls')?.innerText ?? '';
         return modal && !modal.hidden && /\/api\//.test(calls) ? 'ok' : '';
       }), 'API Inspector open with recorded /api calls');
+
+    // 10 (file 10). QLOO API CALL INSPECTOR — THE deep-integration proof
+    //    for engineer judges: the full panel with the client call log,
+    //    the RAW Qloo connectivity block (upstream latency, the live rate
+    //    limiter state, cache hit counters) and the complete provenance
+    //    ledger (resolution/expansion/domains). MEASURED first: every
+    //    section caps at ~224 CSS px (scrollHeights 568 and 2752) — the
+    //    same hidden-content trap as frame 08 — so for THIS frame all
+    //    four caps (three sections + the modal panel) are removed and
+    //    RE-VERIFIED inside the wait condition before an element
+    //    screenshot of .inspector-panel. Same raw JSON, no fabrication.
+    let frame10Diag = '';
+    await shoot(page, '10-qloo-inspector-provenance.png',
+      async () => {
+        const state = await page.evaluate(() => {
+          const uncap = (el) => {
+            if (!el) return;
+            el.style.maxHeight = 'none';
+            el.style.height = 'auto';
+            el.style.overflow = 'visible';
+          };
+          const modal = document.getElementById('inspector');
+          if (!modal || modal.hidden) return { ok: false, why: 'modal hidden' };
+          const ids = ['inspector-calls', 'inspector-qloo', 'inspector-provenance'];
+          for (const id of ids) uncap(document.getElementById(id));
+          uncap(document.querySelector('.inspector-panel'));
+          const text = (id) => document.getElementById(id)?.innerText ?? '';
+          const expanded = [...ids].every((id) => {
+            const el = document.getElementById(id);
+            return !el || el.clientHeight + 5 >= el.scrollHeight;
+          }) && document.querySelector('.inspector-panel').clientHeight + 5
+              >= document.querySelector('.inspector-panel').scrollHeight;
+          const calls = text('inspector-calls');
+          const qloo = text('inspector-qloo');
+          const prov = text('inspector-provenance');
+          const ok = expanded
+            && /\/api\/generate/.test(calls)
+            && /"latencyMs"/.test(qloo) && /rateLimiter/.test(qloo) && /hitsMemory/.test(qloo)
+            && /"resolution"/.test(prov) && /"expansion"/.test(prov) && /"domains"/.test(prov);
+          return { ok, why: `expanded=${expanded} calls=${calls.length} qloo=${qloo.length} prov=${prov.length}` };
+        });
+        if (!state.ok && state.why !== frame10Diag) {
+          frame10Diag = state.why;
+          process.stderr.write(`frame10 diag: ${state.why}\n`);
+        }
+        return state.ok ? 'ok' : '';
+      },
+      'inspector full panel: call log + raw Qloo transport (latency/rateLimiter/cache) + provenance ledger (resolution/expansion/domains), caps removed and verified',
+      { __element: '.inspector-panel' });
 
     await writeFile(path.join(OUT, 'report.json'),
       JSON.stringify({ base: BASE, viewport: VIEWPORT, shots: report }, null, 2));
