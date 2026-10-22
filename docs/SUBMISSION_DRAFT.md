@@ -109,6 +109,11 @@ get resonance and curation they can defend, story teams get a scene kit that isn
 cliché, and every claim carries provenance back to Qloo. The judges can verify all of
 it themselves — the demo shows its own wiring.
 
+**It generalizes:** the same measured layer already returns dining recommendations
+from the graph (the gastronomy layer and the event food zones are live today), so the
+organizers' lateral directions — room moods, health-aware dining, community journeys —
+are parameter sets on this pipeline, not new products.
+
 ### What makes the idea non-obvious
 
 Most entries ask an LLM to *sound* cultural. SUTO OSNOVA makes culture a **measured

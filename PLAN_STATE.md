@@ -2302,3 +2302,16 @@ READING BETWEEN THE LINES:
 IMPLEMENTED: (1) Field 3 of docs/SUBMISSION_DRAFT.md gained the entry-category line; (2) the pitch block gained the tie-break order note (lead with implementation depth on "why you"); (3) docs/FINAL_ONAIR_UA.md gained a Ukrainian note explaining the tie-break order plus a NINTH judge question "Why should you win?" with the criterion-#1-first answer (four Qloo endpoints, one hardened transport, 1,200 tests, provenance on screen).
 
 VERIFICATION (scripted, exit 0): all three eligible shapes cross-checked VERBATIM against the fetched rules source (/tmp/devpost/rules.html) before being referenced; 4/4 draft facts; scenario structure intact (9 speech sentences, Q&A now 9/9); file-relative links, zero emoji, zero banned terms in both files; hygiene CLEAN.
+
+## Quality loop — lateral-examples/submission-items fragment: generalization line aligned with the organizers' own vision
+
+Status: DONE — a truthful generalization claim added to the description and the on-air "what's next" answer; §8 items re-verified live.
+Date: 2026-10-22
+
+READING BETWEEN THE LINES: the organizers' three lateral examples (room moods from an electrician's agent, senior dining with health constraints, rare-disease information + community journeys) are not decoration — they state the VISION the judges will score "Quality of the Idea" against ("genuine understanding of the problem space"). SUTO OSNOVA must not pretend to solve those problems, but it can truthfully state that its measured layer already returns dining recommendations from the graph — the gastronomy extraction layer and the Experiential food zones query the "dining" domain live today (verified in ExperientialMode.js and gastronomyExtractor.js before writing the claim). So the lateral directions become parameter sets on the same pipeline, not new products.
+
+IMPLEMENTED: (1) Field 3 of docs/SUBMISSION_DRAFT.md — an "It generalizes" sentence in the impact section naming the organizers' three lateral directions and grounding them in the live gastronomy layer; (2) docs/FINAL_ONAIR_UA.md — the "What's next after the hackathon?" answer now ends "and the same layer already covers dining and rooms" (still one readable line for the air).
+
+ALSO: §8's five mandatory items re-verified live this round — demo 200, gateway 200 (public, no auth wall), public repo + MIT About (unchanged since the T-8 re-audit in HACKATHON_COMPLIANCE.md).
+
+VERIFICATION (scripted, exit 0): the dining-domain claim cross-checked against the actual mode source before publishing; both files clean on links/emoji/banned; Q&A structure intact (9 rows); hygiene CLEAN.

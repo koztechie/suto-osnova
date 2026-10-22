@@ -72,7 +72,7 @@
 | What did you build in the hackathon? | Що ти побудував під час хакатону? | Everything. The first commit is October 15. Nothing existed before. |
 | How do you know it works? | Звідки відомо, що воно працює? | Over 1,200 tests on every push, plus live checks against the real API. |
 | Why is this idea non-obvious? | Чому ідея незвична? | Most entries ask a model to sound cultural. Mine measures taste first. The model only explains measured numbers. |
-| What's next after the hackathon? | Що далі? | More presets for events and studios, and an MCP server any AI agent can use. |
+| What's next after the hackathon? | Що далі? | More presets for events and studios, an MCP server for any agent — and the same layer already covers dining and rooms. |
 | Are you a team? | Ви команда? | One engineer: me. 199 commits, full history public. |
 | Why should you win? | Чому маєте виграти? | Implementation depth first: four Qloo endpoints, one hardened transport, 1,200 tests, provenance on screen. |
 
