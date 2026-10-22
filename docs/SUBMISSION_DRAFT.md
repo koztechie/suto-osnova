@@ -96,7 +96,10 @@ would not: the graph *is* the product.
   connectivity and the backend's provenance ledger, shown verbatim — judges can audit
   exactly what Qloo was asked.
 - An **MCP server** (stdio) exposing the stack's **18 tools** — including the canonical
-  `qloo_*` namespace — so any MCP client can drive the same capabilities.
+  `qloo_*` namespace — so any MCP client can drive the same capabilities. The MCP
+  surface is validated against the **official Qloo harness** (`npm run mcp:verify`
+  drives `@qloo/qloo-harness` through the identical stdio handshake and compares
+  protocol, tools and resources side by side).
 - 1,200+ tests on every push (GitHub Actions: lint + full suite), plus standalone
   gates for repo hygiene, trackers and hosting stability.
 
@@ -272,3 +275,20 @@ executives, and an active angel investor — every domain the product already se
 - *"Who pays?"* → festival and venue curation teams, production design teams,
   editorial curators — the dossier replaces hours of manual cultural research per
   anchor.
+
+## Organizer channels — Discord introduction (paste-ready)
+
+The organizers run a Discord (link on the Resources page of the hackathon). A short,
+ready-to-paste introduction:
+
+```text
+Hello from the SUTO OSNOVA entry — an agent that turns a cultural anchor into a
+decision-ready cultural dossier grounded in Qloo's taste graph: search, insights,
+tags and audiences behind one hardened transport. Three modes: scene worldbuilding,
+live-event activation, taste antithesis. Live demo: https://suto-osnova.netlify.app
+— the API Inspector inside shows every raw Qloo call. Public repo, MIT, 1,200+
+tests, and the MCP surface is validated against the official qloo-harness
+(npm run mcp:verify). Feedback welcome — especially on festival and event use cases.
+```
+
+Use it for an introduction, or when the organizers ask for showcase links.
