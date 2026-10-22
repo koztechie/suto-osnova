@@ -2581,3 +2581,7 @@ Status: DONE — the About-the-project markdown is now unwrapped: every paragrap
 ## Correction — Built with tags must be space-free (select2 commits on space; user-reported from the live form)
 
 Status: DONE — Field 6 replaced with 10 exact space-free tokens (JavaScript, Node.js, Netlify, HTML5, CSS3, Markdown, JSON, QlooAPI, MCP, GitHubActions), a space-commits warning, and the junk-chip cleanup procedure (× on each accidentally committed chip, e.g. Qloo|Taste|AI|API, before re-adding). Verified: zero whitespace in any of the 10 tags. Date: 2026-10-22
+
+## Field 8 — step 4 "Additional info" exact answers recorded
+
+Status: DONE — SUBMISSION_DRAFT gained Field 8: begin date = the first commit (October 15, 2026), public URL = the live demo, repo URL, and the optional existing-project question answered with the new-project truth (created from scratch in-period, Qloo from day one) to pre-empt the Stage One fairness check; hidden field ids and version flagged do-not-touch. Verified (facts present, zero emoji/banned, links, hygiene CLEAN). Date: 2026-10-22
